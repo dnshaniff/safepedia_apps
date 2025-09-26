@@ -33,14 +33,14 @@ class Helpers
     // default data array
     $DefaultData = [
       'myLayout' => 'vertical',
-      'myTheme' => 'light',
+      'myTheme' => 'system',
       'mySkins' => 'default',
       'hasSemiDark' => false,
       'myRTLMode' => true,
-      'hasCustomizer' => true,
+      'hasCustomizer' => false,
       'showDropdownOnHover' => true,
       'displayCustomizer' => true,
-      'contentLayout' => 'compact',
+      'contentLayout' => 'wide',
       'headerType' => 'fixed',
       'navbarType' => 'sticky',
       'menuFixed' => true,
