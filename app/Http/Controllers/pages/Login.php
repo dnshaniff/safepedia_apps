@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\pages;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class Login extends Controller
 {
@@ -23,21 +25,46 @@ class Login extends Controller
       'password' => 'required',
     ]);
 
-    if (!Auth::validate($credentials)) {
-      return redirect()->back()->withErrors(trans('auth.failed'));
+    $this->ensureIsNotRateLimited($request);
+
+    $remember = (bool) $request->boolean('remember');
+
+    if (! Auth::attempt($credentials, $remember)) {
+      RateLimiter::hit($this->throttleKey($request), 300);
+      throw ValidationException::withMessages([
+        'username' => trans('auth.failed'),
+      ]);
     }
 
-    $user = Auth::getProvider()->retrieveByCredentials($credentials);
-    Auth::login($user);
+    RateLimiter::clear($this->throttleKey($request));
+    $request->session()->regenerate();
 
     return redirect()->intended('/');
   }
 
-  public function destroy()
+  public function destroy(Request $request)
   {
-    Session::flush();
     Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
 
     return redirect()->route('auth-login.index')->with('success', 'You have been successfully logged out');
+  }
+
+  protected function throttleKey(Request $request): string
+  {
+    return Str::lower($request->input('username')) . '|' . $request->ip();
+  }
+
+  protected function ensureIsNotRateLimited(Request $request): void
+  {
+    if (! RateLimiter::tooManyAttempts($this->throttleKey($request), 5)) {
+      return;
+    }
+
+    $seconds = RateLimiter::availableIn($this->throttleKey($request));
+    throw ValidationException::withMessages([
+      'username' => __('Too many login attempts. Please try again in :seconds seconds.', ['seconds' => $seconds]),
+    ])->status(429);
   }
 }
