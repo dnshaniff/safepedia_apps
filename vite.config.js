@@ -15,7 +15,7 @@ function GetFilesArray(query) {
 }
 
 // Page JS Files
-const pageJsFiles = GetFilesArray('resources/assets/js/*.js');
+const pageJsFiles = GetFilesArray('resources/assets/js/**/*.js');
 
 // Processing Vendor JS Files
 const vendorJsFiles = GetFilesArray('resources/assets/vendor/js/*.js');
@@ -55,12 +55,12 @@ export default defineConfig({
     laravel({
       input: [
         'resources/css/app.css',
-        'resources/assets/css/demo.css',
         'resources/js/app.js',
+        'resources/assets/css/demo.css',
         ...pageJsFiles,
         ...vendorJsFiles,
         ...LibsJsFiles,
-        'resources/js/laravel-user-management.js', // Processing Laravel User Management CRUD JS File
+        // 'resources/js/laravel-user-management.js', // Processing Laravel User Management CRUD JS File
         ...CoreScssFiles,
         ...LibsScssFiles,
         ...LibsCssFiles,

@@ -8,7 +8,7 @@
 @yield('vendor-script')
 <!-- END: Page Vendor JS-->
 <!-- BEGIN: Theme JS-->
-@vite(['resources/assets/js/front-main.js'])
+@vite(['resources/assets/js/app/front-main.js'])
 <!-- END: Theme JS-->
 <!-- Pricing Modal JS-->
 @stack('pricing-script')

@@ -48,7 +48,7 @@ class Login extends Controller
     $request->session()->invalidate();
     $request->session()->regenerateToken();
 
-    return redirect()->route('auth-login.index')->with('success', 'You have been successfully logged out');
+    return redirect()->route('login')->with('success', 'You have been successfully logged out');
   }
 
   protected function throttleKey(Request $request): string
@@ -64,7 +64,7 @@ class Login extends Controller
 
     $seconds = RateLimiter::availableIn($this->throttleKey($request));
     throw ValidationException::withMessages([
-      'username' => __('Too many login attempts. Please try again in :seconds seconds.', ['seconds' => $seconds]),
+      'username' => __('Too many login attempts. Please try again in :seconds seconds', ['seconds' => $seconds]),
     ])->status(429);
   }
 }

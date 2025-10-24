@@ -11,7 +11,7 @@
 @yield('vendor-script')
 <!-- END: Page Vendor JS-->
 <!-- BEGIN: Theme JS-->
-@vite(['resources/assets/js/main.js'])
+@vite(['resources/assets/js/app/main.js'])
 
 <!-- END: Theme JS-->
 <!-- Pricing Modal JS-->
