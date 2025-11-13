@@ -16,9 +16,14 @@ class DatabaseSeeder extends Seeder
    */
   public function run(): void
   {
-    $user = User::create([
+    $admin = User::create([
       'username' => 'administrator',
       'password' => Hash::make('P@ssw0rd123'),
+    ]);
+
+    $user = User::create([
+      'username' => 'dnshaniff',
+      'password' => Hash::make('P@ssw0rd'),
     ]);
 
     $this->call([PermissionSeeder::class]);
@@ -33,6 +38,7 @@ class DatabaseSeeder extends Seeder
       $role->syncPermissions($permissions);
     }
 
-    $user->assignRole('Administrator');
+    $admin->assignRole('Administrator');
+    $user->assignRole('Restricted User');
   }
 }

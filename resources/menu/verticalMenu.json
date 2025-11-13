@@ -27,6 +27,33 @@
           "slug": "access-users"
         }
       ]
+    },
+    {
+      "name": "Master Data",
+      "icon": "menu-icon tf-icons bx bx-cog",
+      "slug": "master",
+      "submenu": [
+        {
+          "url": "/master-companies",
+          "name": "Companies",
+          "slug": "master-companies"
+        },
+        {
+          "url": "/master-departments",
+          "name": "Departments",
+          "slug": "master-departments"
+        },
+        {
+          "url": "/master-offices",
+          "name": "Offices",
+          "slug": "master-offices"
+        },
+        {
+          "url": "/master-positions",
+          "name": "Positions",
+          "slug": "master-positions"
+        }
+      ]
     }
   ]
 }

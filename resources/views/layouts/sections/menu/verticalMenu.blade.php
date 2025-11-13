@@ -120,9 +120,11 @@
                                     @php
                                         $subMenuActiveClass = null;
 
+                                        $hasChildren = isset($submenu->submenu) && count((array) $submenu->submenu) > 0;
+
                                         // Check if the submenu should be active
                                         if ($isRelatedRoute($submenu->slug, $currentRouteName, $menu->slug)) {
-                                            $subMenuActiveClass = 'active open';
+                                            $subMenuActiveClass = $hasChildren ? 'active open' : 'active';
                                         }
                                     @endphp
 
