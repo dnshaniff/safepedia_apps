@@ -11,11 +11,9 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('departments', function (Blueprint $table) {
+    Schema::create('job_titles', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('parent_id')->nullable()->constrained('departments', 'id')->onDelete('SET NULL');
-      $table->string('dept_name');
-      $table->string('dept_code')->unique();
+      $table->string('title_name');
       $table->timestamps();
       $table->softDeletes();
     });
@@ -26,6 +24,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('departments');
+    Schema::dropIfExists('job_titles');
   }
 };

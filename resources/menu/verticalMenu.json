@@ -39,9 +39,9 @@
           "slug": "master-companies"
         },
         {
-          "url": "/master-departments",
-          "name": "Departments",
-          "slug": "master-departments"
+          "url": "/master-org_units",
+          "name": "Organization Units",
+          "slug": "master-org_units"
         },
         {
           "url": "/master-offices",

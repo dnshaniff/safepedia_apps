@@ -8,235 +8,179 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableUsers = $('.datatables-users'),
-    modalUser = $('#modalUser'),
-    modalTitle = modalUser.find('.modal-title');
+  const $list = $('#org-unit'),
+    modalOrgUnit = $('#modalOrgUnit'),
+    modalTitle = modalOrgUnit.find('.modal-title'),
+    formOrgUnit = document.getElementById('formOrgUnit'),
+    unitName = formOrgUnit.querySelector('#unit_name'),
+    unitCode = formOrgUnit.querySelector('#unit_code'),
+    typeSelect = formOrgUnit.querySelector('#unit_type'),
+    parentSelect = formOrgUnit.querySelector('#parent_id'),
+    btnSubmit = formOrgUnit.querySelector('button[type="submit"]');
 
-  let dt_users, userRoleSelect;
+  let editingId = null,
+    currentParentId = null;
 
-  if (datatableUsers) {
-    const filterRole = document.createElement('div');
-    filterRole.classList.add('user_roles', 'w-px-200', 'pb-3', 'pb-sm-0', 'me-3');
-    dt_users = new DataTable(datatableUsers, {
-      processing: true,
-      serverSide: true,
-      ajax: {
-        url: `${baseUrl}users`
-      },
-      columns: [
-        { data: 'fake_id' },
-        { data: 'username' },
-        { data: 'role' },
-        { data: 'status' },
-        { data: 'created_at' },
-        { data: 'updated_at' },
-        { data: 'id' }
-      ],
-      columnDefs: [
-        {
-          orderable: false,
-          targets: [0, 1, 2, 3, 4, 5, -1]
-        },
-        {
-          searchable: true,
-          targets: [1]
-        },
-        {
-          targets: 3,
-          render: function (data, type, full, meta) {
-            var userStatus = data === 'active' ? 'ACTIVE' : 'INACTIVE',
-              statusClass = userStatus === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
-
-            return '<span class="badge ' + statusClass + '">' + userStatus + '</span>';
-          }
-        },
-        {
-          targets: 4,
-          render: function (data, type, full, meta) {
-            const options = {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            };
-            return new Date(data).toLocaleString('en-GB', options);
-          }
-        },
-        {
-          targets: 5,
-          render: function (data, type, full, meta) {
-            const options = {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            };
-            return new Date(data).toLocaleString('en-GB', options);
-          }
-        },
-        {
-          targets: -1,
-          title: 'Actions',
-          render: function (data, type, full, meta) {
-            if (full.deleted_at !== null) {
-              return `
-                <span class="text-nowrap">
-                  <button class="btn btn-icon me-2 restore-record" data-id="${data}">
-                    <i class="bx bx-recycle"></i>
-                  </button>
-                  <button class="btn btn-icon force-record" data-id="${data}">
-                    <i class="bx bx-trash"></i>
-                  </button>
-                </span>
-              `;
-            }
-
-            return `
-              <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalUser" data-bs-toggle="modal" data-bs-dismiss="modal">
-                  <i class="bx bx-edit"></i>
-                </button>
-                <button class="btn btn-icon delete-record" data-id="${data}">
-                  <i class="bx bx-trash-alt"></i>
-                </button>
-              </span>
-            `;
-          }
-        }
-      ],
-      scrollCollapse: true,
-      fixedHeader: { header: true, headerOffset: 70 },
-      fixedColumns: { leftColumns: 1 },
-      order: [[]],
-      layout: {
-        topStart: {
-          rowClass: 'row m-3 my-0 justify-content-between',
-          features: [
-            {
-              pageLength: {
-                menu: [10, 25, 50, 100],
-                text: 'Show_MENU_ entries'
-              }
-            }
-          ]
-        },
-        topEnd: {
-          features: [
-            {
-              search: {
-                placeholder: 'Search Username',
-                text: '_INPUT_'
-              }
-            },
-            filterRole
-          ]
-        },
-        bottomStart: {
-          rowClass: 'row mx-3 justify-content-between',
-          features: ['info']
-        },
-        bottomEnd: 'paging'
-      },
-      language: {
-        paginate: {
-          next: '<i class="icon-base bx bx-chevron-right scaleX-n1-rtl icon-18px"></i>',
-          previous: '<i class="icon-base bx bx-chevron-left scaleX-n1-rtl icon-18px"></i>',
-          first: '<i class="icon-base bx bx-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-          last: '<i class="icon-base bx bx-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-        }
-      },
-      initComplete: function (settings, json) {
-        userRoleSelect = $(
-          '<select id="userRole" class="form-select text-capitalize"><option value=""> Select Group </option></select>'
-        )
-          .appendTo('.user_roles')
-          .on('change', function () {
-            var val = $(this).val();
-            dt_users.column(2).search(val).draw();
-          });
-
-        updateUserRoleOptions(json.roles);
-      },
-      createdRow: function (row, data) {
-        if (data.deleted_at !== null) {
-          $(row).addClass('bg-danger-subtle');
-        }
-      }
-    });
-
-    function updateUserRoleOptions(roles) {
-      if (!userRoleSelect) return; // Guard clause
-      var currentVal = userRoleSelect.val();
-      userRoleSelect.empty().append('<option value=""> Select Role </option>');
-      roles.forEach(function (role) {
-        userRoleSelect.append('<option value="' + role + '" class="text-capitalize">' + role + '</option>');
-      });
-      userRoleSelect.val(currentVal);
+  function fetchOrgUnits(parentId) {
+    if (typeof parentId !== 'undefined') {
+      currentParentId = parentId;
     }
 
-    dt_users.on('draw.dt', function () {
-      var json = dt_users.ajax.json();
-      if (json && json.roles) {
-        updateUserRoleOptions(json.roles);
-      }
+    const params = {};
+    if (currentParentId !== null && currentParentId !== '') {
+      params.parent_id = currentParentId;
+    }
+
+    $.getJSON(`${baseUrl}org_units`, params, function (res) {
+      const units = res.data || [];
+      const breadcrumbs = res.breadcrumbs || [];
+
+      renderBreadcrumbs(breadcrumbs);
+
+      $list.empty();
+      units.forEach(unit => $list.append(renderOrgUnitNode(unit)));
     });
   }
 
-  setTimeout(() => {
-    const elementsToModify = [
-      { selector: '.dt-buttons .btn', classToRemove: 'btn-secondary' },
-      { selector: '.dt-search', classToAdd: 'me-3' },
-      { selector: '.dt-search .form-control', classToRemove: 'form-control-sm' },
-      { selector: '.dt-length', classToAdd: 'mb-0 mb-md-5' },
-      { selector: '.dt-length .form-select', classToRemove: 'form-select-sm' },
-      { selector: '.dt-buttons', classToAdd: 'mb-0 w-auto' },
-      { selector: '.dt-layout-start', classToAdd: 'mt-0 px-5' },
-      {
-        selector: '.dt-layout-end',
-        classToAdd: 'justify-content-md-between justify-content-center d-flex',
-        classToRemove: 'justify-content-between d-md-flex'
-      },
-      { selector: '.dt-layout-table', classToRemove: 'row mt-2' },
-      { selector: '.dt-layout-full', classToRemove: 'col-md col-12', classToAdd: 'table-responsive' }
-    ];
+  function renderBreadcrumbs(breadcrumbs) {
+    const $bc = $('#org-breadcrumbs');
+    $bc.empty();
 
-    // Delete record
-    elementsToModify.forEach(({ selector, classToRemove, classToAdd }) => {
-      document.querySelectorAll(selector).forEach(element => {
-        if (classToRemove) {
-          classToRemove.split(' ').forEach(className => element.classList.remove(className));
-        }
-        if (classToAdd) {
-          classToAdd.split(' ').forEach(className => element.classList.add(className));
-        }
-      });
+    if (!breadcrumbs || breadcrumbs.length === 0) return;
+
+    let html = `<nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-custom-icon">`;
+
+    html += `<li class="breadcrumb-item">
+              <a href="javascript:;" class="bc-link" data-id="">GST</a>
+              <i class="breadcrumb-icon icon-base bx bx-chevron-right align-middle"></i>
+            </li>`;
+
+    breadcrumbs.forEach((item, index) => {
+      if (index === breadcrumbs.length - 1) {
+        html += `<li class="breadcrumb-item active">${item.name}</li>`;
+      } else {
+        html += `<li class="breadcrumb-item">
+                  <a href="javascript:;" class="bc-link" data-id="${item.id}">
+                    ${item.name}
+                  </a>
+                  <i class="breadcrumb-icon icon-base bx bx-chevron-right align-middle"></i>
+                </li>`;
+      }
     });
-  }, 100);
 
-  const formUser = document.getElementById('formUser'),
-    userName = formUser.querySelector('#username'),
-    roleSelect = formUser.querySelector('#role'),
-    statusSelect = formUser.querySelector('#status'),
-    btnSubmit = formUser.querySelector('button[type="submit"]');
+    html += `</ol></nav>`;
 
-  let editingId = null;
+    $bc.html(html);
+  }
 
-  initStatic($(statusSelect), {
+  function renderOrgUnitNode(node) {
+    const li = document.createElement('li');
+    li.className = 'mb-2';
+    li.dataset.id = node.id;
+
+    const card = document.createElement('div');
+    card.className = 'card shadow-none border mb-0';
+    if (node.deleted_at) {
+      card.classList.add('bg-danger-subtle', 'border-danger-subtle', 'text-muted');
+    }
+
+    const body = document.createElement('div');
+    body.className = 'card-body py-3 px-4 d-flex align-items-center justify-content-between gap-2';
+
+    const left = document.createElement('div');
+    left.className = 'd-flex align-items-center gap-2 drill-unit cursor-pointer';
+    left.dataset.id = node.id;
+
+    left.innerHTML = `
+      <span class="fw-bold ${node.deleted_at ? 'text-muted' : 'text-body'} fs-5">
+        ${node.unit_name}
+      </span>
+      <small class="text-muted">(${node.unit_code})</small>
+    `;
+
+    left.addEventListener('click', function () {
+      fetchOrgUnits(node.id);
+    });
+
+    const right = document.createElement('div');
+    right.className = 'btn-group';
+
+    let btnHtml;
+    if (!node.deleted_at) {
+      btnHtml = `
+        <button class="btn btn-outline-primary edit-record" data-id="${node.id}" data-bs-toggle="modal" data-bs-target="#modalOrgUnit">
+          <i class="bx bx-edit fs-4"></i>
+        </button>
+        <button class="btn btn-outline-danger delete-record" data-id="${node.id}">
+          <i class="bx bx-trash-alt fs-4"></i>
+        </button>
+      `;
+    } else {
+      btnHtml = `
+        <button class="btn btn-outline-warning restore-record" data-id="${node.id}">
+          <i class="bx bx-recycle fs-4"></i>
+        </button>
+        <button class="btn btn-outline-danger force-record" data-id="${node.id}">
+          <i class="bx bx-trash fs-4"></i>
+        </button>
+      `;
+    }
+
+    right.innerHTML = btnHtml;
+
+    body.appendChild(left);
+    body.appendChild(right);
+    card.appendChild(body);
+    li.appendChild(card);
+
+    if (node.children && node.children.length > 0) {
+      const ul = document.createElement('ul');
+      ul.className = 'list-unstyled ms-4 mt-2';
+      node.children.forEach(child => {
+        ul.appendChild(renderOrgUnitNode(child));
+      });
+      li.appendChild(ul);
+    }
+
+    return li;
+  }
+
+  $list.on('click', '.drill-unit', function () {
+    const id = this.dataset.id;
+    fetchOrgUnits(id);
+  });
+
+  fetchOrgUnits();
+
+  $(document).on('click', '.bc-link', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id') || '';
+    fetchOrgUnits(id);
+  });
+
+  initStatic($(typeSelect), {
     placeholder: 'Select an option',
     disableSearch: true,
     data: [
-      { id: 'active', text: 'Active' },
-      { id: 'inactive', text: 'Inactive' }
+      { id: 'Office', text: 'Office' },
+      { id: 'Division', text: 'Division' },
+      { id: 'Department', text: 'Department' },
+      { id: 'Team', text: 'Team' }
     ]
   });
 
-  initDropdownPaged($(roleSelect), {
-    url: '/roles/select',
+  initDropdownPaged($(parentSelect), {
+    url: '/org_units/select',
     placeholder: 'Select an option',
-    perPage: 10,
-    hideSearch: true
+    perPage: 10
+  });
+
+  // create record
+  $('.add-new').on('click', function () {
+    modalTitle.html('Create Organization Unit');
+    editingId = null;
+    $(btnSubmit).html('Submit');
   });
 
   // edit record
@@ -250,75 +194,47 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
 
     // changing the title of modal
-    modalTitle.html('Edit User');
+    modalTitle.html('Edit Organization Unit');
     $(btnSubmit).html('Save');
 
     // get data
-    $.get(`${baseUrl}users/${id}/edit`, function (data) {
+    $.get(`${baseUrl}org_units/${id}/edit`, function (data) {
       editingId = id;
-      userName.value = data.username || '';
+      unitName.value = data.unit_name || '';
+      unitCode.value = data.unit_code || '';
 
-      if (data.status) {
-        $(statusSelect).val(data.status).trigger('change');
+      if (data.unit_type) {
+        $(typeSelect).val(data.unit_type).trigger('change');
       }
 
-      const role = Array.isArray(data.roles) && data.roles.length ? data.roles[0] : null;
-      if (role && role.id != null) {
-        setValue($(roleSelect), { id: role.id, text: role.name });
+      if (data.parent && data.parent.id != null) {
+        setValue($(parentSelect), { id: data.parent.id, text: data.parent.unit_name });
+      } else {
+        $(parentSelect).val(null).trigger('change');
       }
     });
   });
 
-  FormValidation.formValidation(formUser, {
+  FormValidation.formValidation(formOrgUnit, {
     fields: {
-      username: {
+      unit_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter an username'
-          },
-          stringLength: {
-            min: 6,
-            message: 'The username must be at least 6 characters long'
-          },
-          regexp: {
-            regexp: /^[a-z0-9]+$/,
-            message: 'The username can only consist of lowercase letters and numbers'
+            message: 'Please enter an organization unit name'
           }
         }
       },
-      password: {
-        validators: {
-          stringLength: {
-            min: 8,
-            message: 'The password must be at least 8 characters long'
-          },
-          regexp: {
-            regexp: /^(?=.*[a-z])(?=.*[A-Z]).+$/,
-            message: 'The password must contain at least one uppercase letter and one lowercase letter'
-          }
-        }
-      },
-      password_confirmation: {
-        validators: {
-          identical: {
-            compare: function () {
-              return formUser.querySelector('[name="password"]').value;
-            },
-            message: 'The password and its confirm are not the same'
-          }
-        }
-      },
-      role: {
+      unit_code: {
         validators: {
           notEmpty: {
-            message: 'Please select a role'
+            message: 'Please enter an organization unit code'
           }
         }
       },
-      status: {
+      unit_type: {
         validators: {
           notEmpty: {
-            message: 'Please select a status'
+            message: 'Please select an option'
           }
         }
       }
@@ -341,17 +257,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    let url = editingId ? `${baseUrl}users/${editingId}` : `${baseUrl}users`;
+    let url = editingId ? `${baseUrl}org_units/${editingId}` : `${baseUrl}org_units`;
     let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
-      data: $(formUser).serialize(),
+      data: $(formOrgUnit).serialize(),
       url: url,
       type: method,
       success: function (res) {
         Loading.remove();
-        dt_users.draw(false);
-        modalUser.modal('hide');
+        fetchOrgUnits();
+        modalOrgUnit.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -376,9 +292,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
   });
 
   // clearing form data when modal hidden
-  modalUser.on('hidden.bs.modal', function () {
-    formUser.reset();
-    $(formUser).find('select').val('').trigger('change');
+  modalOrgUnit.on('hidden.bs.modal', function () {
+    formOrgUnit.reset();
+    $(formOrgUnit).find('select').val('').trigger('change');
+    editingId = null;
   });
 
   // delete record
@@ -414,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}users/${id}`,
+          url: `${baseUrl}org_units/${id}`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -426,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              fetchOrgUnits();
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -455,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not deleted!',
+          text: 'The Organization Unit is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -498,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // restore the data
         $.ajax({
           method: 'POST',
-          url: `${baseUrl}users/${id}/restore`,
+          url: `${baseUrl}org_units/${id}/restore`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -510,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              fetchOrgUnits();
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -539,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not restored!',
+          text: 'The Organization Unit is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -582,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // permanent delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}users/${id}/force`,
+          url: `${baseUrl}org_units/${id}/force`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -594,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              fetchOrgUnits();
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -623,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not deleted!',
+          text: 'The Organization Unit is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

@@ -102,7 +102,7 @@ class Role extends Controller
       $role = ModelsRole::create(['name' => $request->get('name')]);
       $role->syncPermissions($request->input('permissions'));
 
-      return response()->json(['status' => 'success', 'message' => $role->name . ' created successfully'], 201);
+      return response()->json(['status' => 'success', 'message' => "$role->name created successfully"], 201);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
       return response()->json(['status' => 'danger', 'message' => $message], 422);
@@ -132,7 +132,7 @@ class Role extends Controller
       $role->update(['name' => $request->get('name')]);
       $role->syncPermissions($request->input('permissions'));
 
-      return response()->json(['status' => 'success', 'message' => $role->name . ' updated successfully'], 200);
+      return response()->json(['status' => 'success', 'message' => "$role->name updated successfully"], 200);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
       return response()->json(['status' => 'danger', 'message' => $message], 422);
@@ -153,7 +153,7 @@ class Role extends Controller
       }
 
       $role->delete();
-      return response()->json(['status' => 'success', 'message' => $role->name . ' deleted successfully'], 200);
+      return response()->json(['status' => 'success', 'message' => "Role deleted successfully"], 200);
     } catch (Throwable $e) {
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }

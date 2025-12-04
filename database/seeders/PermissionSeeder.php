@@ -41,7 +41,28 @@ class PermissionSeeder extends Seeder
       ['name' => 'users.update', 'display_name' => 'Update', 'group_name' => 'Users', 'guard_name' => 'web'],
       ['name' => 'users.destroy', 'display_name' => 'Destroy', 'group_name' => 'Users', 'guard_name' => 'web'],
       ['name' => 'users.restore', 'display_name' => 'Restore', 'group_name' => 'Users', 'guard_name' => 'web'],
-      ['name' => 'users.force', 'display_name' => 'Force', 'group_name' => 'Users', 'guard_name' => 'web']
+      ['name' => 'users.force', 'display_name' => 'Force', 'group_name' => 'Users', 'guard_name' => 'web'],
+
+      // Departments
+      ['name' => 'master-departments', 'display_name' => 'View', 'group_name' => 'Departments', 'guard_name' => 'web'],
+      ['name' => 'departments.index', 'display_name' => 'Index', 'group_name' => 'Departments', 'guard_name' => 'web'],
+      ['name' => 'departments.store', 'display_name' => 'Store', 'group_name' => 'Departments', 'guard_name' => 'web'],
+      ['name' => 'departments.show', 'display_name' => 'Show', 'group_name' => 'Departments', 'guard_name' => 'web'],
+      ['name' => 'departments.edit', 'display_name' => 'Edit', 'group_name' => 'Departments', 'guard_name' => 'web'],
+      ['name' => 'departments.update', 'display_name' => 'Update', 'group_name' => 'Departments', 'guard_name' => 'web'],
+      ['name' => 'departments.destroy', 'display_name' => 'Destroy', 'group_name' => 'Departments', 'guard_name' => 'web'],
+      ['name' => 'departments.restore', 'display_name' => 'Restore', 'group_name' => 'Departments', 'guard_name' => 'web'],
+      ['name' => 'departments.force', 'display_name' => 'Force', 'group_name' => 'Departments', 'guard_name' => 'web'],
+
+      // Organization Units
+      ['name' => 'master-org_units', 'display_name' => 'View', 'group_name' => 'Organization Units', 'guard_name' => 'web'],
+      ['name' => 'org_units.index', 'display_name' => 'Index', 'group_name' => 'Organization Units', 'guard_name' => 'web'],
+      ['name' => 'org_units.store', 'display_name' => 'Store', 'group_name' => 'Organization Units', 'guard_name' => 'web'],
+      ['name' => 'org_units.edit', 'display_name' => 'Edit', 'group_name' => 'Organization Units', 'guard_name' => 'web'],
+      ['name' => 'org_units.update', 'display_name' => 'Update', 'group_name' => 'Organization Units', 'guard_name' => 'web'],
+      ['name' => 'org_units.destroy', 'display_name' => 'Destroy', 'group_name' => 'Organization Units', 'guard_name' => 'web'],
+      ['name' => 'org_units.restore', 'display_name' => 'Restore', 'group_name' => 'Organization Units', 'guard_name' => 'web'],
+      ['name' => 'org_units.force', 'display_name' => 'Force', 'group_name' => 'Organization Units', 'guard_name' => 'web'],
     ];
 
     usort($permissions, function ($a, $b) {

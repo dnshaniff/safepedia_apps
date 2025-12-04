@@ -19,10 +19,15 @@ class User extends Controller
 
   public function index(Request $request)
   {
+    $user = auth()->user();
+    $isAdmin = $user->username === 'administrator';
+
     $search = $request->input('search.value');
     $roleFilter = $request->input('columns.2.search.value');
 
-    $query = ModelsUser::withTrashed()->with('roles');
+    $query = ModelsUser::query()->with('roles')->when($isAdmin, function ($q) {
+      $q->withTrashed();
+    });
 
     $totalData = $query->count();
 
@@ -82,7 +87,7 @@ class User extends Controller
 
   public function edit(ModelsUser $user)
   {
-    $user->load('roles');
+    $user->load('roles', 200);
 
     return response()->json($user);
   }
@@ -117,10 +122,7 @@ class User extends Controller
       // assign role ke user
       $user->assignRole($validated['role']);
 
-      return response()->json(
-        ['status' => 'success', 'message' => 'User: ' . $user->username . ' updated successfully'],
-        200
-      );
+      return response()->json(['status' => 'success', 'message' => "User: $user->username updated successfully"], 200);
     } catch (ValidationException $e) {
       return response()->json(['status' => 'danger', 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
     } catch (Throwable $e) {
@@ -138,18 +140,16 @@ class User extends Controller
   {
     try {
       $user->delete();
-      return response()->json(
-        ['status' => 'success', 'message' => $user->username . ' deleted successfully'],
-        200
-      );
+
+      return response()->json(['status' => 'success', 'message' => "User: $user->username deleted successfully"], 200);
     } catch (Throwable $e) {
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }
 
-  public function restore($id)
+  public function restore(string $id)
   {
-    $user = ModelsUser::withTrashed()->where('id', $id)->first();
+    $user = ModelsUser::withTrashed()->findOrFail($id);
 
     if (!$user) {
       return response()->json(['status' => 'danger', 'message' => 'User not found'], 404);
@@ -160,7 +160,7 @@ class User extends Controller
         $user->restore();
 
         return response()->json(
-          ['status' => 'success', 'message' => $user->username . ' successfully restored'],
+          ['status' => 'success', 'message' => "$user->username successfully restored"],
           200
         );
       } else {
@@ -171,9 +171,9 @@ class User extends Controller
     }
   }
 
-  public function force($id)
+  public function force(string $id)
   {
-    $user = ModelsUser::withTrashed()->where('id', $id)->first();
+    $user = ModelsUser::withTrashed()->findOrFail($id);
 
     if (!$user) {
       return response()->json(['status' => 'danger', 'message' => 'User not found'], 404);
@@ -195,10 +195,7 @@ class User extends Controller
           $user->forceDelete();
         }
 
-        return response()->json(
-          ['status' => 'success', 'message' => 'User permanent delete successfully'],
-          200
-        );
+        return response()->json(['status' => 'success', 'message' => 'User permanent delete successfully'], 200);
       } else {
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }

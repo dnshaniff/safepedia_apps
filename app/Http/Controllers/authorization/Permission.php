@@ -139,7 +139,7 @@ class Permission extends Controller
       }
 
       $permission->delete();
-      return response()->json(['status' => 'success', 'message' => "$permission->group_name: $permission->display_name deleted successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Permission deleted successfully"], 200);
     } catch (Throwable $e) {
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
