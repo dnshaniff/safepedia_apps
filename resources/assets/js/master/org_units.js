@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
       $list.empty();
       units.forEach(unit => $list.append(renderOrgUnitNode(unit)));
+
+      initSortable();
     });
   }
 
@@ -89,59 +91,55 @@ document.addEventListener('DOMContentLoaded', function (e) {
     body.className = 'card-body py-3 px-4 d-flex align-items-center justify-content-between gap-2';
 
     const left = document.createElement('div');
-    left.className = 'd-flex align-items-center gap-2 drill-unit cursor-pointer';
+    left.className = 'd-flex align-items-center gap-3';
     left.dataset.id = node.id;
 
-    left.innerHTML = `
-      <span class="fw-bold ${node.deleted_at ? 'text-muted' : 'text-body'} fs-5">
-        ${node.unit_name}
-      </span>
-      <small class="text-muted">(${node.unit_code})</small>
-    `;
+    const iconWrapper = document.createElement('div');
+    iconWrapper.className = 'drag-handle d-flex align-items-center pe-3 me-2 border-end cursor-pointer';
+    iconWrapper.innerHTML = `<i class="bx bx-menu fs-4 text-muted"></i>`;
 
-    left.addEventListener('click', function () {
+    const textWrapper = document.createElement('div');
+    textWrapper.className = 'd-flex align-items-baseline cursor-pointer gap-2';
+
+    textWrapper.innerHTML = `
+    <span class="fw-bold ${node.deleted_at ? 'text-muted' : 'text-body'} fs-5">
+      ${node.unit_name}
+    </span>
+    <small class="text-muted">(${node.unit_code})</small>
+  `;
+
+    left.appendChild(iconWrapper);
+    left.appendChild(textWrapper);
+
+    left.addEventListener('click', function (e) {
+      if (e.target.closest('.drag-handle')) return;
       fetchOrgUnits(node.id);
     });
 
     const right = document.createElement('div');
     right.className = 'btn-group';
-
-    let btnHtml;
-    if (!node.deleted_at) {
-      btnHtml = `
-        <button class="btn btn-outline-primary edit-record" data-id="${node.id}" data-bs-toggle="modal" data-bs-target="#modalOrgUnit">
-          <i class="bx bx-edit fs-4"></i>
-        </button>
-        <button class="btn btn-outline-danger delete-record" data-id="${node.id}">
-          <i class="bx bx-trash-alt fs-4"></i>
-        </button>
-      `;
-    } else {
-      btnHtml = `
-        <button class="btn btn-outline-warning restore-record" data-id="${node.id}">
-          <i class="bx bx-recycle fs-4"></i>
-        </button>
-        <button class="btn btn-outline-danger force-record" data-id="${node.id}">
-          <i class="bx bx-trash fs-4"></i>
-        </button>
-      `;
-    }
-
-    right.innerHTML = btnHtml;
+    right.innerHTML = node.deleted_at
+      ? `
+      <button class="btn btn-outline-danger restore-record" data-id="${node.id}">
+        <i class="bx bx-recycle fs-4"></i>
+      </button>
+      <button class="btn btn-outline-danger force-record" data-id="${node.id}">
+        <i class="bx bx-trash fs-4"></i>
+      </button>
+    `
+      : `
+      <button class="btn btn-outline-primary edit-record" data-id="${node.id}" data-bs-toggle="modal" data-bs-target="#modalOrgUnit">
+        <i class="bx bx-edit fs-4"></i>
+      </button>
+      <button class="btn btn-outline-danger delete-record" data-id="${node.id}">
+        <i class="bx bx-trash-alt fs-4"></i>
+      </button>
+    `;
 
     body.appendChild(left);
     body.appendChild(right);
     card.appendChild(body);
     li.appendChild(card);
-
-    if (node.children && node.children.length > 0) {
-      const ul = document.createElement('ul');
-      ul.className = 'list-unstyled ms-4 mt-2';
-      node.children.forEach(child => {
-        ul.appendChild(renderOrgUnitNode(child));
-      });
-      li.appendChild(ul);
-    }
 
     return li;
   }
@@ -150,6 +148,78 @@ document.addEventListener('DOMContentLoaded', function (e) {
     const id = this.dataset.id;
     fetchOrgUnits(id);
   });
+
+  function initSortable() {
+    if (!$list.length) return;
+
+    Sortable.create($list[0], {
+      handle: '.drag-handle',
+      animation: 150,
+      onEnd: function () {
+        const items = [];
+        $('#org-unit > li').each(function (index, li) {
+          const id = li.dataset.id;
+          if (!id) return;
+          items.push({ id: id, sort_order: index + 1 });
+        });
+
+        const parentId = currentParentId || null;
+
+        Swal.fire({
+          title: 'Are you sure?',
+          text: 'You are going to reorder the organization units.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, reorder',
+          cancelButtonText: 'Cancel',
+          customClass: {
+            confirmButton: 'btn btn-primary me-3',
+            cancelButton: 'btn btn-label-secondary'
+          },
+          buttonsStyling: false
+        }).then(function (result) {
+          if (result.isConfirmed) {
+            Loading.circle({
+              backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+              svgSize: '60px',
+              svgColor: config.colors.white
+            });
+
+            $.ajax({
+              url: `${baseUrl}org_units/reorder`,
+              method: 'PATCH',
+              data: {
+                parent_id: parentId,
+                items: items
+              },
+              success: function (res) {
+                Loading.remove();
+                showToast(res.status, res.message);
+                fetchOrgUnits(parentId);
+              },
+              error: function (xhr) {
+                Loading.remove();
+                const res = xhr.responseJSON || {};
+                showToast(res.status || 'danger', res.message || 'Failed to reorder units');
+                fetchOrgUnits(parentId);
+              }
+            });
+          } else {
+            Swal.fire({
+              title: 'Cancelled',
+              text: 'The organization units were not reordered.',
+              icon: 'info',
+              customClass: {
+                confirmButton: 'btn btn-primary'
+              },
+              buttonsStyling: false
+            });
+            fetchOrgUnits(parentId);
+          }
+        });
+      }
+    });
+  }
 
   fetchOrgUnits();
 
@@ -207,11 +277,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
         $(typeSelect).val(data.unit_type).trigger('change');
       }
 
-      if (data.parent && data.parent.id != null) {
-        setValue($(parentSelect), { id: data.parent.id, text: data.parent.unit_name });
-      } else {
-        $(parentSelect).val(null).trigger('change');
-      }
+      data.parent && data.parent.id != null
+        ? setValue($(parentSelect), { id: data.parent.id, text: data.parent.unit_name })
+        : $(parentSelect).val(null).trigger('change');
     });
   });
 
@@ -549,66 +617,4 @@ document.addEventListener('DOMContentLoaded', function (e) {
       }
     });
   });
-
-  // showToast
-  function showToast(status, message) {
-    // Buat elemen toast secara dinamis
-    const toastElement = document.createElement('div');
-    toastElement.classList.add(
-      'bs-toast',
-      'toast',
-      'toast-ex',
-      'animate__animated',
-      'my-2',
-      'fade',
-      `bg-${status}`,
-      'animate__bounceInDown'
-    );
-    toastElement.setAttribute('role', 'alert');
-    toastElement.setAttribute('aria-live', 'assertive');
-    toastElement.setAttribute('aria-atomic', 'true');
-    toastElement.setAttribute('data-bs-delay', '3500');
-
-    // Bagian header toast
-    const toastHeader = document.createElement('div');
-    toastHeader.classList.add('toast-header');
-
-    const bellIcon = document.createElement('i');
-    bellIcon.classList.add('bx', 'bx-bell', 'me-2');
-
-    const headerText = document.createElement('div');
-    headerText.classList.add('me-auto', 'fw-medium');
-    headerText.innerText = 'System Message';
-
-    const closeButton = document.createElement('button');
-    closeButton.setAttribute('type', 'button');
-    closeButton.classList.add('btn-close');
-    closeButton.setAttribute('data-bs-dismiss', 'toast');
-    closeButton.setAttribute('aria-label', 'Close');
-
-    toastHeader.appendChild(bellIcon);
-    toastHeader.appendChild(headerText);
-    toastHeader.appendChild(closeButton);
-
-    // Bagian body toast
-    const toastBody = document.createElement('div');
-    toastBody.classList.add('toast-body');
-    toastBody.innerText = message;
-
-    // Gabungkan semua elemen
-    toastElement.appendChild(toastHeader);
-    toastElement.appendChild(toastBody);
-
-    // Tempelkan elemen toast ke dalam dokumen
-    document.body.appendChild(toastElement);
-
-    // Tampilkan toast
-    const myToast = new bootstrap.Toast(toastElement);
-    myToast.show();
-
-    // Hapus elemen toast setelah animasi selesai
-    toastElement.addEventListener('hidden.bs.toast', function () {
-      document.body.removeChild(toastElement);
-    });
-  }
 });

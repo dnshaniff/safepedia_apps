@@ -40,16 +40,16 @@
                 </div>
                 <div class="modal-body row">
                     <div class="col-12 mb-3">
-                        <label class="form-label" for="unit_name">Unit Name</label>
+                        <label class="form-label" for="unit_name">Unit Name <strong class="text-danger">**</strong></label>
                         <input type="text" id="unit_name" name="unit_name" class="form-control"
                             placeholder="General Affairs" autofocus />
                     </div>
                     <div class="col-12 mb-3">
-                        <label class="form-label" for="unit_code">Unit Code</label>
+                        <label class="form-label" for="unit_code">Unit Code <strong class="text-danger">**</strong></label>
                         <input type="text" id="unit_code" name="unit_code" class="form-control" placeholder="GA" />
                     </div>
                     <div class="col-12 mb-3">
-                        <label class="form-label" for="unit_type">Type</label>
+                        <label class="form-label" for="unit_type">Type <strong class="text-danger">**</strong></label>
                         <select id="unit_type" name="unit_type" class="select2 form-select"
                             data-allow-clear="true"></select>
                     </div>

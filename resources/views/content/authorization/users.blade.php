@@ -29,7 +29,8 @@
                         <thead>
                             <tr>
                                 <th width="1px">#</th>
-                                <th class="text-start" width="40%">Username</th>
+                                <th class="text-start" width="10%">Username</th>
+                                <th class="text-start" width="30%">Full Name</th>
                                 <th class="text-start" width="14%">Role</th>
                                 <th class="text-start" width="8%">Status</th>
                                 <th class="text-start" width="16%">Created Date</th>
@@ -62,18 +63,17 @@
                             <input type="password" id="password" class="form-control" name="password"
                                 placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                                 aria-describedby="password" />
-                            <span class="input-group-text cursor-pointer" id="password2"><i class="bx bx-hide"></i></span>
+                            <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
                         </div>
                     </div>
                     <div class="col-12 mb-3 form-password-toggle">
-                        <label class="form-label" for="password_confirmation">Password Confirmation</label>
+                        <label class="form-label" for="password_confirmation">Confirm Password</label>
                         <div class="input-group input-group-merge">
                             <input type="password" id="password_confirmation" class="form-control"
                                 name="password_confirmation"
                                 placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                aria-describedby="password" />
-                            <span class="input-group-text cursor-pointer" id="password_confirmation2"><i
-                                    class="bx bx-hide"></i></span>
+                                aria-describedby="password_confirmation" />
+                            <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
                         </div>
                     </div>
                     <div class="col-12 mb-3">

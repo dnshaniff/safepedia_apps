@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Http\Controllers\master\OrgUnit;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,19 +19,26 @@ class Employee extends Model
     'hrbp_id',
     'manager_id',
     'join_date',
-    'job_title_id',
+    'company_id',
     'org_unit_id',
+    'job_title_id',
     'employment_type',
     'office_email',
     'personal_email',
     'phone_number',
     'gender',
-    'birth_of_date',
+    'date_of_birth',
+    'created_by'
   ];
 
   public function user()
   {
     return $this->belongsTo(User::class, 'user_id', 'id');
+  }
+
+  public function company()
+  {
+    return $this->belongsTo(Company::class, 'company_id', 'id');
   }
 
   public function hrbp()
@@ -45,14 +51,19 @@ class Employee extends Model
     return $this->belongsTo(Employee::class, 'manager_id', 'id');
   }
 
+  public function orgUnit()
+  {
+    return $this->belongsTo(OrgUnit::class, 'org_unit_id', 'id');
+  }
+
   public function jobTitle()
   {
     return $this->belongsTo(JobTitle::class, 'job_title_id', 'id');
   }
 
-  public function orgUnit()
+  public function creator()
   {
-    return $this->belongsTo(OrgUnit::class, 'org_unit_id', 'id');
+    return $this->belongsTo(User::class, 'created_by', 'id');
   }
 
   public function subordinates()
@@ -60,8 +71,13 @@ class Employee extends Model
     return $this->hasMany(Employee::class, 'manager_id', 'id');
   }
 
+  public function agreements()
+  {
+    return $this->hasMany(EmployeeAgreement::class, 'employee_id', 'id');
+  }
+
   protected $casts = [
     'join_date' => 'date',
-    'birth_of_date' => 'date'
+    'date_of_birth' => 'date'
   ];
 }

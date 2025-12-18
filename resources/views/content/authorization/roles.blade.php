@@ -15,7 +15,7 @@
 @endsection
 
 @section('page-script')
-    @vite(['resources/assets/js/authorization/roles.js'])
+    @vite(['resources/assets/js/app/select2-utils.js', 'resources/assets/js/authorization/roles.js'])
 @endsection
 
 @section('content')

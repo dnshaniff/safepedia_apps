@@ -5,9 +5,11 @@ namespace App\Http\Controllers\authorization;
 use Throwable;
 use Illuminate\Http\Request;
 use App\Models\User as ModelsUser;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class User extends Controller
@@ -33,17 +35,12 @@ class User extends Controller
 
     if (!empty($search)) {
       $query->where(function ($q) use ($search) {
-        $q->where('username', 'LIKE', "%{$search}%");
+        $q->where('username', 'LIKE', "%{$search}%")
+          ->orWhereHas('employee', function ($q) use ($search) {
+            $q->where('full_name', 'LIKE', "%{$search}%");
+          });
       });
     }
-    // if (!empty($search)) {
-    //   $query->where(function ($q) use ($search) {
-    //     $q->where('username', 'LIKE', "%{$search}%")
-    //       ->orWhereHas('employee', function ($q) use ($search) {
-    //         $q->where('full_name', 'LIKE', "%{$search}%");
-    //       });
-    //   });
-    // }
 
     if (!empty($roleFilter)) {
       $query->whereHas('roles', function ($q) use ($roleFilter) {
@@ -63,6 +60,7 @@ class User extends Controller
         $nestedData['fake_id'] = ++$ids;
         $nestedData['id'] = $user->id;
         $nestedData['username'] = $user->username;
+        $nestedData['full_name'] = $user->employee ? $user->employee->full_name : ($user->username === 'administrator' ? 'Administrator' : '-');
         $nestedData['role'] = $user->roles->pluck('name')->first();
         $nestedData['status'] = $user->status;
         $nestedData['created_at'] = $user->created_at;
@@ -87,44 +85,40 @@ class User extends Controller
 
   public function edit(ModelsUser $user)
   {
-    $user->load('roles', 200);
+    $user->load('roles');
 
-    return response()->json($user);
+    return response()->json($user, 200);
   }
 
   public function update(Request $request, ModelsUser $user)
   {
     try {
       $validated = $request->validate([
-        'username' => 'required|min:6|max:50|regex:/^[a-z0-9]+$/|unique:users,id,' . $user->id,
+        'username' => 'required|min:4|max:50|unique:users,username,' . $user->id,
         'role' => 'required',
-        'status' => 'required'
+        'status' => 'required',
+        'password' => ['nullable', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/'],
+        'password_confirmation' => ['nullable', 'same:password'],
       ]);
 
-      if ($request->filled('password') || $request->filled('password_confirmation')) {
-        $passwordValidate = $request->validate([
-          'password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/',
-          'password_confirmation' => 'required|same:password',
-        ]);
+      DB::transaction(function () use ($user, $validated) {
+        $data = [
+          'username' => $validated['username'],
+          'status'   => $validated['status'],
+        ];
 
-        $validated = array_merge($validated, $passwordValidate);
-      }
+        if (!empty($validated['password'])) {
+          $data['password'] = Hash::make($validated['password']);
+        }
 
-      $user->update([
-        'username' => $validated['username'],
-        'password' => isset($validated['password']) ? $validated['password'] : $user->password,
-        'status' => $validated['status']
-      ]);
+        $user->update($data);
+        $user->syncRoles([$validated['role']]);
+      });
 
-      // hapus role dari user
-      $user->roles()->detach();
-
-      // assign role ke user
-      $user->assignRole($validated['role']);
-
-      return response()->json(['status' => 'success', 'message' => "User: $user->username updated successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "User: {$user->username} updated successfully"], 200);
     } catch (ValidationException $e) {
-      return response()->json(['status' => 'danger', 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+      $message = collect($e->errors())->flatten()->implode("\n");
+      return response()->json(['status' => 'danger', 'message' => $message, 'errors' => $e->errors()], 422);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
@@ -141,8 +135,14 @@ class User extends Controller
     try {
       $user->delete();
 
-      return response()->json(['status' => 'success', 'message' => "User: $user->username deleted successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "User: {$user->username} deleted successfully"], 200);
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }
@@ -151,22 +151,21 @@ class User extends Controller
   {
     $user = ModelsUser::withTrashed()->findOrFail($id);
 
-    if (!$user) {
-      return response()->json(['status' => 'danger', 'message' => 'User not found'], 404);
-    }
-
     try {
       if ($user->trashed()) {
         $user->restore();
 
-        return response()->json(
-          ['status' => 'success', 'message' => "$user->username successfully restored"],
-          200
-        );
+        return response()->json(['status' => 'success', 'message' => "User: {$user->username} successfully restored"], 200);
       } else {
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }
@@ -175,22 +174,14 @@ class User extends Controller
   {
     $user = ModelsUser::withTrashed()->findOrFail($id);
 
-    if (!$user) {
-      return response()->json(['status' => 'danger', 'message' => 'User not found'], 404);
+    if ($user->employee()->exists()) {
+      return response()->json(['status' => 'info', 'message' => 'Data cannot be deleted because it is associated with other records'], 422);
     }
 
     try {
-      if ($user->employee()->exists()) {
-        return response()->json(['status' => 'info', 'message' => 'Data cannot be deleted because it is associated with other records'], 422);
-      }
-
       if ($user->trashed()) {
         if ($user->username === 'administrator') {
-          return response()->json([
-            'status' => 'danger',
-            'title' => 'Deletion Prevented',
-            'message' => "Data cannot be deleted because this user administrator"
-          ], 422);
+          return response()->json(['status' => 'danger', 'title' => 'Deletion Prevented', 'message' => "Data cannot be deleted because this user administrator"], 422);
         } else {
           $user->forceDelete();
         }
@@ -200,6 +191,12 @@ class User extends Controller
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }

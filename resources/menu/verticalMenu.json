@@ -7,6 +7,23 @@
       "slug": "dashboard"
     },
     {
+      "name": "Human Resources",
+      "icon": "menu-icon tf-icons bx bxs-user-detail",
+      "slug": "hr",
+      "submenu": [
+        {
+          "url": "/hr-employees",
+          "name": "Employees",
+          "slug": "hr-employees"
+        },
+        {
+          "url": "/hr-upcoming_offboardings",
+          "name": "Upcoming Offboardings",
+          "slug": "hr-upcoming_offboardings"
+        }
+      ]
+    },
+    {
       "name": "Authorization",
       "icon": "menu-icon tf-icons bx bx-check-shield",
       "slug": "access",
@@ -39,19 +56,14 @@
           "slug": "master-companies"
         },
         {
+          "url": "/master-job_titles",
+          "name": "Job Titles",
+          "slug": "master-job_titles"
+        },
+        {
           "url": "/master-org_units",
           "name": "Organization Units",
           "slug": "master-org_units"
-        },
-        {
-          "url": "/master-offices",
-          "name": "Offices",
-          "slug": "master-offices"
-        },
-        {
-          "url": "/master-positions",
-          "name": "Positions",
-          "slug": "master-positions"
         }
       ]
     }

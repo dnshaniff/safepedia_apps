@@ -11,9 +11,10 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('job_titles', function (Blueprint $table) {
+    Schema::create('companies', function (Blueprint $table) {
       $table->id();
-      $table->string('title_name');
+      $table->string('company_name');
+      $table->string('company_code')->unique();
       $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->onDelete('SET NULL');
       $table->timestamps();
       $table->softDeletes();
@@ -25,6 +26,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('job_titles');
+    Schema::dropIfExists('companies');
   }
 };

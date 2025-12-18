@@ -18,6 +18,7 @@ return new class extends Migration
       $table->string('unit_code')->unique();
       $table->enum('unit_type', ['Department', 'Division', 'Office'])->default('Department');
       $table->integer('sort_order')->default(0);
+      $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->onDelete('SET NULL');
       $table->timestamps();
       $table->softDeletes();
     });

@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class JobTitle extends Model
+class Company extends Model
 {
   use SoftDeletes;
 
-  protected $table = 'job_titles';
+  protected $table = 'companies';
 
-  protected $fillable = ['title_name', 'created_by'];
+  protected $fillable = ['company_name', 'company_code', 'created_by'];
 
   public function creator()
   {

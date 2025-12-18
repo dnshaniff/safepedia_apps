@@ -82,6 +82,22 @@ export default defineConfig({
   json: {
     stringify: true // Helps with JSON import compatibility
   },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+
+    hmr: {
+      host: '10.11.10.204',
+      port: 5173
+    },
+
+    cors: {
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    }
+  },
   build: {
     commonjsOptions: {
       include: [/node_modules/] // Helps with importing CommonJS modules

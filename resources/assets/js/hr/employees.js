@@ -8,73 +8,104 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableUsers = $('.datatables-users'),
-    modalUser = $('#modalUser'),
-    modalTitle = modalUser.find('.modal-title');
+  const datatableEmployees = $('.datatables-employees'),
+    modalEmployee = $('#modalEmployee'),
+    modalTitle = modalEmployee.find('.modal-title');
 
-  let dt_users, userRoleSelect;
+  let dt_employees;
 
-  if (datatableUsers) {
-    const filterRole = document.createElement('div');
-    filterRole.classList.add('user_roles', 'w-px-200', 'pb-3', 'pb-sm-0', 'me-3');
-    dt_users = new DataTable(datatableUsers, {
+  if (datatableEmployees) {
+    dt_employees = datatableEmployees.DataTable({
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}users`
+        url: `${baseUrl}employees`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'username' },
         { data: 'full_name' },
-        { data: 'role' },
-        { data: 'status' },
-        { data: 'created_at' },
-        { data: 'updated_at' },
+        { data: 'company' },
+        { data: 'job_title' },
+        { data: 'join_date' },
+        { data: 'employment_type' },
+        { data: 'hrbp' },
         { data: 'id' }
       ],
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, 5, 6, -1]
+          targets: [0, 1, 2, 3, 4, 5, -1]
         },
         {
           searchable: true,
-          targets: [1, 2]
+          targets: [1]
         },
         {
-          targets: 4,
-          render: function (data, type, full, meta) {
-            const userStatus = data === 'active' ? 'ACTIVE' : 'INACTIVE',
-              statusClass = userStatus === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
+          targets: 1,
+          responsivePriority: 4,
+          render: function (data, type, row) {
+            const nik = row.employee_code;
+            const fullName = data;
+            const image = row.picture;
+            const imageUrl = `${image ? `/storage/${image}` : `/assets/img/avatars/avatar.png`}`;
 
-            return '<span class="badge ' + statusClass + '">' + userStatus + '</span>';
+            const rowOutput = `
+              <div class="d-flex justify-content-left align-items-center">
+                <div class="avatar-wrapper">
+                  <div class="avatar avatar-sm me-3">
+                    <img src="${imageUrl}" alt="Avatar" class="w-px-38 h-px-38 rounded-circle" style="object-position: center; object-fit: cover;">
+                  </div>
+                </div>
+                <div class="d-flex flex-column">
+                  <small class="text-muted ext">ID: ${nik}</small>
+                  <a href="${baseUrl}employees/${row.id}" class="fw-medium">${fullName}</a>
+                </div>
+              </div>
+            `;
+
+            return rowOutput;
+          }
+        },
+        {
+          targets: 2,
+          render: function (data, type, full, meta) {
+            const companyMap = {
+              GST: 'bg-label-primary',
+              SMB: 'bg-label-danger',
+              GIA: 'bg-label-dark'
+            };
+
+            const companyClass = companyMap[data] || 'bg-label-secondary';
+
+            return `<span class="badge ${companyClass}">${data}</span>`;
+          }
+        },
+        {
+          targets: 3,
+          render: function (data, type, row) {
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.org_unit}</span>
+                <span class="fw-medium">${data}</span>
+              </div>
+            `;
           }
         },
         {
           targets: 5,
           render: function (data, type, full, meta) {
-            const options = {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
+            const statusMap = {
+              Colleague: 'bg-label-success',
+              Contract: 'bg-label-dark',
+              Freelance: 'bg-label-primary',
+              Intern: 'bg-label-info',
+              Probation: 'bg-label-warning',
+              Resign: 'bg-label-danger'
             };
-            return new Date(data).toLocaleString('en-GB', options);
-          }
-        },
-        {
-          targets: 6,
-          render: function (data, type, full, meta) {
-            const options = {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            };
-            return new Date(data).toLocaleString('en-GB', options);
+
+            const statusClass = statusMap[data] || 'bg-label-secondary';
+
+            return `<span class="badge ${statusClass}">${data}</span>`;
           }
         },
         {
@@ -96,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalUser" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalEmployee" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -127,11 +158,23 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Username',
+                placeholder: 'Search Employee',
                 text: '_INPUT_'
               }
             },
-            filterRole
+
+            {
+              buttons: [
+                {
+                  text: 'Create New',
+                  className: 'add-new btn btn-primary mb-3 mb-md-0',
+                  attr: {
+                    'data-bs-toggle': 'modal',
+                    'data-bs-target': '#modalEmployee'
+                  }
+                }
+              ]
+            }
           ]
         },
         bottomStart: {
@@ -148,39 +191,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
           last: '<i class="icon-base bx bx-chevrons-right scaleX-n1-rtl icon-18px"></i>'
         }
       },
-      initComplete: function (settings, json) {
-        userRoleSelect = $(
-          '<select id="userRole" class="form-select text-capitalize"><option value=""> Select Group </option></select>'
-        )
-          .appendTo('.user_roles')
-          .on('change', function () {
-            var val = $(this).val();
-            dt_users.column(2).search(val).draw();
-          });
-
-        updateUserRoleOptions(json.roles);
-      },
       createdRow: function (row, data) {
         if (data.deleted_at !== null) {
           $(row).addClass('bg-danger-subtle');
         }
-      }
-    });
-
-    function updateUserRoleOptions(roles) {
-      if (!userRoleSelect) return; // Guard clause
-      var currentVal = userRoleSelect.val();
-      userRoleSelect.empty().append('<option value=""> Select Role </option>');
-      roles.forEach(function (role) {
-        userRoleSelect.append('<option value="' + role + '" class="text-capitalize">' + role + '</option>');
-      });
-      userRoleSelect.val(currentVal);
-    }
-
-    dt_users.on('draw.dt', function () {
-      var json = dt_users.ajax.json();
-      if (json && json.roles) {
-        updateUserRoleOptions(json.roles);
       }
     });
   }
@@ -216,28 +230,110 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formUser = document.getElementById('formUser'),
-    userName = formUser.querySelector('#username'),
-    roleSelect = formUser.querySelector('#role'),
-    statusSelect = formUser.querySelector('#status'),
-    btnSubmit = formUser.querySelector('button[type="submit"]');
+  const formEmployee = document.getElementById('formEmployee'),
+    employeeCode = formEmployee.querySelector('#employee_code'),
+    fullName = formEmployee.querySelector('#full_name'),
+    hrbpSelect = formEmployee.querySelector('#hrbp_id'),
+    managerSelect = formEmployee.querySelector('#manager_id'),
+    joinDate = formEmployee.querySelector('#join_date'),
+    companySelect = formEmployee.querySelector('#company_id'),
+    orgSelect = formEmployee.querySelector('#org_unit_id'),
+    titleSelect = formEmployee.querySelector('#job_title_id'),
+    typeSelect = formEmployee.querySelector('#employment_type'),
+    officeEmail = formEmployee.querySelector('#office_email'),
+    personalEmail = formEmployee.querySelector('#personal_email'),
+    phoneNumber = formEmployee.querySelector('#phone_number'),
+    genderSelect = formEmployee.querySelector('#gender'),
+    dateBirth = formEmployee.querySelector('#date_of_birth'),
+    btnSubmit = formEmployee.querySelector('button[type="submit"]');
 
   let editingId = null;
 
-  initStatic($(statusSelect), {
+  if (phoneNumber) {
+    phoneNumber.addEventListener('input', event => {
+      const cleanValue = event.target.value.replace(/\D/g, '');
+      phoneNumber.value = formatGeneral(cleanValue, {
+        blocks: [4, 4, 5],
+        delimiters: [' ', ' ']
+      });
+    });
+    registerCursorTracker({
+      input: phoneNumber,
+      delimiter: ' '
+    });
+  }
+
+  initDropdownPaged($(hrbpSelect), {
+    url: '/employees/select?org_unit_code=HR&org_unit_type=Department',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
+  initDropdownPaged($(managerSelect), {
+    url: '/employees/select',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
+  initDropdownPaged($(companySelect), {
+    url: '/companies/select',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
+  initDropdownPaged($(orgSelect), {
+    url: '/org_units/select',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
+  initDropdownPaged($(titleSelect), {
+    url: '/job_titles/select',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
+  initStatic($(typeSelect), {
     placeholder: 'Select an option',
     disableSearch: true,
     data: [
-      { id: 'active', text: 'Active' },
-      { id: 'inactive', text: 'Inactive' }
+      { id: 'Colleague', text: 'Colleague' },
+      { id: 'Contract', text: 'Contract' },
+      { id: 'Freelance', text: 'Freelancee' },
+      { id: 'Intern', text: 'Intern' },
+      { id: 'Probation', text: 'Probation' },
+      { id: 'Resign', text: 'Resign' }
     ]
   });
 
-  initDropdownPaged($(roleSelect), {
-    url: '/roles/select',
+  initStatic($(genderSelect), {
     placeholder: 'Select an option',
-    perPage: 10,
-    hideSearch: true
+    disableSearch: true,
+    data: [
+      { id: 'Female', text: 'Female' },
+      { id: 'Male', text: 'Male' }
+    ]
+  });
+
+  function initFlatPick(element) {
+    if (!element) return;
+
+    flatpickr(element, {
+      altInput: true,
+      altFormat: 'j F, Y',
+      dateFormat: 'Y-m-d',
+      static: true
+    });
+  }
+
+  initFlatPick(joinDate);
+  initFlatPick(dateBirth);
+
+  // create record
+  $('.add-new').on('click', function () {
+    modalTitle.html('Create Employee');
+    editingId = null;
+    $(btnSubmit).html('Submit');
   });
 
   // edit record
@@ -245,75 +341,139 @@ document.addEventListener('DOMContentLoaded', function (e) {
     const id = $(this).data('id'),
       dtrModal = $('.dtr-bs-modal.show');
 
-    // hide responsive modal in small screen
     if (dtrModal.length) {
       dtrModal.modal('hide');
     }
 
-    // changing the title of modal
-    modalTitle.html('Edit User');
+    modalTitle.html('Edit Employee');
     $(btnSubmit).html('Save');
 
-    // get data
-    $.get(`${baseUrl}users/${id}/edit`, function (data) {
+    $.get(`${baseUrl}employees/${id}/edit`, function (data) {
       editingId = id;
-      userName.value = data.username || '';
 
-      if (data.status) {
-        $(statusSelect).val(data.status).trigger('change');
-      }
+      employeeCode.value = data.employee_code || '';
+      fullName.value = data.full_name || '';
 
-      const role = Array.isArray(data.roles) && data.roles.length ? data.roles[0] : null;
-      if (role && role.id != null) {
-        setValue($(roleSelect), { id: role.name, text: role.name });
-      }
+      data.hrbp && data.hrbp.id != null
+        ? setValue($(hrbpSelect), { id: data.hrbp.id, text: data.hrbp.full_name })
+        : $(hrbpSelect).val(null).trigger('change');
+
+      data.manager && data.manager.id != null
+        ? setValue($(managerSelect), { id: data.manager.id, text: data.manager.full_name })
+        : $(managerSelect).val(null).trigger('change');
+
+      joinDate._flatpickr.setDate(data.join_date || null);
+
+      data.company && data.company.id != null
+        ? setValue($(companySelect), { id: data.company.id, text: data.company.company_name })
+        : $(companySelect).val(null).trigger('change');
+
+      data.org_unit && data.org_unit.id != null
+        ? setValue($(orgSelect), { id: data.org_unit.id, text: data.org_unit.unit_name })
+        : $(orgSelect).val(null).trigger('change');
+
+      data.job_title && data.job_title.id != null
+        ? setValue($(titleSelect), { id: data.job_title.id, text: data.job_title.title_name })
+        : $(titleSelect).val(null).trigger('change');
+
+      $(typeSelect).val(data.employment_type).trigger('change');
+
+      officeEmail.value = data.office_email || '';
+      personalEmail.value = data.personal_email || '';
+      phoneNumber.value = data.phone_number;
+
+      $(genderSelect).val(data.gender).trigger('change');
+
+      dateBirth._flatpickr.setDate(data.date_of_birth || null);
     });
   });
 
-  FormValidation.formValidation(formUser, {
+  FormValidation.formValidation(formEmployee, {
     fields: {
-      username: {
+      employee_code: {
         validators: {
           notEmpty: {
-            message: 'Please enter an username'
+            message: 'Please enter employee id'
+          }
+        }
+      },
+      full_name: {
+        validators: {
+          notEmpty: {
+            message: 'Please enter full name'
+          }
+        }
+      },
+      join_date: {
+        validators: {
+          notEmpty: {
+            message: 'Please select join date'
+          }
+        }
+      },
+      company_id: {
+        validators: {
+          notEmpty: {
+            message: 'Please select company'
+          }
+        }
+      },
+      org_unit_id: {
+        validators: {
+          notEmpty: {
+            message: 'Please select Organization Unit'
+          }
+        }
+      },
+      job_title_id: {
+        validators: {
+          notEmpty: {
+            message: 'Please select job title'
+          }
+        }
+      },
+      employment_type: {
+        validators: {
+          notEmpty: {
+            message: 'Please select employment type'
+          }
+        }
+      },
+      office_email: {
+        validators: {
+          emailAddress: {
+            message: 'The value is not a valid email address'
+          }
+        }
+      },
+      personal_email: {
+        validators: {
+          notEmpty: {
+            message: 'Please enter personal email'
           },
-          stringLength: {
-            min: 4,
-            message: 'The username must be at least 4 characters long'
+          emailAddress: {
+            message: 'The value is not a valid email address'
           }
         }
       },
-      password: {
-        validators: {
-          stringLength: {
-            min: 8,
-            message: 'The password must be at least 8 characters long'
-          },
-          regexp: {
-            regexp: /^(?=.*[a-z])(?=.*[A-Z]).+$/,
-            message: 'The password must contain at least one uppercase letter and one lowercase letter'
-          }
-        }
-      },
-      password_confirmation: {
-        validators: {
-          identical: {
-            compare: () => formUser.querySelector('[name="password"]').value,
-            message: 'The password and its confirmation do not match'
-          }
-        }
-      },
-      role: {
+      phone_number: {
         validators: {
           notEmpty: {
-            message: 'Please select a role'
+            message: 'Please enter phone number'
           }
         }
       },
-      status: {
+      gender: {
         validators: {
           notEmpty: {
-            message: 'Please select a status'
+            message: 'Please select gender'
+          }
+        }
+      },
+      date_of_birth: {
+        validators: {
+          notEmpty: {
+            message: 'Please select birth date'
           }
         }
       }
@@ -322,17 +482,12 @@ document.addEventListener('DOMContentLoaded', function (e) {
       trigger: new FormValidation.plugins.Trigger(),
       bootstrap5: new FormValidation.plugins.Bootstrap5({
         eleValidClass: '',
-        rowSelector: '.mb-3'
+        rowSelector: function (field, ele) {
+          return '.mb-3';
+        }
       }),
       submitButton: new FormValidation.plugins.SubmitButton(),
       autoFocus: new FormValidation.plugins.AutoFocus()
-    },
-    init: instance => {
-      instance.on('plugins.message.placed', e => {
-        if (e.element.parentElement.classList.contains('input-group')) {
-          e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
-        }
-      });
     }
   }).on('core.form.valid', function () {
     Loading.circle({
@@ -341,17 +496,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    let url = editingId ? `${baseUrl}users/${editingId}` : `${baseUrl}users`;
+    let url = editingId ? `${baseUrl}employees/${editingId}` : `${baseUrl}employees`;
     let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
-      data: $(formUser).serialize(),
+      data: $(formEmployee).serialize(),
       url: url,
       type: method,
       success: function (res) {
         Loading.remove();
-        dt_users.draw(false);
-        modalUser.modal('hide');
+        dt_employees.draw(false);
+        modalEmployee.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -376,9 +531,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
   });
 
   // clearing form data when modal hidden
-  modalUser.on('hidden.bs.modal', function () {
-    formUser.reset();
-    $(formUser).find('select').val('').trigger('change');
+  modalEmployee.on('hidden.bs.modal', function () {
+    formEmployee.reset();
+    $(formEmployee).find('select').val('').trigger('change');
+    editingId = null;
+
+    dateBirth._flatpickr.clear(false);
+    joinDate._flatpickr.clear(false);
   });
 
   // delete record
@@ -414,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}users/${id}`,
+          url: `${baseUrl}employees/${id}`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -426,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              dt_employees.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -455,7 +614,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not deleted!',
+          text: 'The Organization Unit is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -498,7 +657,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // restore the data
         $.ajax({
           method: 'POST',
-          url: `${baseUrl}users/${id}/restore`,
+          url: `${baseUrl}employees/${id}/restore`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -510,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              dt_employees.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -539,7 +698,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not restored!',
+          text: 'The Organization Unit is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -582,7 +741,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // permanent delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}users/${id}/force`,
+          url: `${baseUrl}employees/${id}/force`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -594,7 +753,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              dt_employees.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -623,7 +782,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not deleted!',
+          text: 'The Organization Unit is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

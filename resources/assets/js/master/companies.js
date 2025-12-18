@@ -8,27 +8,23 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableUsers = $('.datatables-users'),
-    modalUser = $('#modalUser'),
-    modalTitle = modalUser.find('.modal-title');
+  const datatableCompanies = $('.datatables-companies'),
+    modalCompany = $('#modalCompany'),
+    modalTitle = modalCompany.find('.modal-title');
 
-  let dt_users, userRoleSelect;
+  let dt_companies;
 
-  if (datatableUsers) {
-    const filterRole = document.createElement('div');
-    filterRole.classList.add('user_roles', 'w-px-200', 'pb-3', 'pb-sm-0', 'me-3');
-    dt_users = new DataTable(datatableUsers, {
+  if (datatableCompanies) {
+    dt_companies = new DataTable(datatableCompanies, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}users`
+        url: `${baseUrl}companies`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'username' },
-        { data: 'full_name' },
-        { data: 'role' },
-        { data: 'status' },
+        { data: 'company_name' },
+        { data: 'company_code' },
         { data: 'created_at' },
         { data: 'updated_at' },
         { data: 'id' }
@@ -36,23 +32,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, 5, 6, -1]
+          targets: [0, 1, 2, 3, 4, -1]
         },
         {
           searchable: true,
-          targets: [1, 2]
+          targets: [1]
         },
         {
-          targets: 4,
-          render: function (data, type, full, meta) {
-            const userStatus = data === 'active' ? 'ACTIVE' : 'INACTIVE',
-              statusClass = userStatus === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
-
-            return '<span class="badge ' + statusClass + '">' + userStatus + '</span>';
-          }
-        },
-        {
-          targets: 5,
+          targets: 3,
           render: function (data, type, full, meta) {
             const options = {
               day: '2-digit',
@@ -65,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 6,
+          targets: 4,
           render: function (data, type, full, meta) {
             const options = {
               day: '2-digit',
@@ -96,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalUser" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalCompany" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -127,11 +114,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Username',
+                placeholder: 'Search Company',
                 text: '_INPUT_'
               }
             },
-            filterRole
+            {
+              buttons: [
+                {
+                  text: 'Create New',
+                  className: 'add-new btn btn-primary mb-3 mb-md-0',
+                  attr: {
+                    'data-bs-toggle': 'modal',
+                    'data-bs-target': '#modalCompany'
+                  }
+                }
+              ]
+            }
           ]
         },
         bottomStart: {
@@ -140,47 +138,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
         },
         bottomEnd: 'paging'
       },
-      language: {
-        paginate: {
-          next: '<i class="icon-base bx bx-chevron-right scaleX-n1-rtl icon-18px"></i>',
-          previous: '<i class="icon-base bx bx-chevron-left scaleX-n1-rtl icon-18px"></i>',
-          first: '<i class="icon-base bx bx-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-          last: '<i class="icon-base bx bx-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-        }
-      },
-      initComplete: function (settings, json) {
-        userRoleSelect = $(
-          '<select id="userRole" class="form-select text-capitalize"><option value=""> Select Group </option></select>'
-        )
-          .appendTo('.user_roles')
-          .on('change', function () {
-            var val = $(this).val();
-            dt_users.column(2).search(val).draw();
-          });
-
-        updateUserRoleOptions(json.roles);
-      },
       createdRow: function (row, data) {
         if (data.deleted_at !== null) {
           $(row).addClass('bg-danger-subtle');
         }
-      }
-    });
-
-    function updateUserRoleOptions(roles) {
-      if (!userRoleSelect) return; // Guard clause
-      var currentVal = userRoleSelect.val();
-      userRoleSelect.empty().append('<option value=""> Select Role </option>');
-      roles.forEach(function (role) {
-        userRoleSelect.append('<option value="' + role + '" class="text-capitalize">' + role + '</option>');
-      });
-      userRoleSelect.val(currentVal);
-    }
-
-    dt_users.on('draw.dt', function () {
-      var json = dt_users.ajax.json();
-      if (json && json.roles) {
-        updateUserRoleOptions(json.roles);
       }
     });
   }
@@ -216,104 +177,53 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formUser = document.getElementById('formUser'),
-    userName = formUser.querySelector('#username'),
-    roleSelect = formUser.querySelector('#role'),
-    statusSelect = formUser.querySelector('#status'),
-    btnSubmit = formUser.querySelector('button[type="submit"]');
+  const formCompany = document.getElementById('formCompany'),
+    companyName = formCompany.querySelector('#company_name'),
+    companyCode = formCompany.querySelector('#company_code'),
+    btnSubmit = formCompany.querySelector('button[type="submit"]');
 
   let editingId = null;
 
-  initStatic($(statusSelect), {
-    placeholder: 'Select an option',
-    disableSearch: true,
-    data: [
-      { id: 'active', text: 'Active' },
-      { id: 'inactive', text: 'Inactive' }
-    ]
-  });
-
-  initDropdownPaged($(roleSelect), {
-    url: '/roles/select',
-    placeholder: 'Select an option',
-    perPage: 10,
-    hideSearch: true
+  // create record
+  $('.add-new').on('click', function () {
+    modalTitle.html('Create Company');
+    editingId = null;
+    $(btnSubmit).html('Submit');
   });
 
   // edit record
-  $(document).on('click', '.edit-record', function () {
+  $(document).on('click', '.edit-record', function (e) {
     const id = $(this).data('id'),
       dtrModal = $('.dtr-bs-modal.show');
 
-    // hide responsive modal in small screen
     if (dtrModal.length) {
       dtrModal.modal('hide');
     }
 
-    // changing the title of modal
-    modalTitle.html('Edit User');
+    modalTitle.html('Edit Company');
     $(btnSubmit).html('Save');
 
     // get data
-    $.get(`${baseUrl}users/${id}/edit`, function (data) {
+    $.get(`${baseUrl}companies/${id}/edit`, function (data) {
       editingId = id;
-      userName.value = data.username || '';
-
-      if (data.status) {
-        $(statusSelect).val(data.status).trigger('change');
-      }
-
-      const role = Array.isArray(data.roles) && data.roles.length ? data.roles[0] : null;
-      if (role && role.id != null) {
-        setValue($(roleSelect), { id: role.name, text: role.name });
-      }
+      companyName.value = data.company_name || '';
+      companyCode.value = data.company_code || '';
     });
   });
 
-  FormValidation.formValidation(formUser, {
+  FormValidation.formValidation(formCompany, {
     fields: {
-      username: {
+      company_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter an username'
-          },
-          stringLength: {
-            min: 4,
-            message: 'The username must be at least 4 characters long'
+            message: 'Please enter company name'
           }
         }
       },
-      password: {
-        validators: {
-          stringLength: {
-            min: 8,
-            message: 'The password must be at least 8 characters long'
-          },
-          regexp: {
-            regexp: /^(?=.*[a-z])(?=.*[A-Z]).+$/,
-            message: 'The password must contain at least one uppercase letter and one lowercase letter'
-          }
-        }
-      },
-      password_confirmation: {
-        validators: {
-          identical: {
-            compare: () => formUser.querySelector('[name="password"]').value,
-            message: 'The password and its confirmation do not match'
-          }
-        }
-      },
-      role: {
+      company_code: {
         validators: {
           notEmpty: {
-            message: 'Please select a role'
-          }
-        }
-      },
-      status: {
-        validators: {
-          notEmpty: {
-            message: 'Please select a status'
+            message: 'Please enter company code'
           }
         }
       }
@@ -326,13 +236,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
       }),
       submitButton: new FormValidation.plugins.SubmitButton(),
       autoFocus: new FormValidation.plugins.AutoFocus()
-    },
-    init: instance => {
-      instance.on('plugins.message.placed', e => {
-        if (e.element.parentElement.classList.contains('input-group')) {
-          e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
-        }
-      });
     }
   }).on('core.form.valid', function () {
     Loading.circle({
@@ -341,17 +244,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    let url = editingId ? `${baseUrl}users/${editingId}` : `${baseUrl}users`;
+    let url = editingId ? `${baseUrl}companies/${editingId}` : `${baseUrl}companies`;
     let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
-      data: $(formUser).serialize(),
+      data: $(formCompany).serialize(),
       url: url,
       type: method,
       success: function (res) {
         Loading.remove();
-        dt_users.draw(false);
-        modalUser.modal('hide');
+        dt_companies.draw(false);
+        modalCompany.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -375,10 +278,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   });
 
-  // clearing form data when modal hidden
-  modalUser.on('hidden.bs.modal', function () {
-    formUser.reset();
-    $(formUser).find('select').val('').trigger('change');
+  modalCompany.on('hidden.bs.modal', function () {
+    formCompany.reset();
   });
 
   // delete record
@@ -414,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}users/${id}`,
+          url: `${baseUrl}companies/${id}`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -426,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              dt_companies.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -455,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not deleted!',
+          text: 'The Company is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -498,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // restore the data
         $.ajax({
           method: 'POST',
-          url: `${baseUrl}users/${id}/restore`,
+          url: `${baseUrl}companies/${id}/restore`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -510,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              dt_companies.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -539,7 +440,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not restored!',
+          text: 'The Company is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -582,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // permanent delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}users/${id}/force`,
+          url: `${baseUrl}companies/${id}/force`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -594,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_users.draw(false);
+              dt_companies.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -623,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The User is not deleted!',
+          text: 'The Company is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

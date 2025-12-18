@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
             rowSelector: '.mb-3'
           }),
           submitButton: new FormValidation.plugins.SubmitButton(),
-
           defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
           autoFocus: new FormValidation.plugins.AutoFocus()
         },

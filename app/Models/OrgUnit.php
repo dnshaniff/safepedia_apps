@@ -11,7 +11,7 @@ class OrgUnit extends Model
 
   protected $table = 'org_units';
 
-  protected $fillable = ['parent_id', 'unit_name', 'unit_code', 'unit_type', 'sort_order'];
+  protected $fillable = ['parent_id', 'unit_name', 'unit_code', 'unit_type', 'sort_order', 'created_by'];
 
   public function parent()
   {
@@ -32,5 +32,10 @@ class OrgUnit extends Model
   {
     $max = static::where('parent_id', $parentId)->max('sort_order');
     return is_null($max) ? 1 : $max + 1;
+  }
+
+  public function creator()
+  {
+    return $this->belongsTo(User::class, 'created_by', 'id');
   }
 }

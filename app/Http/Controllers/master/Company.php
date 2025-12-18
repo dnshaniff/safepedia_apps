@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Models\JobTitle as ModelsJobTitle;
+use App\Models\Company as ModelsCompany;
 use Illuminate\Validation\ValidationException;
 
-class JobTitle extends Controller
+class Company extends Controller
 {
   public function view()
   {
-    return view('content.master.job_titles');
+    return view('content.master.companies');
   }
 
   public function select(Request $request)
@@ -23,17 +23,17 @@ class JobTitle extends Controller
     $page  = max(1, (int) $request->get('page', 1));
     $per   = max(1, min(100, (int) $request->get('per', 10)));
 
-    $query = ModelsJobTitle::query()->select(['id', 'title_name']);
+    $query = ModelsCompany::query()->select(['id', 'company_name']);
 
     if ($q !== '') {
       $tokens = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [];
       foreach ($tokens as $t) {
         $t = str_replace(['%', '_'], ['\\%', '\\_'], $t);
-        $query->where('title_name', 'LIKE', "%{$t}%");
+        $query->where('company_name', 'LIKE', "%{$t}%");
       }
     }
 
-    $query->orderBy('title_name');
+    $query->orderBy('company_name');
 
     $rows = $query->skip(($page - 1) * $per)->take($per + 1)->get();
 
@@ -43,7 +43,7 @@ class JobTitle extends Controller
     return response()->json([
       'results' => $rows->map(fn($r) => [
         'id'   => $r->id,
-        'text' => $r->title_name,
+        'text' => $r->company_name,
       ])->values(),
       'more' => $more
     ]);
@@ -56,31 +56,33 @@ class JobTitle extends Controller
 
     $search = $request->input('search.value');
 
-    $query = ModelsJobTitle::query()->when($isAdmin, function ($q) {
+    $query = ModelsCompany::query()->when($isAdmin, function ($q) {
       $q->withTrashed();
     });
 
     $totalData = $query->count();
 
     if (!empty($search)) {
-      $query->where('title_name', 'LIKE', "%{$search}%");
+      $query->where('company_name', 'LIKE', "%{$search}%")
+        ->orWhere('company_code', 'LIKE', "%{$search}%");
     }
 
     $totalFiltered = $query->count();
 
-    $jobTitles = $query->offset($request->input('start'))->limit($request->input('length'))->latest()->get();
+    $companys = $query->offset($request->input('start'))->limit($request->input('length'))->latest()->get();
 
     $data = [];
 
-    if (!empty($jobTitles)) {
+    if (!empty($companys)) {
       $ids = $request->input('start');
-      foreach ($jobTitles as $jobTitle) {
+      foreach ($companys as $company) {
         $nestedData['fake_id'] = ++$ids;
-        $nestedData['id'] = $jobTitle->id;
-        $nestedData['title_name'] = $jobTitle->title_name;
-        $nestedData['created_at'] = $jobTitle->created_at;
-        $nestedData['updated_at'] = $jobTitle->updated_at;
-        $nestedData['deleted_at'] = $jobTitle->deleted_at;
+        $nestedData['id'] = $company->id;
+        $nestedData['company_name'] = $company->company_name;
+        $nestedData['company_code'] = $company->company_code;
+        $nestedData['created_at'] = $company->created_at;
+        $nestedData['updated_at'] = $company->updated_at;
+        $nestedData['deleted_at'] = $company->deleted_at;
 
         $data[] = $nestedData;
       }
@@ -98,15 +100,18 @@ class JobTitle extends Controller
   public function store(Request $request)
   {
     try {
-      $validated = $request->validate(['title_name' => 'required|string|max:100']);
+      $validated = $request->validate([
+        'company_name' => 'required|string|max:100',
+        'company_code' => 'required|string|max:10'
+      ]);
 
       $validated['created_by'] = auth()->user()->id;
 
-      $jobTitle = DB::transaction(function () use ($validated) {
-        return ModelsJobTitle::create($validated);
+      $company = DB::transaction(function () use ($validated) {
+        return ModelsCompany::create($validated);
       });
 
-      return response()->json(['status' => 'success', 'message' => "Job title: {$jobTitle->title_name} created successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Company: {$company->company_name} created successfully"], 200);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
       return response()->json(['status' => 'danger', 'message' => $message], 422);
@@ -121,21 +126,24 @@ class JobTitle extends Controller
     }
   }
 
-  public function edit(ModelsJobTitle $jobTitle)
+  public function edit(ModelsCompany $company)
   {
-    return response()->json($jobTitle, 200);
+    return response()->json($company, 200);
   }
 
-  public function update(Request $request, ModelsJobTitle $jobTitle)
+  public function update(Request $request, ModelsCompany $company)
   {
     try {
-      $validated = $request->validate(['title_name' => 'required|string|max:100']);
+      $validated = $request->validate([
+        'company_name' => 'required|string|max:100',
+        'company_code' => 'required|string|max:10'
+      ]);
 
-      DB::transaction(function () use ($jobTitle, $validated) {
-        $jobTitle->update($validated);
+      DB::transaction(function () use ($company, $validated) {
+        $company->update($validated);
       });
 
-      return response()->json(['status' => 'success', 'message' => "Job title: {$jobTitle->title_name} updated successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Company: {$company->company_name} updated successfully"], 200);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
       return response()->json(['status' => 'danger', 'message' => $message, 'errors' => $e->errors()], 422);
@@ -150,12 +158,12 @@ class JobTitle extends Controller
     }
   }
 
-  public function destroy(ModelsJobTitle $jobTitle)
+  public function destroy(ModelsCompany $company)
   {
     try {
-      $jobTitle->delete();
+      $company->delete();
 
-      return response()->json(['status' => 'success', 'message' => "Job title: {$jobTitle->title_name} deleted successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Company: {$company->company_name} deleted successfully"], 200);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
@@ -169,13 +177,13 @@ class JobTitle extends Controller
 
   public function restore(string $id)
   {
-    $jobTitle = ModelsJobTitle::withTrashed()->findOrFail($id);
+    $company = ModelsCompany::withTrashed()->findOrFail($id);
 
     try {
-      if ($jobTitle->trashed()) {
-        $jobTitle->restore();
+      if ($company->trashed()) {
+        $company->restore();
 
-        return response()->json(['status' => 'success', 'message' => "Job title: {$jobTitle->title_name} successfully restored"], 200);
+        return response()->json(['status' => 'success', 'message' => "Company: {$company->company_name} successfully restored"], 200);
       } else {
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }
@@ -192,13 +200,13 @@ class JobTitle extends Controller
 
   public function force(string $id)
   {
-    $jobTitle = ModelsJobTitle::withTrashed()->findOrFail($id);
+    $company = ModelsCompany::withTrashed()->findOrFail($id);
 
     try {
-      if ($jobTitle->trashed()) {
-        $jobTitle->forceDelete();
+      if ($company->trashed()) {
+        $company->forceDelete();
 
-        return response()->json(['status' => 'success', 'message' => 'Job title permanent delete successfully'], 200);
+        return response()->json(['status' => 'success', 'message' => 'Company permanent delete successfully'], 200);
       } else {
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }

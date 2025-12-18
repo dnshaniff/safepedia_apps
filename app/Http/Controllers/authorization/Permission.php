@@ -4,6 +4,7 @@ namespace App\Http\Controllers\authorization;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission as ModelsPermission;
 use Throwable;
@@ -79,19 +80,27 @@ class Permission extends Controller
   public function store(Request $request)
   {
     try {
-      $validate = $request->validate([
+      $validated = $request->validate([
         'display_name' => 'required|min:3',
         'name' => 'required|min:4|unique:permissions,name',
         'group_name' => 'required|min:4',
       ]);
 
-      $permission = ModelsPermission::create($validate);
+      $permission = DB::transaction(function () use ($validated) {
+        return ModelsPermission::create($validated);
+      });
 
-      return response()->json(['status' => 'success', 'message' => "$permission->group_name: $permission->display_name created successfully"], 201);
+      return response()->json(['status' => 'success', 'message' => "{$permission->group_name}: {$permission->display_name} created successfully"], 201);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
       return response()->json(['status' => 'danger', 'message' => $message], 422);
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }
@@ -103,44 +112,49 @@ class Permission extends Controller
 
   public function update(Request $request, ModelsPermission $permission)
   {
-    if (!$permission) {
-      return response()->json(['status' => 'danger', 'message' => 'Permission not found'], 404);
-    }
-
     try {
-      $validate = $request->validate([
+      $validated = $request->validate([
         'display_name' => 'required|min:4',
         'name' => 'required|min:4|unique:permissions,name,' . $permission->id,
         'group_name' => 'required|min:4',
       ]);
-      $permission->update($validate);
 
-      return response()->json(['status' => 'success', 'message' => "$permission->group_name: $permission->display_name updated successfully"], 200);
+      DB::transaction(function () use ($permission, $validated) {
+        $permission->fill($validated)->save();
+      });
+
+      return response()->json(['status' => 'success', 'message' => "{$permission->group_name}: {$permission->display_name} updated successfully"], 200);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
       return response()->json(['status' => 'danger', 'message' => $message], 422);
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }
 
   public function destroy(ModelsPermission $permission)
   {
-    if (!$permission) {
-      return response()->json(['status' => 'danger', 'message' => 'Permission not found'], 404);
-    }
-
     try {
       if ($permission->roles()->count() > 0) {
-        return response()->json([
-          'status' => 'error',
-          'message' => "Cannot delete permission '{$permission->name}' because it is associated with roles"
-        ], 422);
+        return response()->json(['status' => 'error', 'message' => "Cannot delete permission '{$permission->name}' because it is associated with roles"], 422);
       }
 
       $permission->delete();
+
       return response()->json(['status' => 'success', 'message' => "Permission deleted successfully"], 200);
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }

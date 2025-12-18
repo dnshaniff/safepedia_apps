@@ -6,7 +6,8 @@ use App\Http\Controllers\pages\Dashboard;
 use App\Http\Controllers\authorization\Role;
 use App\Http\Controllers\authorization\User;
 use App\Http\Controllers\authorization\Permission;
-use App\Http\Controllers\master\Department;
+use App\Http\Controllers\hr\Employee;
+use App\Http\Controllers\master\Company;
 use App\Http\Controllers\master\JobTitle;
 use App\Http\Controllers\master\OrgUnit;
 
@@ -32,8 +33,11 @@ Route::middleware(['auth', 'status'])->group(function () {
   Route::post('/auth/logout', [Login::class, 'destroy'])->name('login.destroy');
 
   // Fetch Data
-  Route::get('/roles/select', [Role::class, 'select']);
+  Route::get('/companies/select', [Company::class, 'select']);
+  Route::get('/employees/select', [Employee::class, 'select']);
+  Route::get('/job_titles/select', [JobTitle::class, 'select']);
   Route::get('/org_units/select', [OrgUnit::class, 'select']);
+  Route::get('/roles/select', [Role::class, 'select']);
 });
 
 /**
@@ -42,6 +46,13 @@ Route::middleware(['auth', 'status'])->group(function () {
 Route::middleware(['auth', 'status', 'permission'])->group(function () {
   // Dashboard
   Route::get('/', [Dashboard::class, 'view'])->name('dashboard');
+
+  // Human Resources
+  // Employees
+  Route::get('/hr-employees', [Employee::class, 'view'])->name('hr-employees');
+  Route::resource('/employees', Employee::class)->except('create');
+  Route::post('/employees/{employee}/restore', [Employee::class, 'restore'])->name('employees.restore');
+  Route::delete('/employees/{employee}/force', [Employee::class, 'force'])->name('employees.force');
 
   // Authorization
   // Permissions
@@ -59,8 +70,15 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   Route::delete('/users/{user}/force', [User::class, 'force'])->name('users.force');
 
   // Master Data
+  // Companies
+  Route::get('/master-companies', [Company::class, 'view'])->name('master-companies');
+  Route::resource('/companies', Company::class)->except('create', 'show');
+  Route::post('/companies/{company}/restore', [Company::class, 'restore'])->name('companies.restore');
+  Route::delete('/companies/{company}/force', [Company::class, 'force'])->name('companies.force');
+
   // Organization Units
   Route::get('/master-org_units', [OrgUnit::class, 'view'])->name('master-org_units');
+  Route::patch('/org_units/reorder', [OrgUnit::class, 'reorder'])->name('org_units.reorder');
   Route::resource('/org_units', OrgUnit::class)->except('create', 'show');
   Route::post('/org_units/{org_unit}/restore', [OrgUnit::class, 'restore'])->name('org_units.restore');
   Route::delete('/org_units/{org_unit}/force', [OrgUnit::class, 'force'])->name('org_units.force');

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\OrgUnit as ModelsOrgUnit;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OrgUnit extends Controller
@@ -21,6 +22,8 @@ class OrgUnit extends Controller
     $q     = trim((string) $request->get('q', ''));
     $page  = max(1, (int) $request->get('page', 1));
     $per   = max(1, min(100, (int) $request->get('per', 10)));
+
+    $unitType = $request->get('unit_type');
 
     $query = ModelsOrgUnit::query()->select(['id', 'unit_name']);
 
@@ -92,21 +95,26 @@ class OrgUnit extends Controller
         'parent_id' => 'nullable|exists:org_units,id'
       ]);
 
-      $parentId = $validated['parent_id'] ?? null;
-      $validated['sort_order'] = ModelsOrgUnit::nextSortOrder($parentId);
+      $validated['created_by'] = auth()->user()->id;
 
-      $orgUnit = ModelsOrgUnit::create($validated);
+      $orgUnit = DB::transaction(function () use ($validated) {
+        $parentId = $validated['parent_id'] ?? null;
+        $validated['sort_order'] = ModelsOrgUnit::nextSortOrder($parentId);
 
-      return response()->json(['status' => 'success', 'message' => "Organization Unit: $orgUnit->unit_name created successfully"], 201);
+        return ModelsOrgUnit::create($validated);
+      });
+
+      return response()->json(['status' => 'success', 'message' => "Organization Unit: {$orgUnit->unit_name} created successfully"], 201);
     } catch (ValidationException $e) {
-      return response()->json(['status' => 'danger', 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+      $message = collect($e->errors())->flatten()->implode("\n");
+      return response()->json(['status' => 'danger', 'message' => $message, 'errors' => $e->errors()], 422);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
         'file' => $e->getFile(),
         'line' => $e->getLine(),
-        'trace' => $e->getTraceAsString(),
       ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }
@@ -128,22 +136,24 @@ class OrgUnit extends Controller
         'parent_id' => 'nullable|exists:org_units,id'
       ]);
 
-      if ($orgUnit->parent_id !== ($validated['parent_id'] ?? null)) {
-        $orgUnit->parent_id  = $validated['parent_id'] ?? null;
-        $orgUnit->sort_order = ModelsOrgUnit::nextSortOrder($orgUnit->parent_id);
-      }
+      DB::transaction(function () use ($orgUnit, $validated) {
+        if ($orgUnit->parent_id !== ($validated['parent_id'] ?? null)) {
+          $orgUnit->parent_id  = $validated['parent_id'] ?? null;
+          $orgUnit->sort_order = ModelsOrgUnit::nextSortOrder($orgUnit->parent_id);
+        }
 
-      $orgUnit->update($validated);
+        $orgUnit->fill($validated)->save();
+      });
 
-      return response()->json(['status' => 'success', 'message' => "Organization Unit: $orgUnit->unit_name updated successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Organization Unit: {$orgUnit->unit_name} updated successfully"], 200);
     } catch (ValidationException $e) {
-      return response()->json(['status' => 'danger', 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+      $message = collect($e->errors())->flatten()->implode("\n");
+      return response()->json(['status' => 'danger', 'message' => $message, 'errors' => $e->errors()], 422);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
         'file' => $e->getFile(),
         'line' => $e->getLine(),
-        'trace' => $e->getTraceAsString(),
       ]);
       return response()->json(['status' => 'danger', 'message' => 'An error occured while processing your request', 'errors' => $e], 500);
     }
@@ -152,11 +162,52 @@ class OrgUnit extends Controller
   public function destroy(ModelsOrgUnit $orgUnit, Request $request)
   {
     try {
-      $orgUnit->delete();
+      DB::transaction(function () use ($orgUnit) {
+        $orgUnit->delete();
+      });
 
-      return response()->json(['status' => 'success', 'message' => "Organization Unit: $orgUnit->unit_name deleted successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Organization Unit: {$orgUnit->unit_name} deleted successfully"], 200);
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
+  }
+
+  public function reorder(Request $request)
+  {
+    try {
+      $validated = $request->validate([
+        'parent_id'      => ['nullable', 'integer', 'exists:org_units,id'],
+        'items'          => ['required', 'array', 'min:1'],
+        'items.*.id'     => ['required', 'integer', 'exists:org_units,id'],
+      ]);
+
+      $parentId = $validated['parent_id'] ?? null;
+      $items    = $validated['items'];
+
+      DB::transaction(function () use ($items, $parentId) {
+        foreach ($items as $index => $item) {
+          ModelsOrgUnit::where('id', $item['id'])->update([
+            'sort_order' => $index + 1,
+            'parent_id'  => $parentId,
+          ]);
+        }
+      });
+
+      return response()->json(['status'  => 'success', 'message' => 'Organization units reordered successfully'], 200);
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+      ]);
+
+      return response()->json(['status' => 'danger', 'message' => 'An error occured while processing your request', 'errors' => $e], 500);
     }
   }
 
@@ -170,16 +221,22 @@ class OrgUnit extends Controller
 
     try {
       if ($orgUnit->trashed()) {
-        $orgUnit->restore();
 
-        return response()->json(
-          ['status' => 'success', 'message' => "Organization Unit: $orgUnit->unit_name successfully restored"],
-          200
-        );
+        DB::transaction(function () use ($orgUnit) {
+          $orgUnit->restore();
+        });
+
+        return response()->json(['status' => 'success', 'message' => "Organization Unit: {$orgUnit->unit_name} successfully restored"], 200);
       } else {
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }
@@ -194,13 +251,22 @@ class OrgUnit extends Controller
 
     try {
       if ($orgUnit->trashed()) {
-        $orgUnit->forceDelete();
+        DB::transaction(function () use ($orgUnit) {
+          $orgUnit->forceDelete();
+        });
+
 
         return response()->json(['status' => 'success', 'message' => 'Organization Unit permanent delete successfully'], 200);
       } else {
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }
     } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+      ]);
+
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
   }

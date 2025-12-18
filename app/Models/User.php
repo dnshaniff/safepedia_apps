@@ -53,4 +53,17 @@ class User extends Authenticatable
   {
     return $this->hasOne(Employee::class, 'user_id', 'id');
   }
+
+  public function getDisplayNameAttribute(): string
+  {
+    if ($this->employee) {
+      return $this->employee->full_name;
+    }
+
+    if ($this->username === 'administrator') {
+      return 'Administrator';
+    }
+
+    return $this->username ?? '-';
+  }
 }
