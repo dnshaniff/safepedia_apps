@@ -7,6 +7,7 @@ use App\Http\Controllers\authorization\Role;
 use App\Http\Controllers\authorization\User;
 use App\Http\Controllers\authorization\Permission;
 use App\Http\Controllers\hr\Employee;
+use App\Http\Controllers\hr\EmployeeAgreement;
 use App\Http\Controllers\master\Company;
 use App\Http\Controllers\master\JobTitle;
 use App\Http\Controllers\master\OrgUnit;
@@ -53,6 +54,11 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   Route::resource('/employees', Employee::class)->except('create');
   Route::post('/employees/{employee}/restore', [Employee::class, 'restore'])->name('employees.restore');
   Route::delete('/employees/{employee}/force', [Employee::class, 'force'])->name('employees.force');
+
+  // Employee Agreements
+  Route::resource('/employees/{employee}/employee_agreements', EmployeeAgreement::class)->except('create', 'show');
+  Route::post('/employees/{employee}/employee_agreements/{employee_agreements}/restore', [EmployeeAgreement::class, 'restore'])->name('employee_agreements.restore');
+  Route::delete('/employees/{employee}/employee_agreements/{employee_agreements}/force', [EmployeeAgreement::class, 'force'])->name('employee_agreements.force');
 
   // Authorization
   // Permissions

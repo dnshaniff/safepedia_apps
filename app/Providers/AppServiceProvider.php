@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Employee;
+use App\Observers\EmployeeObserver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -32,5 +34,7 @@ class AppServiceProvider extends ServiceProvider
       }
       return [];
     });
+
+    Employee::observe(EmployeeObserver::class);
   }
 }

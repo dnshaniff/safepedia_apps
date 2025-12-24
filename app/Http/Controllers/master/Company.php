@@ -118,8 +118,7 @@ class Company extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -150,8 +149,7 @@ class Company extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -167,8 +165,7 @@ class Company extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -190,8 +187,7 @@ class Company extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -213,8 +209,7 @@ class Company extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);

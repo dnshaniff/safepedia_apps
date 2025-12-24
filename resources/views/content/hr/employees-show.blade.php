@@ -19,7 +19,6 @@
 @endsection
 
 @section('content')
-    <!-- Header -->
     <div class="row">
         <div class="col-12">
             <div class="card my-6">
@@ -51,12 +50,9 @@
             </div>
         </div>
     </div>
-    <!--/ Header -->
 
-    <!-- User Profile Content -->
     <div class="row">
         <div class="col-xl-4 col-lg-5 col-md-5">
-            <!-- About User -->
             <div class="card mb-6">
                 <div class="card-body">
                     <small class="card-text text-uppercase text-body-secondary small">Employment</small>
@@ -94,8 +90,6 @@
                     </ul>
                 </div>
             </div>
-            <!--/ About User -->
-            <!-- Profile Overview -->
             <div class="card">
                 <div class="card-body">
                     <small class="card-text text-uppercase text-body-secondary small">Audit Information</small>
@@ -111,24 +105,22 @@
                     </ul>
                 </div>
             </div>
-            <!--/ Profile Overview -->
         </div>
         <div class="col-xl-8 col-lg-7 col-md-7">
-            <!-- Agreements -->
             <div class="card card-action mb-6">
                 <div class="card-header align-items-center">
-                    <h5 class="card-action-title mb-0"><i
-                            class="icon-base bx bx-bar-chart-alt-2 icon-lg text-body me-4"></i>Agreements</h5>
+                    <h5 class="card-action-title mb-0"><i class="icon-base bx bx-file icon-lg text-body me-4"></i>Agreements
+                    </h5>
                 </div>
                 <div class="card-body pt-3">
                     <div class="card-datatable table-responsive text-nowrap">
-                        <table class="datatables-employees table table-hover border-top">
+                        <table class="datatables-agreements table table-hover border-top">
                             <thead>
                                 <tr>
                                     <th width="1px">#</th>
                                     <th class="text-start">Type</th>
-                                    <th class="text-start">Effective Date</th>
-                                    <th class="text-start">Period</th>
+                                    <th class="text-start">Date/Period</th>
+                                    <th class="text-start">Notes</th>
                                     <th class="text-start">Created By</th>
                                     <th width="1px">Action</th>
                                 </tr>
@@ -137,8 +129,51 @@
                     </div>
                 </div>
             </div>
-            <!--/ Agreements -->
         </div>
     </div>
-    <!--/ User Profile Content -->
+
+
+
+    <div class="modal fade" id="modalAgreement" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <form id="formAgreement" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="backDropModalTitle">Employee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label" for="agreement_type">Agreement Type <strong
+                                class="text-danger">**</strong></label>
+                        <select id="agreement_type" name="agreement_type" class="select2 form-select"
+                            data-allow-clear="true"></select>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label" for="start_date">Start Date</label>
+                        <input type="text" id="start_date" name="start_date" class="form-control"
+                            placeholder="YYYY-MM-DD" />
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label" for="end_date">End Date</label>
+                        <input type="text" id="end_date" name="end_date" class="form-control"
+                            placeholder="YYYY-MM-DD" />
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label" for="effective_date">Effective Date</label>
+                        <input type="text" id="effective_date" name="effective_date" class="form-control"
+                            placeholder="YYYY-MM-DD" />
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="notes">Notes</label>
+                        <textarea id="notes" name="notes" rows="3" class="form-control autosize"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="reset" class="btn btn-label-danger" data-bs-dismiss="modal"
+                        aria-label="Close">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection

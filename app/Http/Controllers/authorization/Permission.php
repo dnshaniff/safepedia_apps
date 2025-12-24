@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\authorization;
 
+use Throwable;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission as ModelsPermission;
-use Throwable;
 
 class Permission extends Controller
 {
@@ -97,8 +98,7 @@ class Permission extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -130,8 +130,7 @@ class Permission extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -151,8 +150,7 @@ class Permission extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);

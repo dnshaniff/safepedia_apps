@@ -278,7 +278,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
   initDropdownPaged($(companySelect), {
     url: '/companies/select',
     placeholder: 'Select an option',
-    perPage: 10
+    perPage: 10,
+    hideSearch: true
   });
 
   initDropdownPaged($(orgSelect), {
@@ -299,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
     data: [
       { id: 'Colleague', text: 'Colleague' },
       { id: 'Contract', text: 'Contract' },
-      { id: 'Freelance', text: 'Freelancee' },
+      { id: 'Freelance', text: 'Freelance' },
       { id: 'Intern', text: 'Intern' },
       { id: 'Probation', text: 'Probation' },
       { id: 'Resign', text: 'Resign' }
@@ -315,19 +316,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
     ]
   });
 
-  function initFlatPick(element) {
+  function initFP(element) {
     if (!element) return;
 
     flatpickr(element, {
       altInput: true,
       altFormat: 'j F, Y',
       dateFormat: 'Y-m-d',
-      static: true
+      static: true,
+      allowInput: false
     });
   }
 
-  initFlatPick(joinDate);
-  initFlatPick(dateBirth);
+  initFP(joinDate);
+  initFP(dateBirth);
 
   // create record
   $('.add-new').on('click', function () {

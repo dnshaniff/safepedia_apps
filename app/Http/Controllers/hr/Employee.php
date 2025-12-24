@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreEmployeeRequest;
+use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee as ModelsEmployee;
-use Illuminate\Validation\ValidationException;
 
 class Employee extends Controller
 {
@@ -97,7 +98,14 @@ class Employee extends Controller
 
     if (!empty($search)) {
       $query->where(function ($q) use ($search) {
-        $q->where('full_name', 'LIKE', "%{$search}%");
+        $q->where('full_name', 'LIKE', "%{$search}%")
+          ->orWhere('employee_code', 'LIKE', "%{$search}%")
+          ->orWhereHas('orgUnit', function ($q2) use ($search) {
+            $q2->where('unit_name', 'LIKE', "%{$search}%");
+          })
+          ->orWhereHas('jobTitle', function ($q3) use ($search) {
+            $q3->where('title_name', 'LIKE', "%{$search}%");
+          });
       });
     }
 
@@ -114,12 +122,12 @@ class Employee extends Controller
         $nestedData['id'] = $employee->id;
         $nestedData['employee_code'] = $employee->employee_code;
         $nestedData['full_name'] = $employee->full_name;
-        $nestedData['company'] = $employee->company ? $employee->company->company_code : '-';
-        $nestedData['org_unit'] = $employee->orgUnit ? $employee->orgUnit->unit_name : '-';
-        $nestedData['job_title'] = $employee->jobTitle ? $employee->jobTitle->title_name : '-';
+        $nestedData['company'] = $employee->company ? $employee->company->company_code : '';
+        $nestedData['org_unit'] = $employee->orgUnit ? $employee->orgUnit->unit_name : '';
+        $nestedData['job_title'] = $employee->jobTitle ? $employee->jobTitle->title_name : '';
         $nestedData['join_date'] = $employee->join_date->format('d/m/Y');
         $nestedData['employment_type'] = $employee->employment_type;
-        $nestedData['hrbp'] = $employee->hrbp ? $employee->hrbp->full_name : '-';
+        $nestedData['hrbp'] = $employee->hrbp ? $employee->hrbp->full_name : '';
         $nestedData['deleted_at'] = $employee->deleted_at;
 
         $data[] = $nestedData;
@@ -135,40 +143,15 @@ class Employee extends Controller
     ]);
   }
 
-  public function store(Request $request)
+  public function store(StoreEmployeeRequest $request)
   {
     try {
-      $validated = $request->validate([
-        'employee_code' => 'required|string|unique:employees,employee_code',
-        'full_name' => 'required|string',
-        'hrbp_id' => 'nullable|exists:employees,id',
-        'manager_id' => 'nullable|exists:employees,id',
-        'join_date' => 'required|date',
-        'company_id' => 'required|exists:companies,id',
-        'org_unit_id' => 'required|exists:org_units,id',
-        'job_title_id' => 'required|exists:job_titles,id',
-        'employment_type' => 'required|in:Colleague,Contract,Freelance,Intern,Probation,Resign',
-        'office_email' => 'nullable|email|unique:employees,office_email',
-        'personal_email' => 'nullable|email|unique:employees,personal_email',
-        'phone_number' => 'nullable|unique:employees,phone_number',
-        'gender' => 'required|in:Female,Male',
-        'date_of_birth' => 'required|date'
-      ]);
-      $validated['created_by'] = auth()->user()->id;
-
-      $employee = DB::transaction(function () use ($validated) {
-        return ModelsEmployee::create($validated);
-      });
+      $employee = DB::transaction(fn() => ModelsEmployee::create($request->validated()));
 
       return response()->json(['status' => 'success', 'message' => "Employee: {$employee->full_name} created successfully"], 201);
-    } catch (ValidationException $e) {
-      $message = collect($e->errors())->flatten()->implode("\n");
-      return response()->json(['status' => 'danger', 'message' => $message, 'errors' => $e->errors()], 422);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine(),
         'trace' => $e->getTraceAsString(),
       ]);
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -196,43 +179,15 @@ class Employee extends Controller
     return response()->json($employee, 200);
   }
 
-  public function update(Request $request, ModelsEmployee $employee)
+  public function update(UpdateEmployeeRequest $request, ModelsEmployee $employee)
   {
     try {
-      $validated = $request->validate([
-        'employee_code' => 'required|string|unique:employees,employee_code,' . $employee->id,
-        'full_name' => 'required|string',
-        'hrbp_id' => 'nullable|exists:employees,id',
-        'manager_id' => 'nullable|exists:employees,id',
-        'join_date' => 'required|date',
-        'company_id' => 'required|exists:companies,id',
-        'org_unit_id' => 'required|exists:org_units,id',
-        'job_title_id' => 'required|exists:job_titles,id',
-        'employment_type' => 'required|in:Colleague,Contract,Freelance,Intern,Probation,Resign',
-        'office_email' => 'nullable|email|unique:employees,office_email,' . $employee->id,
-        'personal_email' => 'nullable|email|unique:employees,personal_email,' . $employee->id,
-        'phone_number' => 'nullable|unique:employees,phone_number,' . $employee->id,
-        'gender' => 'required|in:Female,Male',
-        'date_of_birth' => 'required|date'
-      ]);
-
-      if (!empty($validated['manager_id']) && $validated['manager_id'] === $employee->id) {
-        return response()->json(['status' => 'info', 'message' => 'Invalid selection: an employee cannot be assigned as their own manager'], 422);
-      }
-
-      DB::transaction(function () use ($validated, $employee) {
-        $employee->update($validated);
-      });
+      DB::transaction(fn() => $employee->update($request->validated()));
 
       return response()->json(['status' => 'success', 'message' => "Employee: {$employee->full_name} updated successfully"], 200);
-    } catch (ValidationException $e) {
-      $message = collect($e->errors())->flatten()->implode("\n");
-      return response()->json(['status' => 'danger', 'message' => $message, 'errors' => $e->errors()], 422);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine(),
         'trace' => $e->getTraceAsString(),
       ]);
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -248,8 +203,7 @@ class Employee extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -271,8 +225,7 @@ class Employee extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
@@ -298,8 +251,7 @@ class Employee extends Controller
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
