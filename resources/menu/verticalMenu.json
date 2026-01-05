@@ -12,14 +12,36 @@
       "slug": "hr",
       "submenu": [
         {
-          "url": "/hr-employees",
           "name": "Employees",
-          "slug": "hr-employees"
+          "slug": "employees",
+          "submenu": [
+            {
+              "url": "/employee-employees",
+              "name": "Data",
+              "slug": "employee-employees"
+            },
+            {
+              "url": "/employee-offboardings",
+              "name": "Offboarding",
+              "slug": "employee-offboardings"
+            }
+          ]
         },
         {
-          "url": "/hr-upcoming_offboardings",
-          "name": "Upcoming Offboardings",
-          "slug": "hr-upcoming_offboardings"
+          "url": "/hr-recruitment",
+          "name": "Recruitment",
+          "submenu": [
+            {
+              "url": "/recruitment-manpower_plans",
+              "name": "Manpower Planning",
+              "slug": "recruitment-manpower_plans"
+            },
+            {
+              "url": "/recruitment-new_joiners",
+              "name": "New Joiners",
+              "slug": "recruitment-new_joiners"
+            }
+          ]
         }
       ]
     },

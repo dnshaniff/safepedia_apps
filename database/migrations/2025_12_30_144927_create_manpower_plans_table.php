@@ -11,13 +11,13 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('employee_agreements', function (Blueprint $table) {
-      $table->id();
-      $table->foreignUuid('employee_id')->constrained('employees', 'id')->onDelete('CASCADE');
-      $table->enum('agreement_type', ['Contract', 'Conversion', 'Extension', 'Promotion', 'Resignation', 'Warning']);
-      $table->date('start_date')->nullable();
-      $table->date('end_date')->nullable();
-      $table->date('effective_date')->nullable();
+    Schema::create('manpower_plans', function (Blueprint $table) {
+      $table->uuid('id')->primary();
+      $table->foreignId('org_unit_id')->nullable()->constrained('org_units', 'id')->onDelete('SET NULL');
+      $table->string('position_title');
+      $table->date('planned_date');
+      $table->integer('number_positions')->default(0);
+      $table->string('devices');
       $table->text('notes')->nullable();
       $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->onDelete('SET NULL');
       $table->timestamps();
@@ -30,6 +30,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('employee_agreements');
+    Schema::dropIfExists('manpower_plans');
   }
 };

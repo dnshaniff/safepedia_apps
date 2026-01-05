@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       { id: 'Conversion', text: 'Conversion' },
       { id: 'Extension', text: 'Extension' },
       { id: 'Promotion', text: 'Promotion' },
-      { id: 'Resign', text: 'Resign' },
+      { id: 'Resignation', text: 'Resignation' },
       { id: 'Warning', text: 'Warning' }
     ]
   });
@@ -247,5 +247,159 @@ document.addEventListener('DOMContentLoaded', function (e) {
     modalTitle.html('Create Agreement');
     editingId = null;
     $(btnSubmit).html('Submit');
+  });
+
+  // edit record
+  $(document).on('click', '.edit-record', function () {
+    const id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    modalTitle.html('Edit Agreements');
+    $(btnSubmit).html('Save');
+
+    $.get(`${currentPath}/employee_agreements/${id}/edit`, function (data) {
+      editingId = id;
+
+      $(typeSelect).val(data.employment_type).trigger('change');
+      startDate._flatpickr.setDate(data.start_date || null);
+      endDate._flatpickr.setDate(data.end_date || null);
+      effectiveDate._flatpickr.setDate(data.effective_date || null);
+      notesInput.value = data.notes || '';
+    });
+  });
+
+  FormValidation.formValidation(formAgreement, {
+    fields: {
+      agreement_type: {
+        validators: {
+          notEmpty: {
+            message: 'Please select type'
+          }
+        }
+      },
+      start_date: {
+        validators: {
+          callback: {
+            message: 'Start date is required for this type',
+            callback: function (input) {
+              const type = ($(typeSelect).val() || '').trim();
+              const val = (input.value || '').trim();
+
+              if (type === '') return true;
+
+              if (PERIOD_TYPES.has(type)) {
+                return val !== '';
+              }
+
+              return true;
+            }
+          }
+        }
+      },
+
+      end_date: {
+        validators: {
+          callback: {
+            message: 'End date is required for this type',
+            callback: function (input) {
+              const type = ($(typeSelect).val() || '').trim();
+              const val = (input.value || '').trim();
+
+              if (type === '') return true;
+
+              if (PERIOD_TYPES.has(type)) {
+                return val !== '';
+              }
+
+              return true;
+            }
+          }
+        }
+      },
+      effective_date: {
+        validators: {
+          callback: {
+            message: 'Effective date is required for this type',
+            callback: function (input) {
+              const type = ($(typeSelect).val() || '').trim();
+              const val = (input.value || '').trim();
+
+              if (type === '') return true;
+
+              if (PERIOD_TYPES.has(type)) {
+                return true;
+              }
+
+              return val !== '';
+            }
+          }
+        }
+      }
+    },
+    plugins: {
+      trigger: new FormValidation.plugins.Trigger(),
+      bootstrap5: new FormValidation.plugins.Bootstrap5({
+        eleValidClass: '',
+        rowSelector: function (field, ele) {
+          return '.mb-3';
+        }
+      }),
+      submitButton: new FormValidation.plugins.SubmitButton(),
+      autoFocus: new FormValidation.plugins.AutoFocus()
+    }
+  }).on('core.form.valid', function () {
+    Loading.circle({
+      backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+      svgSize: '60px',
+      svgColor: config.colors.white
+    });
+
+    let url = editingId ? `${currentPath}/employee_agreements/${editingId}` : `${currentPath}/employee_agreements`;
+    let method = editingId ? 'PATCH' : 'POST';
+
+    $.ajax({
+      data: $(formAgreement).serialize(),
+      url: url,
+      type: method,
+      success: function (res) {
+        Loading.remove();
+        dt_agreements.draw(false);
+        modalAgreement.modal('hide');
+
+        showToast(res.status, res.message);
+      },
+      error: function (xhr, status, error) {
+        let res = xhr.responseJSON;
+        if (res) {
+          Loading.remove();
+          showToast(res.status, res.message);
+          if (res.errors) {
+            for (let field in res.errors) {
+              res.errors[field].forEach(errorMessage => {
+                console.log(`${field}: ${errorMessage}`);
+              });
+            }
+          }
+        } else {
+          Loading.remove();
+          showToast('danger', 'An unexpected error occurred');
+        }
+      }
+    });
+  });
+
+  // clearing form data when modal hidden
+  modalAgreement.on('hidden.bs.modal', function () {
+    formAgreement.reset();
+    $(formAgreement).find('select').val('').trigger('change');
+    editingId = null;
+
+    startDate._flatpickr.clear(false);
+    endDate._flatpickr.clear(false);
+    effectiveDate._flatpickr.clear(false);
   });
 });

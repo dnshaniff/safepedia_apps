@@ -84,15 +84,12 @@ class Employee extends Controller
         'employees.join_date',
         'employees.employment_type',
         'employees.deleted_at',
-      ])
-      ->with([
+      ])->with([
         'company:id,company_code',
         'orgUnit:id,unit_name',
         'jobTitle:id,title_name',
         'hrbp:id,full_name',
-      ])
-      ->when($isAdmin, fn($q) => $q->withTrashed());
-
+      ])->when($isAdmin, fn($q) => $q->withTrashed());
 
     $totalData = $query->count();
 

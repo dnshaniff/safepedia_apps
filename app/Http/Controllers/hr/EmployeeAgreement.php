@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\hr;
 
+use Throwable;
 use Carbon\Carbon;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreEmployeeAgreementRequest;
 use App\Models\EmployeeAgreement as ModelsEmployeeAgreement;
 
 class EmployeeAgreement extends Controller
@@ -51,47 +55,144 @@ class EmployeeAgreement extends Controller
 
   private function formatAgreementDatePeriod(ModelsEmployeeAgreement $a): string
   {
-    $fmt = fn($d) => $d ? Carbon::parse($d)->format('d/m/Y') : null;
-
-    $effective = $fmt($a->effective_date);
-    $start = $fmt($a->start_date);
-    $end = $fmt($a->end_date);
-
-    if (in_array($a->agreement_type, ['Contract', 'Extension'], true)) {
-      $period = trim(($start ?? '-') . ' - ' . ($end ?? '-'));
-      return $effective ? "{$effective} | {$period}" : $period;
+    if (!in_array($a->agreement_type, ['Contract', 'Extension'], true)) {
+      return $a->effective_date ? Carbon::parse($a->effective_date)->format('d F Y') : '-';
     }
 
-    return $effective ?? '-';
+    if (!$a->start_date || !$a->end_date) {
+      return '-';
+    }
+
+    $start = Carbon::parse($a->start_date);
+    $end   = Carbon::parse($a->end_date);
+
+    if ($start->isSameMonth($end) && $start->isSameYear($end)) {
+      return sprintf(
+        '%d – %d, %s %d',
+        $start->day,
+        $end->day,
+        $start->format('F'),
+        $start->year
+      );
+    }
+
+    if ($start->isSameYear($end)) {
+      return sprintf(
+        '%d %s – %d %s, %d',
+        $start->day,
+        $start->format('F'),
+        $end->day,
+        $end->format('F'),
+        $start->year
+      );
+    }
+
+    return sprintf(
+      '%d %s %d – %d %s %d',
+      $start->day,
+      $start->format('F'),
+      $start->year,
+      $end->day,
+      $end->format('F'),
+      $end->year
+    );
   }
 
-  public function store(Request $request)
+  public function store(Employee $employee, StoreEmployeeAgreementRequest $request)
   {
-    //
+    try {
+      $data = $request->validated();
+      $data['employee_id'] = $employee->id;
+
+      $employeeAgreement = DB::transaction(fn() => ModelsEmployeeAgreement::create($data));
+
+      return response()->json(['status' => 'success', 'message' => "Agreement: {$employeeAgreement->agreement_type} created successfully"], 201);
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+      return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
   }
 
-  public function edit(ModelsEmployeeAgreement $employeeAgreement)
+  public function edit(Employee $employee, ModelsEmployeeAgreement $employeeAgreement)
   {
-    //
+    return response()->json($employeeAgreement, 200);
   }
 
-  public function update(Request $request, ModelsEmployeeAgreement $employeeAgreement)
+  public function update(Employee $employee, Request $request, ModelsEmployeeAgreement $employeeAgreement)
   {
-    //
+    try {
+      DB::transaction(fn() => $employeeAgreement->update($request->validated()));
+
+      return response()->json(['status' => 'success', 'message' => "Agreement: {$employeeAgreement->agreement_type} updated successfully", 200]);
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+      return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
   }
 
-  public function destroy(ModelsEmployeeAgreement $employeeAgreement)
+  public function destroy(Employee $employee, ModelsEmployeeAgreement $employeeAgreement)
   {
-    //
+    try {
+      $employeeAgreement->delete();
+
+      return response()->json(['status' => 'success', 'message' => "Agreement: {$employeeAgreement->agreement_type} deleted successfully"], 200);
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+
+      return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
   }
 
-  public function restore(string $id)
+  public function restore(Employee $employee, string $id)
   {
     $employeeAgreement = ModelsEmployeeAgreement::withTrashed()->findOrFail($id);
+
+    try {
+      if ($employeeAgreement->trashed()) {
+        $employeeAgreement->restore();
+
+        return response()->json(['status' => 'success', 'message' => "Agreement: {$employeeAgreement->agreement_type} successfully restored"], 200);
+      } else {
+        return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
+      }
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+
+      return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
   }
 
-  public function force(string $id)
+  public function force(Employee $employee, string $id)
   {
     $employeeAgreement = ModelsEmployeeAgreement::withTrashed()->findOrFail($id);
+
+    try {
+      if ($employeeAgreement->trashed()) {
+        $employeeAgreement->forceDelete();
+
+        return response()->json(['status' => 'success', 'message' => 'Employee agreement delete successfully'], 200);
+      } else {
+        return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
+      }
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+
+      return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
   }
 }

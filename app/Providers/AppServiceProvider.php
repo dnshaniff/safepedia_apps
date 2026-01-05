@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Employee;
+use App\Models\EmployeeAgreement;
+use App\Observers\EmployeeAgreementObserver;
 use App\Observers\EmployeeObserver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Vite;
@@ -36,5 +38,6 @@ class AppServiceProvider extends ServiceProvider
     });
 
     Employee::observe(EmployeeObserver::class);
+    EmployeeAgreement::observe(EmployeeAgreementObserver::class);
   }
 }

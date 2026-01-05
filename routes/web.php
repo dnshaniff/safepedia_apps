@@ -8,6 +8,8 @@ use App\Http\Controllers\authorization\User;
 use App\Http\Controllers\authorization\Permission;
 use App\Http\Controllers\hr\Employee;
 use App\Http\Controllers\hr\EmployeeAgreement;
+use App\Http\Controllers\hr\EmployeeOffboarding;
+use App\Http\Controllers\hr\ManpowerPlan;
 use App\Http\Controllers\master\Company;
 use App\Http\Controllers\master\JobTitle;
 use App\Http\Controllers\master\OrgUnit;
@@ -50,15 +52,24 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
 
   // Human Resources
   // Employees
-  Route::get('/hr-employees', [Employee::class, 'view'])->name('hr-employees');
+  Route::get('/employee-employees', [Employee::class, 'view'])->name('employee-employees');
   Route::resource('/employees', Employee::class)->except('create');
   Route::post('/employees/{employee}/restore', [Employee::class, 'restore'])->name('employees.restore');
   Route::delete('/employees/{employee}/force', [Employee::class, 'force'])->name('employees.force');
-
   // Employee Agreements
   Route::resource('/employees/{employee}/employee_agreements', EmployeeAgreement::class)->except('create', 'show');
   Route::post('/employees/{employee}/employee_agreements/{employee_agreements}/restore', [EmployeeAgreement::class, 'restore'])->name('employee_agreements.restore');
   Route::delete('/employees/{employee}/employee_agreements/{employee_agreements}/force', [EmployeeAgreement::class, 'force'])->name('employee_agreements.force');
+
+  // Upcoming Offboardings
+  Route::get('/employee-offboardings', [EmployeeOffboarding::class, 'view'])->name('employee-offboardings');
+  Route::get('/offboardings', [EmployeeOffboarding::class, 'index'])->name('offboardings.index');
+
+  // Manpower Plans
+  Route::get('/recruitment-manpower_plans', [ManpowerPlan::class, 'view'])->name('recruitment-manpower_plans');
+  Route::resource('/manpower_plans', ManpowerPlan::class)->except('create');
+  Route::post('/manpower_plans/{manpower_plans}/restore', [ManpowerPlan::class, 'restore'])->name('manpower_plans.restore');
+  Route::delete('/manpower_plans/{manpower_plans}/force', [ManpowerPlan::class, 'force'])->name('manpower_plans.force');
 
   // Authorization
   // Permissions

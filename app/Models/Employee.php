@@ -76,6 +76,22 @@ class Employee extends Model
     return $this->hasMany(EmployeeAgreement::class, 'employee_id', 'id');
   }
 
+  public function lastDayAgreement()
+  {
+    return $this->hasOne(EmployeeAgreement::class, 'employee_id', 'id')
+      ->whereIn('agreement_type', ['Resignation', 'Contract'])
+      ->where(function ($q) {
+        $q->where(function ($qq) {
+          $qq->where('agreement_type', 'Resignation')->whereNotNull('effective_date');
+        })->orWhere(function ($qq) {
+          $qq->where('agreement_type', 'Contract')->whereNotNull('end_date');
+        });
+      })
+      ->orderByRaw("CASE WHEN agreement_type = 'Resignation' THEN 0 ELSE 1 END")
+      ->orderByRaw("COALESCE(effective_date, end_date) DESC")
+      ->latest('id');
+  }
+
   protected $casts = [
     'join_date' => 'date',
     'date_of_birth' => 'date'
