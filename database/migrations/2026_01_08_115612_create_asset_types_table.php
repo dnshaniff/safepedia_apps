@@ -11,13 +11,11 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('manpower_plans', function (Blueprint $table) {
-      $table->uuid('id')->primary();
-      $table->foreignId('org_unit_id')->nullable()->constrained('org_units', 'id')->onDelete('SET NULL');
-      $table->string('position_title');
-      $table->date('planned_date');
-      $table->integer('number_positions')->default(0);
-      $table->text('notes')->nullable();
+    Schema::create('asset_types', function (Blueprint $table) {
+      $table->id();
+      $table->foreignId('asset_category_id')->nullable()->constrained('asset_categories', 'id')->onDelete('SET NULL');
+      $table->string('type_name');
+      $table->string('type_code')->unique();
       $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->onDelete('SET NULL');
       $table->timestamps();
       $table->softDeletes();
@@ -29,6 +27,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-    Schema::dropIfExists('manpower_plans');
+    Schema::dropIfExists('asset_types');
   }
 };

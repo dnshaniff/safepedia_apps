@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\master;
+namespace App\Http\Controllers\hr;
 
 use Throwable;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ class OrgUnit extends Controller
 {
   public function view()
   {
-    return view('content.master.org_units');
+    return view('content.hr.org_units');
   }
 
   public function select(Request $request)
@@ -22,8 +22,6 @@ class OrgUnit extends Controller
     $q     = trim((string) $request->get('q', ''));
     $page  = max(1, (int) $request->get('page', 1));
     $per   = max(1, min(100, (int) $request->get('per', 10)));
-
-    $unitType = $request->get('unit_type');
 
     $query = ModelsOrgUnit::query()->select(['id', 'unit_name']);
 

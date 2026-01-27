@@ -30,11 +30,11 @@
                             <tr>
                                 <th width="1px">#</th>
                                 <th class="text-start">Position</th>
-                                <th class="text-start" width="10px">PT</th>
-                                <th class="text-start">Planned Date</th>
+                                <th class="text-start">Estimation Join Date</th>
                                 <th class="text-start">Total</th>
-                                <th class="text-start">Created By</th>
+                                <th class="text-start">Devices</th>
                                 <th class="text-start">Status</th>
+                                <th class="text-start">Created By</th>
                                 <th width="1px">Action</th>
                             </tr>
                         </thead>
@@ -44,19 +44,14 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalEmployee" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal fade" id="modalManPower" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form id="formEmployee" class="modal-content">
+            <form id="formManPower" class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="backDropModalTitle">Employee</h5>
+                    <h5 class="modal-title" id="backDropModalTitle">Manpower Plan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body row">
-                    <div class="col-12 col-md-6 mb-3">
-                        <label class="form-label" for="company_id">Company <strong class="text-danger">**</strong></label>
-                        <select id="company_id" name="company_id" class="select2 form-select" data-allow-clear="true"
-                            autofocus></select>
-                    </div>
                     <div class="col-12 col-md-6 mb-3">
                         <label class="form-label" for="org_unit_id">Organization Unit <strong
                                 class="text-danger">**</strong></label>
@@ -79,6 +74,10 @@
                         <label class="form-label" for="number_positions">Total Headcount</label>
                         <input type="text" id="number_positions" name="number_positions"
                             class="form-control phone-number-mask" placeholder="0813 1234 1234" />
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label" for="devices">Devices <strong class="text-danger">**</strong></label>
+                        <select id="devices" name="devices[]" class="select2 form-select" multiple></select>
                     </div>
                     <div class="col-12 mb-3">
                         <label class="form-label" for="notes">Notes</label>

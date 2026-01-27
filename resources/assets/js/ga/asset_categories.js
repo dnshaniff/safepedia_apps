@@ -8,22 +8,24 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableJobTitles = $('.datatables-job_titles'),
-    modalJobTitle = $('#modalJobTitle'),
-    modalTitle = modalJobTitle.find('.modal-title');
+  const datatableAssetCategories = $('.datatables-asset_categories'),
+    modalAssetCategory = $('#modalAssetCategory'),
+    modalTitle = modalAssetCategory.find('.modal-title');
 
-  let dt_job_titles;
+  let dt_asset_categories;
 
-  if (datatableJobTitles) {
-    dt_job_titles = new DataTable(datatableJobTitles, {
+  if (datatableAssetCategories) {
+    dt_asset_categories = new DataTable(datatableAssetCategories, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}job_titles`
+        url: `${baseUrl}asset_categories`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'title_name' },
+        { data: 'category_name' },
+        { data: 'category_code' },
+        { data: 'creator' },
         { data: 'created_at' },
         { data: 'updated_at' },
         { data: 'id' }
@@ -31,14 +33,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, -1]
+          targets: [0, 1, 2, 3, 4, 5, -1]
         },
         {
           searchable: true,
           targets: [1]
         },
         {
-          targets: 2,
+          targets: 4,
           render: function (data, type, full, meta) {
             const options = {
               day: '2-digit',
@@ -51,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 3,
+          targets: 5,
           render: function (data, type, full, meta) {
             const options = {
               day: '2-digit',
@@ -82,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalJobTitle" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalAssetCategory" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Job Title',
+                placeholder: 'Search Category',
                 text: '_INPUT_'
               }
             },
@@ -124,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalJobTitle'
+                    'data-bs-target': '#modalAssetCategory'
                   }
                 }
               ]
@@ -176,15 +178,16 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formJobTitle = document.getElementById('formJobTitle'),
-    titleName = formJobTitle.querySelector('#title_name'),
-    btnSubmit = formJobTitle.querySelector('button[type="submit"]');
+  const formAssetCategory = document.getElementById('formAssetCategory'),
+    categoryName = formAssetCategory.querySelector('#category_name'),
+    categoryCode = formAssetCategory.querySelector('#category_code'),
+    btnSubmit = formAssetCategory.querySelector('button[type="submit"]');
 
   let editingId = null;
 
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create Job Title');
+    modalTitle.html('Create Asset Category');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
@@ -198,22 +201,30 @@ document.addEventListener('DOMContentLoaded', function (e) {
       dtrModal.modal('hide');
     }
 
-    modalTitle.html('Edit Job Title');
+    modalTitle.html('Edit Asset Category');
     $(btnSubmit).html('Save');
 
     // get data
-    $.get(`${baseUrl}job_titles/${id}/edit`, function (data) {
+    $.get(`${baseUrl}asset_categories/${id}/edit`, function (data) {
       editingId = id;
-      titleName.value = data.title_name || '';
+      categoryName.value = data.category_name || '';
+      categoryCode.value = data.category_code || '';
     });
   });
 
-  FormValidation.formValidation(formJobTitle, {
+  FormValidation.formValidation(formAssetCategory, {
     fields: {
-      title_name: {
+      category_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter job title name'
+            message: 'Please enter category name'
+          }
+        }
+      },
+      category_code: {
+        validators: {
+          notEmpty: {
+            message: 'Please enter category code'
           }
         }
       }
@@ -234,17 +245,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    let url = editingId ? `${baseUrl}job_titles/${editingId}` : `${baseUrl}job_titles`;
+    let url = editingId ? `${baseUrl}asset_categories/${editingId}` : `${baseUrl}asset_categories`;
     let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
-      data: $(formJobTitle).serialize(),
+      data: $(formAssetCategory).serialize(),
       url: url,
       type: method,
       success: function (res) {
         Loading.remove();
-        dt_job_titles.draw(false);
-        modalJobTitle.modal('hide');
+        dt_asset_categories.draw(false);
+        modalAssetCategory.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -268,8 +279,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   });
 
-  modalJobTitle.on('hidden.bs.modal', function () {
-    formJobTitle.reset();
+  modalAssetCategory.on('hidden.bs.modal', function () {
+    formAssetCategory.reset();
   });
 
   // delete record
@@ -305,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}job_titles/${id}`,
+          url: `${baseUrl}asset_categories/${id}`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -317,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_job_titles.draw(false);
+              dt_asset_categories.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -389,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // restore the data
         $.ajax({
           method: 'POST',
-          url: `${baseUrl}job_titles/${id}/restore`,
+          url: `${baseUrl}asset_categories/${id}/restore`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -401,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_job_titles.draw(false);
+              dt_asset_categories.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -473,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // permanent delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}job_titles/${id}/force`,
+          url: `${baseUrl}asset_categories/${id}/force`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -485,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_job_titles.draw(false);
+              dt_asset_categories.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({

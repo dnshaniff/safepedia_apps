@@ -13,7 +13,9 @@
                 ©
                 <script>
                     document.write(new Date().getFullYear())
-                </script>, Made by IT
+                </script>, Develop by <a
+                    href="https://www.larksuite.com/invitation/page/add_contact/?token=3c7j25d3-57b6-4216-aac2-decdf2m1f4j1"
+                    target="_blank" class="footer-link d-none d-sm-inline-block">Denis (IT)</a>
             </div>
             {{-- <div class="d-none d-lg-inline-block">
         <a href="http://10.4.1.116/ticket_mis/" target="_blank" class="footer-link d-none d-sm-inline-block">Support</a>

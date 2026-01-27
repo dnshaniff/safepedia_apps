@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         { data: 'fake_id' },
         { data: 'company_name' },
         { data: 'company_code' },
+        { data: 'creator' },
         { data: 'created_at' },
         { data: 'updated_at' },
         { data: 'id' }
@@ -32,14 +33,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, -1]
+          targets: [0, 1, 2, 3, 4, 5, -1]
         },
         {
           searchable: true,
           targets: [1]
         },
         {
-          targets: 3,
+          targets: 4,
           render: function (data, type, full, meta) {
             const options = {
               day: '2-digit',
@@ -52,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 4,
+          targets: 5,
           render: function (data, type, full, meta) {
             const options = {
               day: '2-digit',

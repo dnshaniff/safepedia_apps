@@ -17,7 +17,6 @@ class ManpowerPlan extends Model
     'position_title',
     'planned_date',
     'number_positions',
-    'devices',
     'notes',
     'created_by'
   ];
@@ -30,6 +29,11 @@ class ManpowerPlan extends Model
   public function creator()
   {
     return $this->belongsTo(User::class, 'created_by', 'id');
+  }
+
+  public function devices()
+  {
+    return $this->belongsToMany(AssetType::class, 'manpower_plan_asset_type', 'manpower_plan_id', 'asset_type_id');
   }
 
   protected $casts = ['planned_date' => 'date'];

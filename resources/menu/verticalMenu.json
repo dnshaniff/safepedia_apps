@@ -7,6 +7,50 @@
       "slug": "dashboard"
     },
     {
+      "name": "General Affairs",
+      "icon": "menu-icon tf-icons bx bx-cog",
+      "slug": "hr",
+      "submenu": [
+        {
+          "name": "Asset Items",
+          "slug": "asset",
+          "submenu": [
+            {
+              "url": "/asset-asset_items",
+              "name": "Data",
+              "slug": "asset-asset_items"
+            },
+            {
+              "url": "/asset-asset_logs",
+              "name": "Log",
+              "slug": "asset-asset_logs"
+            },
+            {
+              "url": "/asset-purchase_requests",
+              "name": "Purchase Requests",
+              "slug": "asset-purchase_requests"
+            }
+          ]
+        },
+        {
+          "name": "Master Data",
+          "slug": "masterga",
+          "submenu": [
+            {
+              "url": "/masterga-asset_categories",
+              "name": "Asset Categories",
+              "slug": "masterga-asset_categories"
+            },
+            {
+              "url": "/masterga-asset_types",
+              "name": "Asset Types",
+              "slug": "masterga-asset_types"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Human Resources",
       "icon": "menu-icon tf-icons bx bxs-user-detail",
       "slug": "hr",
@@ -28,8 +72,8 @@
           ]
         },
         {
-          "url": "/hr-recruitment",
           "name": "Recruitment",
+          "slug": "recruitment",
           "submenu": [
             {
               "url": "/recruitment-manpower_plans",
@@ -37,9 +81,58 @@
               "slug": "recruitment-manpower_plans"
             },
             {
-              "url": "/recruitment-new_joiners",
-              "name": "New Joiners",
-              "slug": "recruitment-new_joiners"
+              "url": "/recruitment-new_comers",
+              "name": "New Comers",
+              "slug": "recruitment-new_comers"
+            }
+          ]
+        },
+        {
+          "name": "Master Data",
+          "slug": "masterhr",
+          "submenu": [
+            {
+              "url": "/masterhr-companies",
+              "name": "Companies",
+              "slug": "masterhr-companies"
+            },
+            {
+              "url": "/masterhr-job_titles",
+              "name": "Job Titles",
+              "slug": "masterhr-job_titles"
+            },
+            {
+              "url": "/masterhr-org_units",
+              "name": "Organization Units",
+              "slug": "masterhr-org_units"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legal",
+      "icon": "menu-icon tf-icons bx bx-certification",
+      "slug": "lg",
+      "submenu": [
+        {
+          "url": "/lg-legal_documents",
+          "name": "Document Control",
+          "slug": "lg-legal_documents"
+        },
+        {
+          "url": "/lg-stamp_usages",
+          "name": "Stamp Usages",
+          "slug": "lg-stamp_usages"
+        },
+        {
+          "name": "Master Data",
+          "slug": "masterlg",
+          "submenu": [
+            {
+              "url": "/masterlg-letter_types",
+              "name": "Letter Types",
+              "slug": "masterlg-letter_types"
             }
           ]
         }
@@ -64,28 +157,6 @@
           "url": "/access-users",
           "name": "Users",
           "slug": "access-users"
-        }
-      ]
-    },
-    {
-      "name": "Master Data",
-      "icon": "menu-icon tf-icons bx bx-cog",
-      "slug": "master",
-      "submenu": [
-        {
-          "url": "/master-companies",
-          "name": "Companies",
-          "slug": "master-companies"
-        },
-        {
-          "url": "/master-job_titles",
-          "name": "Job Titles",
-          "slug": "master-job_titles"
-        },
-        {
-          "url": "/master-org_units",
-          "name": "Organization Units",
-          "slug": "master-org_units"
         }
       ]
     }

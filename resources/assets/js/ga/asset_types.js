@@ -8,37 +8,84 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableManPower = $('.datatables-manpowers'),
-    modalManPower = $('#modalManPower'),
-    modalTitle = modalManPower.find('.modal-title');
+  const datatableAssetTypes = $('.datatables-asset_types'),
+    modalAssetType = $('#modalAssetType'),
+    modalTitle = modalAssetType.find('.modal-title');
 
-  let dt_manpowers;
+  let dt_asset_types;
 
-  if (datatableManPower) {
-    dt_manpowers = new DataTable(datatableManPower, {
+  if (datatableAssetTypes) {
+    dt_asset_types = new DataTable(datatableAssetTypes, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}manpower_plans`
+        url: `${baseUrl}asset_types`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'org_unit' },
-        { data: 'planned_date' },
-        { data: 'number_positions' },
-        { data: 'devices' },
-        { data: 'status' },
+        { data: 'category_name' },
+        { data: 'type_name' },
         { data: 'creator' },
+        { data: 'created_at' },
+        { data: 'updated_at' },
         { data: 'id' }
       ],
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, 5, 6, -1]
+          targets: [0, 1, 2, 3, 4, 5, -1]
         },
         {
           searchable: true,
           targets: [1]
+        },
+        {
+          targets: 1,
+          render: function (data, type, row) {
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.category_code}</span>
+                <span class="fw-medium">${data}</span>
+              </div>
+            `;
+          }
+        },
+        {
+          targets: 2,
+          render: function (data, type, row) {
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.type_code}</span>
+                <span class="fw-medium">${data}</span>
+              </div>
+            `;
+          }
+        },
+        {
+          targets: 4,
+          render: function (data, type, full, meta) {
+            const options = {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            };
+            return new Date(data).toLocaleString('en-GB', options);
+          }
+        },
+        {
+          targets: 5,
+          render: function (data, type, full, meta) {
+            const options = {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            };
+            return new Date(data).toLocaleString('en-GB', options);
+          }
         },
         {
           targets: -1,
@@ -59,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalManPower" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalAssetType" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -90,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Position',
+                placeholder: 'Search Type',
                 text: '_INPUT_'
               }
             },
@@ -101,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalManPower'
+                    'data-bs-target': '#modalAssetType'
                   }
                 }
               ]
@@ -153,20 +200,23 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formManpower = document.getElementById('formManpower'),
-    orgSelect = formManpower.querySelector('#org_unit_id'),
-    positionTitle = formManpower.querySelector('#position_title'),
-    plannedDate = formManpower.querySelector('#planned_date'),
-    numberPositions = formManpower.querySelector('#number_positions'),
-    deviceSelect = formManpower.querySelector('#devices'),
-    notesInput = formManpower.querySelector('#notes'),
-    btnSubmit = formManpower.querySelector('button[type="submit"]');
+  const formAssetType = document.getElementById('formAssetType'),
+    categorySelect = formAssetType.querySelector('#asset_category_id'),
+    typeName = formAssetType.querySelector('#type_name'),
+    typeCode = formAssetType.querySelector('#type_code'),
+    btnSubmit = formAssetType.querySelector('button[type="submit"]');
 
   let editingId = null;
 
+  initDropdownPaged($(categorySelect), {
+    url: '/asset_categories/select',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create Manpower Plan');
+    modalTitle.html('Create Asset Type');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
@@ -180,61 +230,45 @@ document.addEventListener('DOMContentLoaded', function (e) {
       dtrModal.modal('hide');
     }
 
-    modalTitle.html('Edit Manpower Plan');
+    modalTitle.html('Edit Asset Type');
     $(btnSubmit).html('Save');
 
     // get data
-    $.get(`${baseUrl}manpower_plans/${id}/edit`, function (data) {
+    $.get(`${baseUrl}asset_types/${id}/edit`, function (data) {
       editingId = id;
-      categoryName.value = data.category_name || '';
-      categoryCode.value = data.category_code || '';
+
+      data.category && data.category.id != null
+        ? setValue($(categorySelect), { id: data.category.id, text: data.category.category_name })
+        : $(categorySelect).val(null).trigger('change');
+
+      typeName.value = data.type_name || '';
+      typeCode.value = data.type_code || '';
     });
   });
 
-  FormValidation.formValidation(formManpower, {
+  FormValidation.formValidation(formAssetType, {
     fields: {
-      org_unit_id: {
+      asset_category_id: {
         validators: {
           notEmpty: {
-            message: 'Please enter category name'
+            message: 'Please select category'
           }
         }
       },
-      position_title: {
+      type_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter category code'
+            message: 'Please enter type name'
           }
         }
       },
-      position_title: {
+      type_code: {
         validators: {
           notEmpty: {
-            message: 'Please enter category code'
+            message: 'Please enter type code'
           }
         }
-      },
-      position_title: {
-        validators: {
-          notEmpty: {
-            message: 'Please enter category code'
-          }
-        }
-      },
-      position_title: {
-        validators: {
-          notEmpty: {
-            message: 'Please enter category code'
-          }
-        }
-      },
-      position_title: {
-        validators: {
-          notEmpty: {
-            message: 'Please enter category code'
-          }
-        }
-      },
+      }
     },
     plugins: {
       trigger: new FormValidation.plugins.Trigger(),
@@ -252,17 +286,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    let url = editingId ? `${baseUrl}manpower_plans/${editingId}` : `${baseUrl}manpower_plans`;
+    let url = editingId ? `${baseUrl}asset_types/${editingId}` : `${baseUrl}asset_types`;
     let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
-      data: $(formManpower).serialize(),
+      data: $(formAssetType).serialize(),
       url: url,
       type: method,
       success: function (res) {
         Loading.remove();
-        dt_manpowers.draw(false);
-        modalManPower.modal('hide');
+        dt_asset_types.draw(false);
+        modalAssetType.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -286,8 +320,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   });
 
-  modalManPower.on('hidden.bs.modal', function () {
-    formManpower.reset();
+  modalAssetType.on('hidden.bs.modal', function () {
+    formAssetType.reset();
+    editingId = null;
+    $(formAssetType).find('select').val('').trigger('change');
   });
 
   // delete record
@@ -323,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}manpower_plans/${id}`,
+          url: `${baseUrl}asset_types/${id}`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -335,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_manpowers.draw(false);
+              dt_asset_types.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -407,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // restore the data
         $.ajax({
           method: 'POST',
-          url: `${baseUrl}manpower_plans/${id}/restore`,
+          url: `${baseUrl}asset_types/${id}/restore`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -419,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_manpowers.draw(false);
+              dt_asset_types.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -491,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // permanent delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}manpower_plans/${id}/force`,
+          url: `${baseUrl}asset_types/${id}/force`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -503,7 +539,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_manpowers.draw(false);
+              dt_asset_types.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({

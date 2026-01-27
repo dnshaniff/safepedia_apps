@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\master;
+namespace App\Http\Controllers\ga;
 
 use Throwable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Models\Company as ModelsCompany;
 use Illuminate\Validation\ValidationException;
+use App\Models\AssetCategory as ModelsAssetCategory;
 
-class Company extends Controller
+class AssetCategory extends Controller
 {
   public function view()
   {
-    return view('content.master.companies');
+    return view('content.ga.asset_categories');
   }
 
   public function select(Request $request)
@@ -23,17 +23,17 @@ class Company extends Controller
     $page  = max(1, (int) $request->get('page', 1));
     $per   = max(1, min(100, (int) $request->get('per', 10)));
 
-    $query = ModelsCompany::query()->select(['id', 'company_name']);
+    $query = ModelsAssetCategory::query()->select(['id', 'category_name']);
 
     if ($q !== '') {
       $tokens = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [];
       foreach ($tokens as $t) {
         $t = str_replace(['%', '_'], ['\\%', '\\_'], $t);
-        $query->where('company_name', 'LIKE', "%{$t}%");
+        $query->where('category_name', 'LIKE', "%{$t}%");
       }
     }
 
-    $query->orderBy('company_name');
+    $query->orderBy('category_name');
 
     $rows = $query->skip(($page - 1) * $per)->take($per + 1)->get();
 
@@ -43,7 +43,7 @@ class Company extends Controller
     return response()->json([
       'results' => $rows->map(fn($r) => [
         'id'   => $r->id,
-        'text' => $r->company_name,
+        'text' => $r->category_name,
       ])->values(),
       'more' => $more
     ]);
@@ -56,33 +56,33 @@ class Company extends Controller
 
     $search = $request->input('search.value');
 
-    $query = ModelsCompany::query()->when($isAdmin, function ($q) {
+    $query = ModelsAssetCategory::query()->when($isAdmin, function ($q) {
       $q->withTrashed();
     });
 
     $totalData = $query->count();
 
     if (!empty($search)) {
-      $query->where('company_name', 'LIKE', "%{$search}%")
-        ->orWhere('company_code', 'LIKE', "%{$search}%");
+      $query->where('category_name', 'LIKE', "%{$search}%");
     }
 
     $totalFiltered = $query->count();
 
-    $companys = $query->offset($request->input('start'))->limit($request->input('length'))->latest()->get();
+    $assetCategories = $query->offset($request->input('start'))->limit($request->input('length'))->latest()->get();
 
     $data = [];
 
-    if (!empty($companys)) {
+    if (!empty($assetCategories)) {
       $ids = $request->input('start');
-      foreach ($companys as $company) {
+      foreach ($assetCategories as $assetCategory) {
         $nestedData['fake_id'] = ++$ids;
-        $nestedData['id'] = $company->id;
-        $nestedData['company_name'] = $company->company_name;
-        $nestedData['company_code'] = $company->company_code;
-        $nestedData['created_at'] = $company->created_at;
-        $nestedData['updated_at'] = $company->updated_at;
-        $nestedData['deleted_at'] = $company->deleted_at;
+        $nestedData['id'] = $assetCategory->id;
+        $nestedData['category_name'] = $assetCategory->category_name;
+        $nestedData['category_code'] = $assetCategory->category_code;
+        $nestedData['creator'] = $assetCategory->creator?->display_name ?? '-';;
+        $nestedData['created_at'] = $assetCategory->created_at;
+        $nestedData['updated_at'] = $assetCategory->updated_at;
+        $nestedData['deleted_at'] = $assetCategory->deleted_at;
 
         $data[] = $nestedData;
       }
@@ -101,17 +101,17 @@ class Company extends Controller
   {
     try {
       $validated = $request->validate([
-        'company_name' => 'required|string|max:100',
-        'company_code' => 'required|string|max:10'
+        'category_name' => 'required|string|max:100',
+        'category_code' => 'required|string|max:20|unique:asset_categories,category_code'
       ]);
 
       $validated['created_by'] = auth()->user()->id;
 
-      $company = DB::transaction(function () use ($validated) {
-        return ModelsCompany::create($validated);
+      $assetCategory = DB::transaction(function () use ($validated) {
+        return ModelsAssetCategory::create($validated);
       });
 
-      return response()->json(['status' => 'success', 'message' => "Company: {$company->company_name} created successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Asset category: {$assetCategory->category_name} created successfully"], 201);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
       return response()->json(['status' => 'danger', 'message' => $message], 422);
@@ -125,24 +125,24 @@ class Company extends Controller
     }
   }
 
-  public function edit(ModelsCompany $company)
+  public function edit(ModelsAssetCategory $assetCategory)
   {
-    return response()->json($company, 200);
+    return response()->json($assetCategory, 200);
   }
 
-  public function update(Request $request, ModelsCompany $company)
+  public function update(Request $request, ModelsAssetCategory $assetCategory)
   {
     try {
       $validated = $request->validate([
-        'company_name' => 'required|string|max:100',
-        'company_code' => 'required|string|max:10'
+        'category_name' => 'required|string|max:100',
+        'category_code' => 'required|string|max:20|unique:asset_categories,category_code,' . $assetCategory->id
       ]);
 
-      DB::transaction(function () use ($company, $validated) {
-        $company->update($validated);
+      DB::transaction(function () use ($assetCategory, $validated) {
+        $assetCategory->update($validated);
       });
 
-      return response()->json(['status' => 'success', 'message' => "Company: {$company->company_name} updated successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Asset category: {$assetCategory->category_name} updated successfully"], 200);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
       return response()->json(['status' => 'danger', 'message' => $message, 'errors' => $e->errors()], 422);
@@ -156,12 +156,12 @@ class Company extends Controller
     }
   }
 
-  public function destroy(ModelsCompany $company)
+  public function destroy(ModelsAssetCategory $assetCategory)
   {
     try {
-      $company->delete();
+      $assetCategory->delete();
 
-      return response()->json(['status' => 'success', 'message' => "Company: {$company->company_name} deleted successfully"], 200);
+      return response()->json(['status' => 'success', 'message' => "Asset category: {$assetCategory->category_name} deleted successfully"], 200);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
@@ -174,13 +174,13 @@ class Company extends Controller
 
   public function restore(string $id)
   {
-    $company = ModelsCompany::withTrashed()->findOrFail($id);
+    $assetCategory = ModelsAssetCategory::withTrashed()->findOrFail($id);
 
     try {
-      if ($company->trashed()) {
-        $company->restore();
+      if ($assetCategory->trashed()) {
+        $assetCategory->restore();
 
-        return response()->json(['status' => 'success', 'message' => "Company: {$company->company_name} successfully restored"], 200);
+        return response()->json(['status' => 'success', 'message' => "Asset category: {$assetCategory->category_name} successfully restored"], 200);
       } else {
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }
@@ -196,13 +196,13 @@ class Company extends Controller
 
   public function force(string $id)
   {
-    $company = ModelsCompany::withTrashed()->findOrFail($id);
+    $assetCategory = ModelsAssetCategory::withTrashed()->findOrFail($id);
 
     try {
-      if ($company->trashed()) {
-        $company->forceDelete();
+      if ($assetCategory->trashed()) {
+        $assetCategory->forceDelete();
 
-        return response()->json(['status' => 'success', 'message' => 'Company permanent delete successfully'], 200);
+        return response()->json(['status' => 'success', 'message' => 'Asset category permanent delete successfully'], 200);
       } else {
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }

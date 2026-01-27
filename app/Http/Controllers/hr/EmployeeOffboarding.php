@@ -17,7 +17,7 @@ class EmployeeOffboarding extends Controller
   {
     $search = $request->input('search.value');
 
-    $from = now()->subDays(2)->toDateString();
+    $from = now()->subDays(1)->toDateString();
     $until = now()->addMonths(2)->toDateString();
 
     $query = Employee::query()
