@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
   // clearing form data when modal hidden
   modalOrgUnit.on('hidden.bs.modal', function () {
     formOrgUnit.reset();
-    $(formOrgUnit).find('select').val('').trigger('change');
+    $(formOrgUnit).find('select').val(null).trigger('change');
     editingId = null;
   });
 

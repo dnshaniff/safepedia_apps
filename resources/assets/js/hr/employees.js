@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
   // clearing form data when modal hidden
   modalEmployee.on('hidden.bs.modal', function () {
     formEmployee.reset();
-    $(formEmployee).find('select').val('').trigger('change');
+    $(formEmployee).find('select').val(null).trigger('change');
     editingId = null;
 
     dateBirth._flatpickr.clear(false);

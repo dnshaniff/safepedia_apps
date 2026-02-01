@@ -29,9 +29,13 @@ class AssetType extends Controller
       return response()->json(['results' => [], 'more' => false]);
     }
 
-    $query = ModelsAssetType::query()->from('asset_types')->select(['asset_types.id', 'asset_types.type_name'])
-      ->join('asset_categories as ac', 'ac.id', '=', 'asset_types.asset_category_id')
-      ->where('ac.category_code', $categoryCode);
+    $query = ModelsAssetType::query()->select(['asset_types.id', 'asset_types.type_name'])->with('category:id,category_code');
+
+    if (!empty($categoryCode)) {
+      $query->whereHas('category', function ($q) use ($categoryCode) {
+        $q->where('category_code', $categoryCode);
+      });
+    }
 
     if ($q !== '') {
       $tokens = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [];
@@ -41,7 +45,7 @@ class AssetType extends Controller
       }
     }
 
-    $query->orderBy('asset_types.type_name');
+    $query->orderBy('type_name');
 
     $rows = $query->skip(($page - 1) * $per)->take($per + 1)->get();
 

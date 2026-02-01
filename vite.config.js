@@ -88,8 +88,9 @@ export default defineConfig({
     strictPort: true,
 
     hmr: {
-      host: '10.11.10.96',
-      port: 5173
+      host: 'gst_apps.test',
+      port: 5173,
+      protocol: 'wss'
     },
 
     cors: {

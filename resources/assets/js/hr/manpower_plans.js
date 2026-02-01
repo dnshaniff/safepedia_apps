@@ -41,6 +41,31 @@ document.addEventListener('DOMContentLoaded', function (e) {
           targets: [1]
         },
         {
+          targets: 1,
+          render: function (data, type, row) {
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${data}</span>
+                <span class="fw-medium">${row.position_title}</span>
+              </div>
+            `;
+          }
+        },
+        {
+          targets: 5,
+          render: function (data, type, full, meta) {
+            const statusMap = {
+              Pending: 'bg-label-danger',
+              'On Progress': 'bg-label-warning',
+              Done: 'bg-label-success'
+            };
+
+            const statusClass = statusMap[data] || 'bg-label-secondary';
+
+            return `<span class="badge ${statusClass}">${data}</span>`;
+          }
+        },
+        {
           targets: -1,
           title: 'Actions',
           render: function (data, type, full, meta) {
@@ -153,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formManpower = document.getElementById('formManpower'),
+  const formManpower = document.getElementById('formManPower'),
     orgSelect = formManpower.querySelector('#org_unit_id'),
     positionTitle = formManpower.querySelector('#position_title'),
     plannedDate = formManpower.querySelector('#planned_date'),
@@ -163,6 +188,42 @@ document.addEventListener('DOMContentLoaded', function (e) {
     btnSubmit = formManpower.querySelector('button[type="submit"]');
 
   let editingId = null;
+
+  initDropdownPaged($(orgSelect), {
+    url: '/org_units/select',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
+  function initFP(element) {
+    if (!element) return;
+
+    flatpickr(element, {
+      altInput: true,
+      altFormat: 'j F, Y',
+      dateFormat: 'Y-m-d',
+      static: true,
+      allowInput: false
+    });
+  }
+
+  initFP(plannedDate);
+
+  numberPositions.addEventListener('input', function () {
+    if (this.value === '') return;
+
+    const value = parseInt(this.value, 10);
+
+    if (isNaN(value) || value < 0) {
+      this.value = 0;
+    }
+  });
+
+  initDropdownPaged($(deviceSelect), {
+    url: '/asset_types/select?category_code=IT',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
 
   // create record
   $('.add-new').on('click', function () {
@@ -186,8 +247,25 @@ document.addEventListener('DOMContentLoaded', function (e) {
     // get data
     $.get(`${baseUrl}manpower_plans/${id}/edit`, function (data) {
       editingId = id;
-      categoryName.value = data.category_name || '';
-      categoryCode.value = data.category_code || '';
+
+      data.org_unit && data.org_unit.id != null
+        ? setValue($(orgSelect), { id: data.org_unit.id, text: data.org_unit.unit_name })
+        : $(orgSelect).val(null).trigger('change');
+
+      positionTitle.value = data.position_title || '';
+      plannedDate._flatpickr.setDate(data.planned_date || null);
+      numberPositions.value = data.number_positions || '';
+
+      if (Array.isArray(data.devices) && data.devices.length > 0) {
+        const $select = $(deviceSelect).empty();
+        data.devices.forEach(d => $select.append(new Option(d.type_name, d.id, true, true)));
+
+        $select.trigger('change');
+      } else {
+        $(deviceSelect).val(null).trigger('change');
+      }
+
+      notesInput.value = data.notes || '';
     });
   });
 
@@ -196,45 +274,38 @@ document.addEventListener('DOMContentLoaded', function (e) {
       org_unit_id: {
         validators: {
           notEmpty: {
-            message: 'Please enter category name'
+            message: 'Please select Organization Unit'
           }
         }
       },
       position_title: {
         validators: {
           notEmpty: {
-            message: 'Please enter category code'
+            message: 'Please enter position title'
           }
         }
       },
-      position_title: {
+      planned_date: {
         validators: {
           notEmpty: {
-            message: 'Please enter category code'
+            message: 'Please select planned date'
           }
         }
       },
-      position_title: {
+      number_positions: {
         validators: {
           notEmpty: {
-            message: 'Please enter category code'
+            message: 'Please enter number of positions'
           }
         }
       },
-      position_title: {
+      'devices[]': {
         validators: {
           notEmpty: {
-            message: 'Please enter category code'
+            message: 'Please select at least one device'
           }
         }
-      },
-      position_title: {
-        validators: {
-          notEmpty: {
-            message: 'Please enter category code'
-          }
-        }
-      },
+      }
     },
     plugins: {
       trigger: new FormValidation.plugins.Trigger(),
@@ -288,6 +359,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   modalManPower.on('hidden.bs.modal', function () {
     formManpower.reset();
+    $(formManpower).find('select').val(null).trigger('change');
+    editingId = null;
+
+    plannedDate._flatpickr.clear(false);
   });
 
   // delete record

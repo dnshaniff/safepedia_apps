@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEmployeeAgreementRequest;
+use App\Http\Requests\UpdateEmployeeAgreementRequest;
 use App\Models\EmployeeAgreement as ModelsEmployeeAgreement;
 
 class EmployeeAgreement extends Controller
@@ -121,7 +122,7 @@ class EmployeeAgreement extends Controller
     return response()->json($employeeAgreement, 200);
   }
 
-  public function update(Employee $employee, Request $request, ModelsEmployeeAgreement $employeeAgreement)
+  public function update(Employee $employee, UpdateEmployeeAgreementRequest $request, ModelsEmployeeAgreement $employeeAgreement)
   {
     try {
       DB::transaction(fn() => $employeeAgreement->update($request->validated()));

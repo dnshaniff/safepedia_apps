@@ -39,6 +39,7 @@ Route::middleware(['auth', 'status'])->group(function () {
 
   // Fetch Data
   Route::get('/asset_categories/select', [AssetCategory::class, 'select']);
+  Route::get('/asset_types/select', [AssetType::class, 'select']);
   Route::get('/companies/select', [Company::class, 'select']);
   Route::get('/employees/select', [Employee::class, 'select']);
   Route::get('/job_titles/select', [JobTitle::class, 'select']);

@@ -72,10 +72,10 @@
                     </div>
                     <div class="col-12 col-md-6 mb-3">
                         <label class="form-label" for="number_positions">Total Headcount</label>
-                        <input type="text" id="number_positions" name="number_positions"
-                            class="form-control phone-number-mask" placeholder="0813 1234 1234" />
+                        <input type="number" id="number_positions" name="number_positions" class="form-control"
+                            placeholder="5" min="0" step="1" />
                     </div>
-                    <div class="col-12 col-md-6 mb-3">
+                    <div class="col-12 mb-3">
                         <label class="form-label" for="devices">Devices <strong class="text-danger">**</strong></label>
                         <select id="devices" name="devices[]" class="select2 form-select" multiple></select>
                     </div>

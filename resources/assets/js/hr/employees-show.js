@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
     $.get(`${currentPath}/employee_agreements/${id}/edit`, function (data) {
       editingId = id;
 
-      $(typeSelect).val(data.employment_type).trigger('change');
+      $(typeSelect).val(data.agreement_type).trigger('change');
       startDate._flatpickr.setDate(data.start_date || null);
       endDate._flatpickr.setDate(data.end_date || null);
       effectiveDate._flatpickr.setDate(data.effective_date || null);
@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
   // clearing form data when modal hidden
   modalAgreement.on('hidden.bs.modal', function () {
     formAgreement.reset();
-    $(formAgreement).find('select').val('').trigger('change');
+    $(formAgreement).find('select').val(null).trigger('change');
     editingId = null;
 
     startDate._flatpickr.clear(false);
