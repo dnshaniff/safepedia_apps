@@ -8,26 +8,27 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableManPower = $('.datatables-manpowers'),
-    modalManPower = $('#modalManPower'),
-    modalTitle = modalManPower.find('.modal-title');
+  const datatableCandidate = $('.datatables-candidates'),
+    modalCandidate = $('#modalCandidate'),
+    modalTitle = modalCandidate.find('.modal-title'),
+    currentPath = window.location.pathname;
 
-  let dt_manpowers;
+  let dt_candidates;
 
-  if (datatableManPower) {
-    dt_manpowers = new DataTable(datatableManPower, {
+  if (datatableCandidate) {
+    dt_candidates = new DataTable(datatableCandidate, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}manpower_plans`
+        url: `${currentPath}/ta_candidates`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'org_unit' },
-        { data: 'planned_date' },
-        { data: 'number_positions' },
-        { data: 'devices' },
-        { data: 'status' },
+        { data: 'full_name' },
+        { data: 'phone_number' },
+        { data: 'interview_status' },
+        { data: 'expected_join_date' },
+        { data: 'notes' },
         { data: 'creator' },
         { data: 'id' }
       ],
@@ -41,23 +42,25 @@ document.addEventListener('DOMContentLoaded', function (e) {
           targets: [1]
         },
         {
-          targets: 1,
+          targets: 2,
           render: function (data, type, row) {
             return `
               <div class="d-flex flex-column">
-                <span class="text-muted">${data}</span>
-                <a href="${baseUrl}manpower_plans/${row.id}" class="fw-medium">${row.position_title}</a>
+                <span class="text-muted">${row.phone_number}</span>
+                <span class="fw-medium">${data}</span>
               </div>
             `;
           }
         },
         {
-          targets: 5,
+          targets: 3,
           render: function (data, type, full, meta) {
             const statusMap = {
-              Pending: 'bg-label-danger',
-              'On Progress': 'bg-label-warning',
-              Done: 'bg-label-success'
+              Screening: 'bg-label-primary',
+              Interview: 'bg-label-warning',
+              Offering: 'bg-label-info',
+              'Offer Accepted': 'bg-label-success',
+              Canceled: 'bg-label-danger'
             };
 
             const statusClass = statusMap[data] || 'bg-label-secondary';
@@ -66,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 6,
+          targets: 5,
           render: function (data, type, row) {
             const options = {
               day: '2-digit',
@@ -82,14 +85,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 <span class="text-muted">${data}</span>
                 <span class="fw-medium">${formattedDate}</span>
               </div>
-            `;
-          }
-        },
-        {
-          targets: 6,
-          render: function (data, type, row) {
-            return `
-              <span class="text-break">${data}</span>
             `;
           }
         },
@@ -112,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalManPower" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalCandidate" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -143,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Position',
+                placeholder: 'Search Candidate Name',
                 text: '_INPUT_'
               }
             },
@@ -154,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalManPower'
+                    'data-bs-target': '#modalCandidate'
                   }
                 }
               ]
@@ -360,8 +355,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
       type: method,
       success: function (res) {
         Loading.remove();
-        dt_manpowers.draw(false);
-        modalManPower.modal('hide');
+        dt_candidates.draw(false);
+        modalCandidate.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -385,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   });
 
-  modalManPower.on('hidden.bs.modal', function () {
+  modalCandidate.on('hidden.bs.modal', function () {
     formManpower.reset();
     $(formManpower).find('select').val(null).trigger('change');
     editingId = null;
@@ -438,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_manpowers.draw(false);
+              dt_candidates.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -522,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_manpowers.draw(false);
+              dt_candidates.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -606,7 +601,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_manpowers.draw(false);
+              dt_candidates.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({

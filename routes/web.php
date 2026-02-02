@@ -15,6 +15,7 @@ use App\Http\Controllers\hr\ManpowerPlan;
 use App\Http\Controllers\hr\Company;
 use App\Http\Controllers\hr\JobTitle;
 use App\Http\Controllers\hr\OrgUnit;
+use App\Http\Controllers\hr\TaCandidate;
 
 /**
  * Guest
@@ -85,8 +86,12 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   // Manpower Plans
   Route::get('/recruitment-manpower_plans', [ManpowerPlan::class, 'view'])->name('recruitment-manpower_plans');
   Route::resource('/manpower_plans', ManpowerPlan::class)->except('create');
-  Route::post('/manpower_plans/{manpower_plans}/restore', [ManpowerPlan::class, 'restore'])->name('manpower_plans.restore');
-  Route::delete('/manpower_plans/{manpower_plans}/force', [ManpowerPlan::class, 'force'])->name('manpower_plans.force');
+  Route::post('/manpower_plans/{manpower_plan}/restore', [ManpowerPlan::class, 'restore'])->name('manpower_plans.restore');
+  Route::delete('/manpower_plans/{manpower_plan}/force', [ManpowerPlan::class, 'force'])->name('manpower_plans.force');
+  // Ta Candidates
+  Route::resource('/manpower_plans/{manpower_plan}/ta_candidates', TaCandidate::class)->except('create', 'show');
+  Route::post('/manpower_plans/{manpower_plan}/ta_candidates/{ta_candidate}/restore', [TaCandidate::class, 'restore'])->name('ta_candidates.restore');
+  Route::delete('/manpower_plans/{manpower_plan}/ta_candidates/{ta_candidate}/force', [TaCandidate::class, 'force'])->name('ta_candidates.force');
 
   // Companies
   Route::get('/masterhr-companies', [Company::class, 'view'])->name('masterhr-companies');

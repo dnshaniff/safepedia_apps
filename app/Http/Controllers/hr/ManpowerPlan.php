@@ -75,7 +75,7 @@ class ManpowerPlan extends Controller
   public function store(StoreManpowerPlanRequest $request)
   {
     try {
-      $manpowerPlan = DB::transaction(function () use ($request) {
+      DB::transaction(function () use ($request, &$manpowerPlan) {
         $data = $request->validated();
         $devices = $data['devices'];
         unset($data['devices']);
@@ -102,7 +102,11 @@ class ManpowerPlan extends Controller
       'creator.employee:id,user_id,full_name'
     ]);
 
-    return view('content.hr.manpower_plans-show', compact('manpowerPlan'));
+    $filled = $manpowerPlan->newComers()
+      ->whereIn('status_join', ['Planned', 'Joined'])
+      ->count();
+
+    return view('content.hr.manpower_plans-show', compact('manpowerPlan', 'filled'));
   }
 
   public function edit(ModelsManpowerPlan $manpowerPlan)
@@ -114,6 +118,10 @@ class ManpowerPlan extends Controller
 
   public function update(UpdateManpowerPlanRequest $request, ModelsManpowerPlan $manpowerPlan)
   {
+    if ($manpowerPlan->candidates()->exists()) {
+      return response()->json(['status' => 'info', 'message' => 'Cannot update a manpower plan that has candidates'], 400);
+    }
+
     try {
       DB::transaction(function () use ($request, $manpowerPlan) {
         $data = $request->validated();
@@ -173,6 +181,10 @@ class ManpowerPlan extends Controller
   public function force(string $id)
   {
     $manpowerPlan = ModelsManpowerPlan::withTrashed()->findOrFail($id);
+
+    if ($manpowerPlan->candidates()->exists()) {
+      return response()->json(['status' => 'info', 'message' => 'Cannot delete a manpower plan that has candidates'], 400);
+    }
 
     try {
       if ($manpowerPlan->trashed()) {

@@ -132,8 +132,6 @@
         </div>
     </div>
 
-
-
     <div class="modal fade" id="modalAgreement" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <form id="formAgreement" class="modal-content">

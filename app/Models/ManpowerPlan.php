@@ -21,6 +21,8 @@ class ManpowerPlan extends Model
     'created_by'
   ];
 
+  protected $casts = ['planned_date' => 'date'];
+
   public function orgUnit()
   {
     return $this->belongsTo(OrgUnit::class, 'org_unit_id', 'id');
@@ -36,5 +38,20 @@ class ManpowerPlan extends Model
     return $this->belongsToMany(AssetType::class, 'manpower_plan_asset_type', 'manpower_plan_id', 'asset_type_id');
   }
 
-  protected $casts = ['planned_date' => 'date'];
+  public function candidates()
+  {
+    return $this->hasMany(TaCandidate::class, 'manpower_plan_id', 'id');
+  }
+
+  public function newComers()
+  {
+    return $this->hasManyThrough(
+      NewComer::class,
+      TaCandidate::class,
+      'manpower_plan_id',
+      'ta_candidate_id',
+      'id',
+      'id'
+    );
+  }
 }
