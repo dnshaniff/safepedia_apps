@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use App\Events\SystemResourceUpdated;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\Employee as ModelsEmployee;
 use App\Http\Requests\StoreEmployeeRequest;
@@ -155,6 +156,14 @@ class Employee extends Controller
     try {
       $employee = DB::transaction(fn() => ModelsEmployee::create($request->validated()));
 
+      event(new SystemResourceUpdated(
+        resource: 'employees',
+        action: 'store',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Employee: {$employee->full_name} created successfully"], 201);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
@@ -187,6 +196,14 @@ class Employee extends Controller
       });
 
       Mail::to($email)->queue(new EmployeeUserCreated($user, $password));
+
+      event(new SystemResourceUpdated(
+        resource: 'users',
+        action: 'store',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
 
       return response()->json(['status' => 'success', 'message' => "User: {$user->username} created successfully"], 201);
     } catch (Throwable $e) {
@@ -222,8 +239,20 @@ class Employee extends Controller
 
   public function update(UpdateEmployeeRequest $request, ModelsEmployee $employee)
   {
+    if ($employee->created_by !== auth()->id()) {
+      return response()->json(['status' => 'info', 'message' => 'You are not authorized to update this record'], 403);
+    }
+
     try {
       DB::transaction(fn() => $employee->update($request->validated()));
+
+      event(new SystemResourceUpdated(
+        resource: 'employees',
+        action: 'update',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
 
       return response()->json(['status' => 'success', 'message' => "Employee: {$employee->full_name} updated successfully"], 200);
     } catch (Throwable $e) {
@@ -237,8 +266,20 @@ class Employee extends Controller
 
   public function destroy(ModelsEmployee $employee)
   {
+    if ($employee->created_by !== auth()->id()) {
+      return response()->json(['status' => 'info', 'message' => 'You are not authorized to delete this record'], 403);
+    }
+
     try {
       $employee->delete();
+
+      event(new SystemResourceUpdated(
+        resource: 'employees',
+        action: 'delete',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
 
       return response()->json(['status' => 'success', 'message' => "Employee: {$employee->full_name} deleted successfully"], 200);
     } catch (Throwable $e) {
@@ -258,6 +299,14 @@ class Employee extends Controller
     try {
       if ($employee->trashed()) {
         $employee->restore();
+
+        event(new SystemResourceUpdated(
+          resource: 'employees',
+          action: 'restore',
+          performedBy: auth()->id(),
+          message: null,
+          notifyAuthor: false
+        ));
 
         return response()->json(['status' => 'success', 'message' => "Employee: {$employee->full_name} successfully restored"], 200);
       } else {
@@ -284,6 +333,14 @@ class Employee extends Controller
     try {
       if ($employee->trashed()) {
         $employee->forceDelete();
+
+        event(new SystemResourceUpdated(
+          resource: 'employees',
+          action: 'delete',
+          performedBy: auth()->id(),
+          message: null,
+          notifyAuthor: false
+        ));
 
         return response()->json(['status' => 'success', 'message' => 'Employee permanent delete successfully'], 200);
       } else {

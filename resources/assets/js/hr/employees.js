@@ -8,19 +8,18 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  window.Echo.channel('employees-import').listen('.employees.import.finished', e => {
-    showToast('success', 'Import completed');
-    dt_employees.ajax.reload();
-  });
-
   const datatableEmployees = $('.datatables-employees'),
     modalEmployee = $('#modalEmployee'),
     modalTitle = modalEmployee.find('.modal-title');
 
-  let dt_employees;
+  window.ResourceRegistry = window.ResourceRegistry || {};
+
+  window.ResourceRegistry['employees'] = () => {
+    dt_employees.ajax.reload();
+  };
 
   if (datatableEmployees) {
-    dt_employees = datatableEmployees.DataTable({
+    window.dt_employees = datatableEmployees.DataTable({
       processing: true,
       serverSide: true,
       ajax: {

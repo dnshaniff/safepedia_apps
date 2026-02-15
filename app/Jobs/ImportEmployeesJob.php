@@ -6,8 +6,8 @@ use Throwable;
 use App\Imports\EmployeesImport;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Events\SystemResourceUpdated;
 use Illuminate\Queue\SerializesModels;
-use App\Events\EmployeesImportFinished;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -40,7 +40,13 @@ class ImportEmployeesJob implements ShouldQueue
 
       Storage::delete($this->path);
 
-      event(new EmployeesImportFinished($this->userId));
+      event(new SystemResourceUpdated(
+        resource: 'employees',
+        action: 'import',
+        performedBy: $this->userId,
+        message: 'Import employee completed',
+        notifyAuthor: true
+      ));
     } catch (Throwable $e) {
       Log::error('Employee import failed', [
         'error' => $e->getMessage(),

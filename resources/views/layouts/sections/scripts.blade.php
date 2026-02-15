@@ -11,6 +11,9 @@
 @yield('vendor-script')
 <!-- END: Page Vendor JS-->
 <!-- BEGIN: Theme JS-->
+<script>
+    window.authUserId = "{{ auth()->id() }}";
+</script>
 @vite(['resources/assets/js/app/main.js'])
 
 <!-- END: Theme JS-->
