@@ -288,8 +288,8 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
-                    {{-- <a class="dropdown-item" href="{{ route('profile.show', auth()->user()->username) }}"> --}}
-                    <a class="dropdown-item" href="">
+                    <a class="dropdown-item"
+                        href="{{ Auth::user()->username === 'administrator' ? '#' : route('profile.view', auth()->user()->username) }}">
                         <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                                 <div class="avatar avatar-online">
@@ -302,7 +302,7 @@
                                     {{ Auth::user()->username === 'administrator' ? Auth::user()->username : Auth::user()->employee->full_name }}
                                 </span>
                                 <small
-                                    class="text-muted">{{ Auth::user()->username === 'administrator' ? Auth::user()->roles()->first()->name : Auth::user()->employee->position->position_name }}</small>
+                                    class="text-muted">{{ Auth::user()->username === 'administrator' ? Auth::user()->roles()->first()->name : Auth::user()->employee->jobTitle->title_name }}</small>
                             </div>
                         </div>
                     </a>

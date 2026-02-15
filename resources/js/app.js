@@ -1,4 +1,5 @@
 import './bootstrap';
+import './echo';
 /*
   Add custom scripts here
 */

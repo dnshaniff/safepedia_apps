@@ -203,18 +203,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         initComplete: function (settings, json) {
-          const groups = json.groups;
+          const container = $('.permission_group');
+          if (container.find('#permissionGroup').length) return;
+
           const select = $(
             '<select id="permissionGroup" class="form-select text-capitalize"><option value="">Select Group</option></select>'
           )
-            .appendTo('.permission_group')
+            .appendTo(container)
             .on('change', function () {
               const val = $(this).val();
               dt_permissions.column(1).search(val).draw();
             });
 
-          groups.forEach(function (group) {
-            select.append('<option value="' + group + '" class="text-capitalize">' + group + '</option>');
+          json.groups.forEach(function (group) {
+            select.append('<option value="' + group + '">' + group + '</option>');
           });
         }
       });

@@ -45,7 +45,7 @@
     </div>
 
     <div class="modal fade" id="modalEmployee" tabindex="-1" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <form id="formEmployee" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="backDropModalTitle">Employee</h5>
@@ -81,7 +81,7 @@
                         <select id="company_id" name="company_id" class="select2 form-select"
                             data-allow-clear="true"></select>
                     </div>
-                    <div class="col-12 col-md-6 mb-3">
+                    <div class="col-12 mb-3">
                         <label class="form-label" for="org_unit_id">Organization Unit <strong
                                 class="text-danger">**</strong></label>
                         <select id="org_unit_id" name="org_unit_id" class="select2 form-select"
@@ -94,9 +94,9 @@
                             data-allow-clear="true"></select>
                     </div>
                     <div class="col-12 col-md-6 mb-3">
-                        <label class="form-label" for="employment_type">Employment Type <strong
+                        <label class="form-label" for="employment_status">Status <strong
                                 class="text-danger">**</strong></label>
-                        <select id="employment_type" name="employment_type" class="select2 form-select"
+                        <select id="employment_status" name="employment_status" class="select2 form-select"
                             data-allow-clear="true"></select>
                     </div>
                     <div class="col-12 col-md-6 mb-3">
@@ -111,7 +111,8 @@
                             placeholder="johndoe@example.com" />
                     </div>
                     <div class="col-12 col-md-6 mb-3">
-                        <label class="form-label" for="phone_number">Phone Number</label>
+                        <label class="form-label" for="phone_number">Phone Number <strong
+                                class="text-danger">**</strong></label>
                         <input type="text" id="phone_number" name="phone_number"
                             class="form-control phone-number-mask" placeholder="0813 1234 1234" />
                     </div>
@@ -125,6 +126,62 @@
                                 class="text-danger">**</strong></label>
                         <input type="text" id="date_of_birth" name="date_of_birth" class="form-control"
                             placeholder="YYYY-MM-DD" />
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label" for="ktp_number">KTP Number <strong
+                                class="text-danger">**</strong></label>
+                        <input type="text" id="ktp_number" name="ktp_number" class="form-control phone-number-mask"
+                            placeholder="3152 0610 1102 0001" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="reset" class="btn btn-label-danger" data-bs-dismiss="modal"
+                        aria-label="Close">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalUser" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <form id="formUser" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="backDropModalTitle">Create User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="username">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" placeholder="johndoe"
+                            autofocus />
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="role">Role</label>
+                        <select id="role" name="role" class="select2 form-select"
+                            data-allow-clear="true"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="reset" class="btn btn-label-danger" data-bs-dismiss="modal"
+                        aria-label="Close">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalImport" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <form id="formImport" class="modal-content" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="backDropModalTitle">Import Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="file">Upload File</label>
+                        <input id="file" name="file" class="form-control" type="file"accept=".xls,.xlsx">
                     </div>
                 </div>
                 <div class="modal-footer">

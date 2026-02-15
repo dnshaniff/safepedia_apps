@@ -13,6 +13,7 @@ class Employee extends Model
   protected $table = 'employees';
 
   protected $fillable = [
+    'id',
     'user_id',
     'employee_code',
     'full_name',
@@ -22,12 +23,13 @@ class Employee extends Model
     'company_id',
     'org_unit_id',
     'job_title_id',
-    'employment_type',
+    'employment_status',
     'office_email',
     'personal_email',
     'phone_number',
     'gender',
     'date_of_birth',
+    'ktp_number',
     'created_by'
   ];
 
@@ -94,6 +96,9 @@ class Employee extends Model
 
   protected $casts = [
     'join_date' => 'date',
-    'date_of_birth' => 'date'
+    'date_of_birth' => 'date',
+    'employee_code' => 'string',
+    'phone_number' => 'string',
+    'ktp_number' => 'string',
   ];
 }

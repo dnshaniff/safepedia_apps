@@ -71,6 +71,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
         {
           targets: 5,
           render: function (data, type, row) {
+            return `
+              <span class="text-break">${data}</span>
+            `;
+          }
+        },
+        {
+          targets: 6,
+          render: function (data, type, row) {
             const options = {
               day: '2-digit',
               month: 'short',

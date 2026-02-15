@@ -65,32 +65,43 @@ document.addEventListener('DOMContentLoaded', function (e) {
             return `<span class="badge ${statusClass}">${data}</span>`;
           }
         },
+
         {
           targets: 6,
           render: function (data, type, row) {
-            const options = {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
+            const formatDate = value => {
+              if (!value) return '-';
+
+              return new Date(value).toLocaleString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
             };
-            const formattedDate = new Date(row.updated_at).toLocaleString('en-GB', options);
+
+            let tooltipContent = '';
+
+            if (row.deleted_at) {
+              tooltipContent = `Deleted: ${formatDate(row.deleted_at)}`;
+            } else {
+              tooltipContent = `
+                Created: ${formatDate(row.created_at)}
+                Updated: ${formatDate(row.updated_at)}
+              `;
+            }
 
             return `
-              <div class="d-flex flex-column">
-                <span class="text-muted">${data}</span>
-                <span class="fw-medium">${formattedDate}</span>
-              </div>
-            `;
-          }
-        },
-        {
-          targets: 6,
-          render: function (data, type, row) {
-            return `
-              <span class="text-break">${data}</span>
-            `;
+                <span class="text-nowrap"
+                  data-bs-toggle="tooltip"
+                  data-bs-offset="0,8"
+                  data-bs-placement="top"
+                  data-bs-custom-class="tooltip-dark"
+                  title="${tooltipContent}">
+                  ${data}
+                </span>
+              `;
           }
         },
         {
@@ -203,6 +214,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
           classToAdd.split(' ').forEach(className => element.classList.add(className));
         }
       });
+    });
+
+    new bootstrap.Tooltip(document.body, {
+      selector: '[data-bs-toggle="tooltip"]'
     });
   }, 100);
 

@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -90,18 +92,12 @@ class User extends Controller
     return response()->json($user, 200);
   }
 
-  public function update(Request $request, ModelsUser $user)
+  public function update(UpdateUserRequest $request, ModelsUser $user)
   {
     try {
-      $validated = $request->validate([
-        'username' => 'required|min:4|max:50|unique:users,username,' . $user->id,
-        'role' => 'required',
-        'status' => 'required',
-        'password' => ['nullable', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/'],
-        'password_confirmation' => ['nullable', 'same:password'],
-      ]);
+      DB::transaction(function () use ($request, $user) {
+        $validated = $request->validated();
 
-      DB::transaction(function () use ($user, $validated) {
         $data = [
           'username' => $validated['username'],
           'status'   => $validated['status'],

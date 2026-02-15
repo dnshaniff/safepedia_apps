@@ -3,13 +3,21 @@
 namespace App\Http\Controllers\hr;
 
 use Throwable;
+use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Jobs\ImportEmployeesJob;
+use App\Mail\EmployeeUserCreated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreEmployeeRequest;
-use App\Http\Requests\UpdateEmployeeRequest;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Requests\StoreUserRequest;
 use App\Models\Employee as ModelsEmployee;
+use App\Http\Requests\StoreEmployeeRequest;
+use App\Http\Requests\ImportEmployeeRequest;
+use App\Http\Requests\UpdateEmployeeRequest;
 
 class Employee extends Controller
 {
@@ -72,24 +80,24 @@ class Employee extends Controller
 
     $search = $request->input('search.value');
 
-    $query = ModelsEmployee::query()
-      ->select([
-        'employees.id',
-        'employees.employee_code',
-        'employees.full_name',
-        'employees.company_id',
-        'employees.org_unit_id',
-        'employees.job_title_id',
-        'employees.hrbp_id',
-        'employees.join_date',
-        'employees.employment_type',
-        'employees.deleted_at',
-      ])->with([
-        'company:id,company_code',
-        'orgUnit:id,unit_name',
-        'jobTitle:id,title_name',
-        'hrbp:id,full_name',
-      ])->when($isAdmin, fn($q) => $q->withTrashed());
+    $query = ModelsEmployee::query()->select([
+      'employees.id',
+      'employees.user_id',
+      'employees.employee_code',
+      'employees.full_name',
+      'employees.company_id',
+      'employees.org_unit_id',
+      'employees.job_title_id',
+      'employees.hrbp_id',
+      'employees.join_date',
+      'employees.employment_status',
+      'employees.deleted_at',
+    ])->with([
+      'company:id,company_code',
+      'orgUnit:id,unit_name',
+      'jobTitle:id,title_name',
+      'hrbp:id,full_name',
+    ])->when($isAdmin, fn($q) => $q->withTrashed());
 
     $totalData = $query->count();
 
@@ -123,8 +131,10 @@ class Employee extends Controller
         $nestedData['org_unit'] = $employee->orgUnit ? $employee->orgUnit->unit_name : '';
         $nestedData['job_title'] = $employee->jobTitle ? $employee->jobTitle->title_name : '';
         $nestedData['join_date'] = $employee->join_date->format('d/m/Y');
-        $nestedData['employment_type'] = $employee->employment_type;
+        $nestedData['employment_status'] = $employee->employment_status;
         $nestedData['hrbp'] = $employee->hrbp ? $employee->hrbp->full_name : '';
+        $nestedData['user_id'] = $employee->user_id;
+        $nestedData['can_store_user'] = auth()->user()->can('employees.storeUser');
         $nestedData['deleted_at'] = $employee->deleted_at;
 
         $data[] = $nestedData;
@@ -152,6 +162,40 @@ class Employee extends Controller
         'trace' => $e->getTraceAsString(),
       ]);
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
+  }
+
+  public function storeUser(StoreUserRequest $request, ModelsEmployee $employee)
+  {
+    if ($employee->user_id) {
+      return response()->json(['status' => 'info', 'message' => 'Employee already has a user'], 400);
+    }
+
+    try {
+      $validated = $request->validated();
+      $password = Str::random(12);
+      $email = $employee->office_email ?: $employee->personal_email;
+
+      $user = DB::transaction(function () use ($validated, $employee, $password) {
+        $user = User::create([
+          'username' => $validated['username'],
+          'password' => Hash::make($password),
+        ]);
+
+        $user->syncRoles([$validated['role']]);
+        $employee->update(['user_id' => $user->id]);
+      });
+
+      Mail::to($email)->queue(new EmployeeUserCreated($user, $password));
+
+      return response()->json(['status' => 'success', 'message' => "User: {$user->username} created successfully"], 201);
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while creating user', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+
+      return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request'], 500);
     }
   }
 
@@ -252,6 +296,25 @@ class Employee extends Controller
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
+  }
+
+  public function import(ImportEmployeeRequest $request)
+  {
+    try {
+      $file = $request->file('file');
+      $path = $file->store('imports/employees');
+
+      ImportEmployeesJob::dispatch($path, auth()->id());
+
+      return response()->json(['status' => 'success', 'message' => 'Import process started'], 201);
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+
+      return response()->json(['status' => 'danger', 'message' => 'Failed to start import process'], 500);
     }
   }
 }

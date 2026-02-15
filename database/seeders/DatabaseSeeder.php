@@ -21,11 +21,6 @@ class DatabaseSeeder extends Seeder
       'password' => Hash::make('P@ssw0rd123'),
     ]);
 
-    $user = User::create([
-      'username' => 'dnshaniff',
-      'password' => Hash::make('P@ssw0rd'),
-    ]);
-
     $this->call([PermissionSeeder::class]);
 
     $rolesPermissions = [
@@ -39,6 +34,5 @@ class DatabaseSeeder extends Seeder
     }
 
     $admin->assignRole('Administrator');
-    $user->assignRole('Restricted User');
   }
 }

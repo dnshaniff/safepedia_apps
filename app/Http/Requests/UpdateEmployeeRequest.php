@@ -27,12 +27,13 @@ class UpdateEmployeeRequest extends FormRequest
       'company_id' => ['required', 'exists:companies,id'],
       'org_unit_id' => ['required', 'exists:org_units,id'],
       'job_title_id' => ['required', 'exists:job_titles,id'],
-      'employment_type' => ['required', Rule::in(['Colleague', 'Contract', 'Freelance', 'Intern', 'Probation', 'Resign'])],
+      'employment_status' => ['required', Rule::in(['Colleague', 'Contract', 'Freelance', 'Intern', 'Probation', 'Resign'])],
       'office_email' => ['nullable', 'email', Rule::unique('employees', 'office_email')->ignore($employeeId)],
       'personal_email' => ['nullable', 'email', Rule::unique('employees', 'personal_email')->ignore($employeeId)],
       'phone_number' => ['nullable', Rule::unique('employees', 'phone_number')->ignore($employeeId)],
       'gender' => ['required', Rule::in(['Female', 'Male'])],
       'date_of_birth' => ['required', 'date'],
+      'ktp_number' => ['required', Rule::unique('employees', 'ktp_number')->ignore($employeeId)]
     ];
   }
 

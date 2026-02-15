@@ -24,12 +24,13 @@ class StoreEmployeeRequest extends FormRequest
       'company_id' => 'required|exists:companies,id',
       'org_unit_id' => 'required|exists:org_units,id',
       'job_title_id' => 'required|exists:job_titles,id',
-      'employment_type' => 'required|in:Colleague,Contract,Freelance,Intern,Probation,Resign',
+      'employment_status' => 'required|in:Colleague,Contract,Freelance,Intern,Probation,Resign',
       'office_email' => 'nullable|email|unique:employees,office_email',
       'personal_email' => 'nullable|email|unique:employees,personal_email',
       'phone_number' => 'nullable|unique:employees,phone_number',
       'gender' => 'required|in:Female,Male',
-      'date_of_birth' => 'required|date'
+      'date_of_birth' => 'required|date',
+      'ktp_number' => 'required|unique:employees,ktp_number'
     ];
   }
 

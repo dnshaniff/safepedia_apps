@@ -67,7 +67,7 @@
                         </div>
                     </div>
                     <div class="col-12 mb-3 form-password-toggle">
-                        <label class="form-label" for="password_confirmation">Confirm Password</label>
+                        <label class="form-label" for="password_confirmation">Password Confirmation</label>
                         <div class="input-group input-group-merge">
                             <input type="password" id="password_confirmation" class="form-control"
                                 name="password_confirmation"

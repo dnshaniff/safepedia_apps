@@ -83,15 +83,15 @@ export default defineConfig({
     stringify: true // Helps with JSON import compatibility
   },
   server: {
-    host: '0.0.0.0',
-    port: 5173,
-    strictPort: true,
+    // host: 'localhost',
+    // port: 5173,
+    // strictPort: true,
 
-    hmr: {
-      host: 'gst_apps.test',
-      port: 5173,
-      protocol: 'wss'
-    },
+    // hmr: {
+    //   host: 'gst_apps.test',
+    //   port: 5173,
+    //   protocol: 'wss'
+    // },
 
     cors: {
       origin: '*',

@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
+  window.Echo.channel('employees-import').listen('.employees.import.finished', e => {
+    showToast('success', 'Import completed');
+    dt_employees.ajax.reload();
+  });
+
   const datatableEmployees = $('.datatables-employees'),
     modalEmployee = $('#modalEmployee'),
     modalTitle = modalEmployee.find('.modal-title');
@@ -27,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         { data: 'company' },
         { data: 'job_title' },
         { data: 'join_date' },
-        { data: 'employment_type' },
+        { data: 'employment_status' },
         { data: 'hrbp' },
         { data: 'id' }
       ],
@@ -111,8 +116,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
         {
           targets: -1,
           title: 'Actions',
-          render: function (data, type, full, meta) {
-            if (full.deleted_at !== null) {
+          render: function (data, type, row) {
+            if (row.deleted_at !== null) {
               return `
                 <span class="text-nowrap">
                   <button class="btn btn-icon me-2 restore-record" data-id="${data}">
@@ -125,16 +130,24 @@ document.addEventListener('DOMContentLoaded', function (e) {
               `;
             }
 
-            return `
-              <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalEmployee" data-bs-toggle="modal" data-bs-dismiss="modal">
-                  <i class="bx bx-edit"></i>
-                </button>
-                <button class="btn btn-icon delete-record" data-id="${data}">
-                  <i class="bx bx-trash-alt"></i>
-                </button>
-              </span>
+            let buttons = `
+              <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalEmployee" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <i class="bx bx-edit"></i>
+              </button>
+              <button class="btn btn-icon delete-record" data-id="${data}">
+                <i class="bx bx-trash-alt"></i>
+              </button>
             `;
+
+            if (row.deleted_at === null && row.user_id === null && row.can_store_user === true) {
+              buttons += `
+                <button class="btn btn-icon create-user" data-id="${data}" data-bs-target="#modalUser" data-bs-toggle="modal" data-bs-dismiss="modal">
+                  <i class="bx bx-user-plus"></i>
+                </button>
+              `;
+            }
+
+            return `<span class="text-nowrap">${buttons}</span>`;
           }
         }
       ],
@@ -162,15 +175,26 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 text: '_INPUT_'
               }
             },
-
             {
               buttons: [
                 {
                   text: 'Create New',
-                  className: 'add-new btn btn-primary mb-3 mb-md-0',
+                  className: 'add-new btn btn-primary mb-3 mb-md-0 me-3',
                   attr: {
                     'data-bs-toggle': 'modal',
                     'data-bs-target': '#modalEmployee'
+                  }
+                }
+              ]
+            },
+            {
+              buttons: [
+                {
+                  text: '<i class="bx bx-import"></i>',
+                  className: 'import-record btn btn-primary mb-3 mb-md-0',
+                  attr: {
+                    'data-bs-toggle': 'modal',
+                    'data-bs-target': '#modalImport'
                   }
                 }
               ]
@@ -239,12 +263,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
     companySelect = formEmployee.querySelector('#company_id'),
     orgSelect = formEmployee.querySelector('#org_unit_id'),
     titleSelect = formEmployee.querySelector('#job_title_id'),
-    typeSelect = formEmployee.querySelector('#employment_type'),
+    statusSelect = formEmployee.querySelector('#employment_status'),
     officeEmail = formEmployee.querySelector('#office_email'),
     personalEmail = formEmployee.querySelector('#personal_email'),
     phoneNumber = formEmployee.querySelector('#phone_number'),
     genderSelect = formEmployee.querySelector('#gender'),
     dateBirth = formEmployee.querySelector('#date_of_birth'),
+    ktpNumber = formEmployee.querySelector('#ktp_number'),
     btnSubmit = formEmployee.querySelector('button[type="submit"]');
 
   let editingId = null;
@@ -259,6 +284,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
     registerCursorTracker({
       input: phoneNumber,
+      delimiter: ' '
+    });
+  }
+
+  if (ktpNumber) {
+    ktpNumber.addEventListener('input', event => {
+      const cleanValue = event.target.value.replace(/\D/g, '');
+      ktpNumber.value = formatGeneral(cleanValue, {
+        blocks: [4, 4, 4, 4],
+        delimiters: [' ', ' ', ' ']
+      });
+    });
+    registerCursorTracker({
+      input: ktpNumber,
       delimiter: ' '
     });
   }
@@ -294,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
     perPage: 10
   });
 
-  initStatic($(typeSelect), {
+  initStatic($(statusSelect), {
     placeholder: 'Select an option',
     disableSearch: true,
     data: [
@@ -378,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         ? setValue($(titleSelect), { id: data.job_title.id, text: data.job_title.title_name })
         : $(titleSelect).val(null).trigger('change');
 
-      $(typeSelect).val(data.employment_type).trigger('change');
+      $(statusSelect).val(data.employment_status).trigger('change');
 
       officeEmail.value = data.office_email || '';
       personalEmail.value = data.personal_email || '';
@@ -387,6 +426,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
       $(genderSelect).val(data.gender).trigger('change');
 
       dateBirth._flatpickr.setDate(data.date_of_birth || null);
+
+      ktpNumber.value = data.ktp_number || '';
     });
   });
 
@@ -434,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         }
       },
-      employment_type: {
+      employment_status: {
         validators: {
           notEmpty: {
             message: 'Please select employment type'
@@ -476,6 +517,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
         validators: {
           notEmpty: {
             message: 'Please select birth date'
+          }
+        }
+      },
+      ktp_number: {
+        validators: {
+          notEmpty: {
+            message: 'Please enter KTP number'
           }
         }
       }
@@ -792,5 +840,182 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       }
     });
+  });
+
+  const modalUser = $('#modalUser'),
+    formUser = document.getElementById('formUser'),
+    roleSelect = formUser.querySelector('#role');
+
+  initDropdownPaged($(roleSelect), {
+    url: '/roles/select',
+    placeholder: 'Select an option',
+    perPage: 10,
+    hideSearch: false
+  });
+
+  // create user
+  $(document).on('click', '.create-user', function () {
+    const id = $(this).data('id');
+    editingId = id;
+  });
+
+  FormValidation.formValidation(formUser, {
+    fields: {
+      username: {
+        validators: {
+          notEmpty: {
+            message: 'Please enter an username'
+          },
+          stringLength: {
+            min: 4,
+            message: 'The username must be at least 4 characters long'
+          }
+        }
+      },
+      role: {
+        validators: {
+          notEmpty: {
+            message: 'Please select a role'
+          }
+        }
+      }
+    },
+    plugins: {
+      trigger: new FormValidation.plugins.Trigger(),
+      bootstrap5: new FormValidation.plugins.Bootstrap5({
+        eleValidClass: '',
+        rowSelector: '.mb-3'
+      }),
+      submitButton: new FormValidation.plugins.SubmitButton(),
+      autoFocus: new FormValidation.plugins.AutoFocus()
+    },
+    init: instance => {
+      instance.on('plugins.message.placed', e => {
+        if (e.element.parentElement.classList.contains('input-group')) {
+          e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+        }
+      });
+    }
+  }).on('core.form.valid', function () {
+    Loading.circle({
+      backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+      svgSize: '60px',
+      svgColor: config.colors.white
+    });
+
+    $.ajax({
+      data: $(formUser).serialize(),
+      url: `${baseUrl}employees/${editingId}/storeUser`,
+      type: 'POST',
+      success: function (res) {
+        Loading.remove();
+        dt_employees.draw(false);
+        modalUser.modal('hide');
+
+        showToast(res.status, res.message);
+      },
+      error: function (xhr, status, error) {
+        let res = xhr.responseJSON;
+        if (res) {
+          Loading.remove();
+          showToast(res.status, res.message);
+          if (res.errors) {
+            for (let field in res.errors) {
+              res.errors[field].forEach(errorMessage => {
+                console.log(`${field}: ${errorMessage}`);
+              });
+            }
+          }
+        } else {
+          Loading.remove();
+          showToast('danger', 'An unexpected error occurred');
+        }
+      }
+    });
+  });
+
+  // clearing form data when modal hidden
+  modalUser.on('hidden.bs.modal', function () {
+    formUser.reset();
+    editingId = null;
+    $(formUser).find('select').val('').trigger('change');
+  });
+
+  const modalImport = $('#modalImport'),
+    formImport = document.getElementById('formImport');
+
+  FormValidation.formValidation(formImport, {
+    fields: {
+      file_import: {
+        validators: {
+          file: {
+            extension: 'xls,xlsx',
+            maxSize: 5120 * 1024, // ukuran maksimal dalam byte
+            message: 'Please choose a valid file (xls, xlsx)'
+          }
+        }
+      }
+    },
+    plugins: {
+      trigger: new FormValidation.plugins.Trigger(),
+      bootstrap5: new FormValidation.plugins.Bootstrap5({
+        eleValidClass: '',
+        rowSelector: '.mb-3'
+      }),
+      submitButton: new FormValidation.plugins.SubmitButton(),
+      autoFocus: new FormValidation.plugins.AutoFocus()
+    },
+    init: instance => {
+      instance.on('plugins.message.placed', e => {
+        if (e.element.parentElement.classList.contains('input-group')) {
+          e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+        }
+      });
+    }
+  }).on('core.form.valid', function () {
+    Loading.circle({
+      backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+      svgSize: '60px',
+      svgColor: config.colors.white
+    });
+
+    const formData = new FormData(formImport);
+
+    $.ajax({
+      data: formData,
+      url: `${baseUrl}employees/import`,
+      type: 'POST',
+      processData: false,
+      contentType: false,
+      success: function (res) {
+        Loading.remove();
+        dt_employees.draw(false);
+        modalImport.modal('hide');
+
+        showToast(res.status, res.message);
+      },
+      error: function (xhr, status, error) {
+        let res = xhr.responseJSON;
+        if (res) {
+          Loading.remove();
+          showToast(res.status, res.message);
+          if (res.errors) {
+            for (let field in res.errors) {
+              res.errors[field].forEach(errorMessage => {
+                console.log(`${field}: ${errorMessage}`);
+              });
+            }
+          }
+        } else {
+          Loading.remove();
+          showToast('danger', 'An unexpected error occurred');
+        }
+      }
+    });
+  });
+
+  // clearing form data when modal hidden
+  modalImport.on('hidden.bs.modal', function () {
+    formImport.reset();
   });
 });

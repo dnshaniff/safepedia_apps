@@ -54,6 +54,8 @@ Route::middleware(['auth', 'status'])->group(function () {
 Route::middleware(['auth', 'status', 'permission'])->group(function () {
   // Dashboard
   Route::get('/', [Dashboard::class, 'view'])->name('dashboard');
+  Route::get('/profile/{username}', [Dashboard::class, 'profile'])->name('profile.view');
+  Route::patch('/profile/{username}', [Dashboard::class, 'update'])->name('profile.update');
 
   // General Affairs
   // Asset Categories
@@ -72,6 +74,8 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   // Employees
   Route::get('/employee-employees', [Employee::class, 'view'])->name('employee-employees');
   Route::resource('/employees', Employee::class)->except('create');
+  Route::post('/employees/import', [Employee::class, 'import'])->name('employees.import');
+  Route::post('/employees/{employee}/storeUser', [Employee::class, 'storeUser'])->name('employees.storeUser');
   Route::post('/employees/{employee}/restore', [Employee::class, 'restore'])->name('employees.restore');
   Route::delete('/employees/{employee}/force', [Employee::class, 'force'])->name('employees.force');
   // Employee Agreements
