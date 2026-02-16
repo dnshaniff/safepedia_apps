@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         { data: 'full_name' },
         { data: 'company' },
         { data: 'job_title' },
-        { data: 'employment_type' },
+        { data: 'employment_status' },
         { data: 'last_day' },
         { data: 'hrbp' }
       ],

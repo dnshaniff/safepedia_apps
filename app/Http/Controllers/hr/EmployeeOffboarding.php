@@ -29,9 +29,9 @@ class EmployeeOffboarding extends Controller
         'employees.org_unit_id',
         'employees.job_title_id',
         'employees.hrbp_id',
-        'employees.employment_type',
+        'employees.employment_status',
       ])
-      ->where('employees.employment_type', '!=', 'Resign')
+      ->where('employees.employment_status', '!=', 'Resign')
       ->whereExists(function ($exists) use ($from, $until) {
         $exists->selectRaw(1)
           ->from('employee_agreements as ea')
@@ -96,7 +96,7 @@ class EmployeeOffboarding extends Controller
         $nestedData['company'] = $employee->company ? $employee->company->company_code : '';
         $nestedData['org_unit'] = $employee->orgUnit ? $employee->orgUnit->unit_name : '';
         $nestedData['job_title'] = $employee->jobTitle ? $employee->jobTitle->title_name : '';
-        $nestedData['employment_type'] = $employee->employment_type;
+        $nestedData['employment_status'] = $employee->employment_status;
         $nestedData['hrbp'] = $employee->hrbp ? $employee->hrbp->full_name : '';
         $nestedData['last_day'] = $ag ? ($ag->agreement_type === 'Contract' ? $ag->end_date : $ag->effective_date) : null;
 
