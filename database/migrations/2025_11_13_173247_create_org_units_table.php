@@ -16,7 +16,7 @@ return new class extends Migration
       $table->foreignId('parent_id')->nullable()->constrained('org_units', 'id')->onDelete('SET NULL');
       $table->string('unit_name');
       $table->string('unit_code')->unique();
-      $table->enum('unit_type', ['Department', 'Division', 'Office'])->default('Department');
+      $table->enum('unit_type', ['Department', 'Division', 'Office', 'Team'])->default('Department');
       $table->integer('sort_order')->default(0);
       $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->onDelete('SET NULL');
       $table->timestamps();

@@ -89,7 +89,7 @@ class OrgUnit extends Controller
       $validated = $request->validate([
         'unit_name' => 'required|string|max:100',
         'unit_code' => 'required|string|max:20|unique:org_units,unit_code',
-        'unit_type' => 'required|in:Office,Division,Department',
+        'unit_type' => 'required|in:Office,Division,Department,Team',
         'parent_id' => 'nullable|exists:org_units,id'
       ]);
 
@@ -130,7 +130,7 @@ class OrgUnit extends Controller
       $validated = $request->validate([
         'unit_name' => 'required|string|max:100',
         'unit_code' => 'required|string|max:20|unique:org_units,unit_code,' . $orgUnit->id,
-        'unit_type' => 'required|in:Office,Division,Department',
+        'unit_type' => 'required|in:Office,Division,Department,Team',
         'parent_id' => 'nullable|exists:org_units,id'
       ]);
 
