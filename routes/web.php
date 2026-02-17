@@ -7,6 +7,7 @@ use App\Http\Controllers\authorization\Role;
 use App\Http\Controllers\authorization\User;
 use App\Http\Controllers\authorization\Permission;
 use App\Http\Controllers\ga\AssetCategory;
+use App\Http\Controllers\ga\AssetLocation;
 use App\Http\Controllers\ga\AssetType;
 use App\Http\Controllers\hr\Employee;
 use App\Http\Controllers\hr\EmployeeAgreement;
@@ -69,6 +70,12 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   Route::resource('/asset_types', AssetType::class)->except('create', 'show');
   Route::post('/asset_types/{asset_type}/restore', [AssetType::class, 'restore'])->name('asset_types.restore');
   Route::delete('/asset_types/{asset_type}/force', [AssetType::class, 'force'])->name('asset_types.force');
+
+  // Asset Locations
+  Route::get('/masterga-asset_locations', [AssetLocation::class, 'view'])->name('masterga-asset_locations');
+  Route::resource('/asset_locations', AssetLocation::class)->except('create', 'show');
+  Route::post('/asset_locations/{asset_location}/restore', [AssetLocation::class, 'restore'])->name('asset_locations.restore');
+  Route::delete('/asset_locations/{asset_location}/force', [AssetLocation::class, 'force'])->name('asset_locations.force');
 
   // Human Resources
   // Employees

@@ -45,6 +45,11 @@
               "url": "/masterga-asset_types",
               "name": "Asset Types",
               "slug": "masterga-asset_types"
+            },
+            {
+              "url": "/masterga-asset_locations",
+              "name": "Asset Locations",
+              "slug": "masterga-asset_locations"
             }
           ]
         }
