@@ -11,10 +11,7 @@ class AssetItemObserver
   {
     if (auth()->check()) {
       $assetItem->created_by = auth()->id();
-
-      do {
-        $code = 'AST-' . Str::upper(Str::random(8));
-      } while (AssetItem::where('public_code', $code)->exists());
+      $assetItem->public_code = 'AST-' . Str::uuid()->toString();
     }
   }
 }

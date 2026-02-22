@@ -15,6 +15,7 @@ class AssetItem extends Model
   protected $fillable = [
     'asset_type_id',
     'item_code',
+    'public_code',
     'item_brand',
     'serial_number',
     'item_model',
