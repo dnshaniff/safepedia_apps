@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Events\SystemResourceUpdated;
 use App\Models\AssetType as ModelsAssetType;
 use Illuminate\Validation\ValidationException;
 
@@ -23,19 +24,7 @@ class AssetType extends Controller
     $page  = max(1, (int) $request->get('page', 1));
     $per   = max(1, min(100, (int) $request->get('per', 10)));
 
-    $categoryCode = trim((string) $request->get('category_code', ''));
-
-    if ($categoryCode === '') {
-      return response()->json(['results' => [], 'more' => false]);
-    }
-
-    $query = ModelsAssetType::query()->select(['asset_types.id', 'asset_types.type_name'])->with('category:id,category_code');
-
-    if (!empty($categoryCode)) {
-      $query->whereHas('category', function ($q) use ($categoryCode) {
-        $q->where('category_code', $categoryCode);
-      });
-    }
+    $query = ModelsAssetType::query()->select(['id', 'type_name']);
 
     if ($q !== '') {
       $tokens = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [];
@@ -126,6 +115,14 @@ class AssetType extends Controller
         return ModelsAssetType::create($validated);
       });
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_types',
+        action: 'store',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset type: {$assetType->type_name} created successfully"], 201);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
@@ -160,6 +157,14 @@ class AssetType extends Controller
         $assetType->update($validated);
       });
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_types',
+        action: 'update',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset type: {$assetType->type_name} updated successfully"], 200);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
@@ -179,6 +184,14 @@ class AssetType extends Controller
     try {
       $assetType->delete();
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_types',
+        action: 'delete',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset type: {$assetType->type_name} deleted successfully"], 200);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
@@ -197,6 +210,14 @@ class AssetType extends Controller
     try {
       if ($assetType->trashed()) {
         $assetType->restore();
+
+        event(new SystemResourceUpdated(
+          resource: 'asset_types',
+          action: 'restore',
+          performedBy: auth()->id(),
+          message: null,
+          notifyAuthor: false
+        ));
 
         return response()->json(['status' => 'success', 'message' => "Asset type: {$assetType->type_name} successfully restored"], 200);
       } else {
@@ -219,6 +240,14 @@ class AssetType extends Controller
     try {
       if ($assetType->trashed()) {
         $assetType->forceDelete();
+
+        event(new SystemResourceUpdated(
+          resource: 'asset_types',
+          action: 'delete',
+          performedBy: auth()->id(),
+          message: null,
+          notifyAuthor: false
+        ));
 
         return response()->json(['status' => 'success', 'message' => 'Asset type permanent delete successfully'], 200);
       } else {

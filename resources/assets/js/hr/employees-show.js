@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       agreement_type: {
         validators: {
           notEmpty: {
-            message: 'Please select type'
+            message: 'Type must be selected'
           }
         }
       },
@@ -401,5 +401,257 @@ document.addEventListener('DOMContentLoaded', function (e) {
     startDate._flatpickr.clear(false);
     endDate._flatpickr.clear(false);
     effectiveDate._flatpickr.clear(false);
+  });
+
+  // delete record
+  $(document).on('click', '.delete-record', function () {
+    var id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // sweetalert for confirmation of delete
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        confirmButton: 'btn btn-primary me-3',
+        cancelButton: 'btn btn-label-secondary'
+      },
+      buttonsStyling: false
+    }).then(function (result) {
+      Loading.circle({
+        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+        svgSize: '60px',
+        svgColor: config.colors.white
+      });
+
+      if (result.value) {
+        // delete the data
+        $.ajax({
+          method: 'DELETE',
+          url: `${currentPath}/employee_agreements/${id}`,
+          success: function (res) {
+            Loading.remove();
+            if (res.message) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: res.message,
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+              dt_employees.draw(false);
+            } else if (res.errors) {
+              console.log(res.errors);
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: res.error,
+                customClass: {
+                  confirmButton: 'btn btn-danger'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            Loading.remove();
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: jqXHR.responseJSON.error,
+              customClass: {
+                confirmButton: 'btn btn-danger'
+              }
+            });
+          }
+        });
+      } else {
+        Loading.remove();
+        Swal.fire({
+          title: 'Cancelled',
+          text: 'The agreement is not deleted!',
+          icon: 'error',
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        });
+      }
+    });
+  });
+
+  // restore record
+  $(document).on('click', '.restore-record', function () {
+    var id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // sweetalert for confirmation of restore
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, restore it!',
+      customClass: {
+        confirmButton: 'btn btn-primary me-3',
+        cancelButton: 'btn btn-label-secondary'
+      },
+      buttonsStyling: false
+    }).then(function (result) {
+      Loading.circle({
+        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+        svgSize: '60px',
+        svgColor: config.colors.white
+      });
+
+      if (result.value) {
+        // restore the data
+        $.ajax({
+          method: 'POST',
+          url: `${currentPath}/employee_agreements/${id}/restore`,
+          success: function (res) {
+            Loading.remove();
+            if (res.message) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Restored!',
+                text: res.message,
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+              dt_employees.draw(false);
+            } else if (res.errors) {
+              console.log(res.errors);
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: res.error,
+                customClass: {
+                  confirmButton: 'btn btn-danger'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            Loading.remove();
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: jqXHR.responseJSON.error,
+              customClass: {
+                confirmButton: 'btn btn-danger'
+              }
+            });
+          }
+        });
+      } else {
+        Loading.remove();
+        Swal.fire({
+          title: 'Cancelled',
+          text: 'The agreement is not restored!',
+          icon: 'error',
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        });
+      }
+    });
+  });
+
+  // permanent delete record
+  $(document).on('click', '.force-record', function () {
+    var id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // sweetalert for confirmation of permanent delete
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, permanent delete!',
+      customClass: {
+        confirmButton: 'btn btn-primary me-3',
+        cancelButton: 'btn btn-label-secondary'
+      },
+      buttonsStyling: false
+    }).then(function (result) {
+      Loading.circle({
+        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+        svgSize: '60px',
+        svgColor: config.colors.white
+      });
+
+      if (result.value) {
+        // permanent delete the data
+        $.ajax({
+          method: 'DELETE',
+          url: `${currentPath}/employee_agreements/${id}/force`,
+          success: function (res) {
+            Loading.remove();
+            if (res.message) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Permanent Deleted!',
+                text: res.message,
+                customClass: {
+                  confirmButton: 'btn btn-success'
+                }
+              });
+              dt_employees.draw(false);
+            } else if (res.errors) {
+              console.log(res.errors);
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: res.error,
+                customClass: {
+                  confirmButton: 'btn btn-danger'
+                }
+              });
+            }
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+            Loading.remove();
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: jqXHR.responseJSON.error,
+              customClass: {
+                confirmButton: 'btn btn-danger'
+              }
+            });
+          }
+        });
+      } else {
+        Loading.remove();
+        Swal.fire({
+          title: 'Cancelled',
+          text: 'The agreement is not deleted!',
+          icon: 'error',
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        });
+      }
+    });
   });
 });

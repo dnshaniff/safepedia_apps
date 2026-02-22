@@ -288,21 +288,21 @@ document.addEventListener('DOMContentLoaded', function (e) {
       unit_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter an organization unit name'
+            message: 'Unit name is required'
           }
         }
       },
       unit_code: {
         validators: {
           notEmpty: {
-            message: 'Please enter an organization unit code'
+            message: 'Unit code is required'
           }
         }
       },
       unit_type: {
         validators: {
           notEmpty: {
-            message: 'Please select an option'
+            message: 'Type must be selected'
           }
         }
       }
@@ -440,7 +440,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Organization Unit is not deleted!',
+          text: 'The organization unit is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Organization Unit is not restored!',
+          text: 'The organization unit is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -608,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Organization Unit is not deleted!',
+          text: 'The organization unit is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

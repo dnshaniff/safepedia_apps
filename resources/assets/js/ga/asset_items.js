@@ -8,65 +8,82 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableAssetCategories = $('.datatables-asset_categories'),
-    modalAssetCategory = $('#modalAssetCategory'),
-    modalTitle = modalAssetCategory.find('.modal-title');
+  const datatableItems = $('.datatables-items'),
+    modalItem = $('#modalItem'),
+    modalTitle = modalItem.find('.modal-title');
 
   window.ResourceRegistry = window.ResourceRegistry || {};
 
-  window.ResourceRegistry['asset_categories'] = () => {
-    dt_asset_categories.ajax.reload();
+  window.ResourceRegistry['asset_items'] = () => {
+    dt_items.ajax.reload();
   };
 
-  if (datatableAssetCategories) {
-    window.dt_asset_categories = new DataTable(datatableAssetCategories, {
+  if (datatableItems) {
+    window.dt_items = datatableItems.DataTable({
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}asset_categories`
+        url: `${baseUrl}asset_items`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'category_name' },
-        { data: 'category_code' },
-        { data: 'creator' },
-        { data: 'created_at' },
-        { data: 'updated_at' },
+        { data: 'item_code' },
+        { data: 'company' },
+        { data: 'asset_type' },
+        { data: 'item_specification' },
+        { data: 'item_status' },
         { data: 'id' }
       ],
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, 5, -1]
+          targets: [0, 1, 2, 3, 4, 5 - 1]
         },
         {
           searchable: true,
           targets: [1]
         },
         {
+          targets: 1,
+          render: function (data, type, row) {
+            return `<a href="${baseUrl}asset_items/${row.id}" class="fw-medium">${data}</a>`;
+          }
+        },
+        {
+          targets: 3,
+          render: function (data, type, row) {
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.asset_category}</span>
+                <span class="fw-medium">${data}</span>
+              </div>
+            `;
+          }
+        },
+        {
           targets: 4,
-          render: function (data, type, full, meta) {
-            const options = {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            };
-            return new Date(data).toLocaleString('en-GB', options);
+          render: function (data, type, row) {
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.item_brand}</span>
+                <span class="fw-medium">${data}</span>
+              </div>
+            `;
           }
         },
         {
           targets: 5,
           render: function (data, type, full, meta) {
-            const options = {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
+            const statusMap = {
+              Active: 'bg-label-primary',
+              'In Repair': 'bg-label-success',
+              Disposed: 'bg-label-warning',
+              Lost: 'bg-label-danger'
             };
-            return new Date(data).toLocaleString('en-GB', options);
+
+            const statusClass = statusMap[data] || 'bg-label-secondary';
+
+            return `<span class="badge ${statusClass}">${data}</span>`;
           }
         },
         {
@@ -88,9 +105,12 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalAssetCategory" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon edit-record" data-id="${data}" data-bs-target="#modalItem" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
+                <a href="/asset_items/${data}/qr" data-fancybox="qr" class="btn btn-icon">
+                  <i class="bx bx-qr"></i>
+                </a>
                 <button class="btn btn-icon delete-record" data-id="${data}">
                   <i class="bx bx-trash-alt"></i>
                 </button>
@@ -119,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Category',
+                placeholder: 'Search Code',
                 text: '_INPUT_'
               }
             },
@@ -130,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalAssetCategory'
+                    'data-bs-target': '#modalItem'
                   }
                 }
               ]
@@ -182,22 +202,50 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formAssetCategory = document.getElementById('formAssetCategory'),
-    categoryName = formAssetCategory.querySelector('#category_name'),
-    categoryCode = formAssetCategory.querySelector('#category_code'),
-    btnSubmit = formAssetCategory.querySelector('button[type="submit"]');
+  const formItem = document.getElementById('formItem'),
+    typeSelect = formItem.querySelector('#asset_type_id'),
+    itemBrand = formItem.querySelector('#item_brand'),
+    serialNumber = formItem.querySelector('#serial_number'),
+    itemModel = formItem.querySelector('#item_model'),
+    itemSpecification = formItem.querySelector('#item_specification'),
+    companySelect = formItem.querySelector('#company_id'),
+    statusSelect = formItem.querySelector('#item_status'),
+    btnSubmit = formItem.querySelector('button[type="submit"]');
 
   let editingId = null;
 
+  initDropdownPaged($(typeSelect), {
+    url: '/asset_types/select',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
+  initDropdownPaged($(companySelect), {
+    url: '/companies/select',
+    placeholder: 'Select an option',
+    perPage: 10
+  });
+
+  initStatic($(statusSelect), {
+    placeholder: 'Select an option',
+    disableSearch: true,
+    data: [
+      { id: 'Active', text: 'Active' },
+      { id: 'In Repair', text: 'In Repair' },
+      { id: 'Disposed', text: 'Disposed' },
+      { id: 'Lost', text: 'Lost' }
+    ]
+  });
+
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create Asset Category');
+    modalTitle.html('Create Asset Item');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
 
   // edit record
-  $(document).on('click', '.edit-record', function (e) {
+  $(document).on('click', '.edit-record', function () {
     const id = $(this).data('id'),
       dtrModal = $('.dtr-bs-modal.show');
 
@@ -205,30 +253,63 @@ document.addEventListener('DOMContentLoaded', function (e) {
       dtrModal.modal('hide');
     }
 
-    modalTitle.html('Edit Asset Category');
+    modalTitle.html('Edit Asset Item');
     $(btnSubmit).html('Save');
 
-    // get data
-    $.get(`${baseUrl}asset_categories/${id}/edit`, function (data) {
+    $.get(`${baseUrl}asset_items/${id}/edit`, function (data) {
       editingId = id;
-      categoryName.value = data.category_name || '';
-      categoryCode.value = data.category_code || '';
+
+      data.type && data.type.id != null
+        ? setEvaluated($(typeSelect), { id: data.type.id, text: data.type.type_name })
+        : $(typeSelect).val(null).trigger('change');
+
+      itemBrand.value = data.item_brand || '';
+      serialNumber.value = data.serial_number || '';
+      itemModel.value = data.item_model || '';
+      itemSpecification.value = data.item_specification || '';
+
+      data.company && data.company.id != null
+        ? setEvaluated($(companySelect), { id: data.company.id, text: data.company.company_name })
+        : $(companySelect).val(null).trigger('change');
+
+      $(statusSelect).val(data.item_status).trigger('change');
     });
   });
 
-  FormValidation.formValidation(formAssetCategory, {
+  FormValidation.formValidation(formItem, {
     fields: {
-      category_name: {
+      asset_type_id: {
         validators: {
           notEmpty: {
-            message: 'Category name is required'
+            message: 'Type must be selected'
           }
         }
       },
-      category_code: {
+      item_brand: {
         validators: {
           notEmpty: {
-            message: 'Category code is required'
+            message: 'Asset brand is required'
+          }
+        }
+      },
+      item_specification: {
+        validators: {
+          notEmpty: {
+            message: 'Specification is required'
+          }
+        }
+      },
+      company_id: {
+        validators: {
+          notEmpty: {
+            message: 'Company must be selected'
+          }
+        }
+      },
+      item_status: {
+        validators: {
+          notEmpty: {
+            message: 'Status must be selected'
           }
         }
       }
@@ -237,7 +318,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
       trigger: new FormValidation.plugins.Trigger(),
       bootstrap5: new FormValidation.plugins.Bootstrap5({
         eleValidClass: '',
-        rowSelector: '.mb-3'
+        rowSelector: function (field, ele) {
+          return '.mb-3';
+        }
       }),
       submitButton: new FormValidation.plugins.SubmitButton(),
       autoFocus: new FormValidation.plugins.AutoFocus()
@@ -249,17 +332,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    let url = editingId ? `${baseUrl}asset_categories/${editingId}` : `${baseUrl}asset_categories`;
+    let url = editingId ? `${baseUrl}asset_items/${editingId}` : `${baseUrl}asset_items`;
     let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
-      data: $(formAssetCategory).serialize(),
+      data: $(formItem).serialize(),
       url: url,
       type: method,
       success: function (res) {
         Loading.remove();
-        dt_asset_categories.draw(false);
-        modalAssetCategory.modal('hide');
+        dt_items.draw(false);
+        modalItem.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -283,8 +366,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   });
 
-  modalAssetCategory.on('hidden.bs.modal', function () {
-    formAssetCategory.reset();
+  // clearing form data when modal hidden
+  modalItem.on('hidden.bs.modal', function () {
+    formItem.reset();
+    $(formItem).find('select').val(null).trigger('change');
+    editingId = null;
   });
 
   // delete record
@@ -320,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}asset_categories/${id}`,
+          url: `${baseUrl}asset_items/${id}`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -332,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_asset_categories.draw(false);
+              dt_items.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -361,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The category is not deleted!',
+          text: 'The asset item is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -404,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // restore the data
         $.ajax({
           method: 'POST',
-          url: `${baseUrl}asset_categories/${id}/restore`,
+          url: `${baseUrl}asset_items/${id}/restore`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -416,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_asset_categories.draw(false);
+              dt_items.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -445,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The category is not restored!',
+          text: 'The asset item is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -488,7 +574,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // permanent delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}asset_categories/${id}/force`,
+          url: `${baseUrl}asset_items/${id}/force`,
           success: function (res) {
             Loading.remove();
             if (res.message) {
@@ -500,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   confirmButton: 'btn btn-success'
                 }
               });
-              dt_asset_categories.draw(false);
+              dt_items.draw(false);
             } else if (res.errors) {
               console.log(res.errors);
               Swal.fire({
@@ -529,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The category is not deleted!',
+          text: 'The asset item is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

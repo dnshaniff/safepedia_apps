@@ -12,10 +12,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
     modalAssetLocation = $('#modalAssetLocation'),
     modalTitle = modalAssetLocation.find('.modal-title');
 
-  let dt_asset_locations;
+  window.ResourceRegistry = window.ResourceRegistry || {};
+
+  window.ResourceRegistry['asset_locations'] = () => {
+    dt_asset_locations.ajax.reload();
+  };
 
   if (datatableAssetLocations) {
-    dt_asset_locations = new DataTable(datatableAssetLocations, {
+    window.dt_asset_locations = new DataTable(datatableAssetLocations, {
       processing: true,
       serverSide: true,
       ajax: {
@@ -214,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       location_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter location name'
+            message: 'Location name is required'
           }
         }
       }
@@ -347,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not deleted!',
+          text: 'The location is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -431,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not restored!',
+          text: 'The location is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -515,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not deleted!',
+          text: 'The location is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

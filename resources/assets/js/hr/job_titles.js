@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Job Title',
+                placeholder: 'Search title',
                 text: '_INPUT_'
               }
             },
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       title_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter job title name'
+            message: 'Title name is required'
           }
         }
       }
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not deleted!',
+          text: 'The title is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not restored!',
+          text: 'The title is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -515,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not deleted!',
+          text: 'The title is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

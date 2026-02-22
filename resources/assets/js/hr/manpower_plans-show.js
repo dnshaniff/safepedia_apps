@@ -305,35 +305,35 @@ document.addEventListener('DOMContentLoaded', function (e) {
       org_unit_id: {
         validators: {
           notEmpty: {
-            message: 'Please select Organization Unit'
+            message: 'Organization unit must be selected'
           }
         }
       },
       position_title: {
         validators: {
           notEmpty: {
-            message: 'Please enter position title'
+            message: 'Title is required'
           }
         }
       },
       planned_date: {
         validators: {
           notEmpty: {
-            message: 'Please select planned date'
+            message: 'Planned date must be selected'
           }
         }
       },
       number_positions: {
         validators: {
           notEmpty: {
-            message: 'Please enter number of positions'
+            message: 'Number of position is required'
           }
         }
       },
       'devices[]': {
         validators: {
           notEmpty: {
-            message: 'Please select at least one device'
+            message: 'At least one device must be selected'
           }
         }
       }
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not deleted!',
+          text: 'The manpower is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -554,7 +554,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not restored!',
+          text: 'The manpower is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -638,7 +638,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not deleted!',
+          text: 'The manpower is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

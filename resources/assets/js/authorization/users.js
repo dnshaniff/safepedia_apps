@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       username: {
         validators: {
           notEmpty: {
-            message: 'Please enter an username'
+            message: 'Username is required'
           },
           stringLength: {
             min: 4,
@@ -306,14 +306,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
       role: {
         validators: {
           notEmpty: {
-            message: 'Please select a role'
+            message: 'Role must be selected'
           }
         }
       },
       status: {
         validators: {
           notEmpty: {
-            message: 'Please select a status'
+            message: 'Status must be selected'
           }
         }
       }

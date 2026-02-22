@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       name: {
         validators: {
           notEmpty: {
-            message: 'Please enter a role name'
+            message: 'Role name is required'
           }
         }
       }

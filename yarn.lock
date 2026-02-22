@@ -1069,6 +1069,11 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.57.1.tgz"
   integrity sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==
 
+"@fancyapps/ui@^6.1.11":
+  version "6.1.11"
+  resolved "https://registry.npmjs.org/@fancyapps/ui/-/ui-6.1.11.tgz"
+  integrity sha512-6MrKw47k5vATlMewFj36TK3vZvpLyjcJ9wb0R+X8CH1QzG60rhqCC+llclnp85JhHIlw4pC7ILfh1hy7xDqNtA==
+
 "@floating-ui/core@^1.6.0":
   version "1.6.9"
   resolved "https://registry.npmjs.org/@floating-ui/core/-/core-1.6.9.tgz"

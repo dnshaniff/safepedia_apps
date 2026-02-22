@@ -12,10 +12,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
     modalAssetType = $('#modalAssetType'),
     modalTitle = modalAssetType.find('.modal-title');
 
-  let dt_asset_types;
+  window.ResourceRegistry = window.ResourceRegistry || {};
+
+  window.ResourceRegistry['asset_types'] = () => {
+    dt_asset_types.ajax.reload();
+  };
 
   if (datatableAssetTypes) {
-    dt_asset_types = new DataTable(datatableAssetTypes, {
+    window.dt_asset_types = new DataTable(datatableAssetTypes, {
       processing: true,
       serverSide: true,
       ajax: {
@@ -251,21 +255,21 @@ document.addEventListener('DOMContentLoaded', function (e) {
       asset_category_id: {
         validators: {
           notEmpty: {
-            message: 'Please select category'
+            message: 'Category must be selected'
           }
         }
       },
       type_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter type name'
+            message: 'Type name is required'
           }
         }
       },
       type_code: {
         validators: {
           notEmpty: {
-            message: 'Please enter type code'
+            message: 'Type code is required'
           }
         }
       }
@@ -400,7 +404,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not deleted!',
+          text: 'The type is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -484,7 +488,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not restored!',
+          text: 'The type is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -568,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Job Title is not deleted!',
+          text: 'The type is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

@@ -435,49 +435,49 @@ document.addEventListener('DOMContentLoaded', function (e) {
       employee_code: {
         validators: {
           notEmpty: {
-            message: 'Please enter employee id'
+            message: 'ID employee is required'
           }
         }
       },
       full_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter full name'
+            message: 'Full name is required'
           }
         }
       },
       join_date: {
         validators: {
           notEmpty: {
-            message: 'Please select join date'
+            message: 'Join date must be selected'
           }
         }
       },
       company_id: {
         validators: {
           notEmpty: {
-            message: 'Please select company'
+            message: 'Company must be selected'
           }
         }
       },
       org_unit_id: {
         validators: {
           notEmpty: {
-            message: 'Please select Organization Unit'
+            message: 'Organization must be selected'
           }
         }
       },
       job_title_id: {
         validators: {
           notEmpty: {
-            message: 'Please select job title'
+            message: 'Title must be selected'
           }
         }
       },
       employment_status: {
         validators: {
           notEmpty: {
-            message: 'Please select employment type'
+            message: 'Status must be selected'
           }
         }
       },
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       personal_email: {
         validators: {
           notEmpty: {
-            message: 'Please enter personal email'
+            message: 'Personal email is required'
           },
           emailAddress: {
             message: 'The value is not a valid email address'
@@ -501,28 +501,28 @@ document.addEventListener('DOMContentLoaded', function (e) {
       phone_number: {
         validators: {
           notEmpty: {
-            message: 'Please enter phone number'
+            message: 'Phone number is required'
           }
         }
       },
       gender: {
         validators: {
           notEmpty: {
-            message: 'Please select gender'
+            message: 'Gender must be selected'
           }
         }
       },
       date_of_birth: {
         validators: {
           notEmpty: {
-            message: 'Please select birth date'
+            message: 'Birth date must be selected'
           }
         }
       },
       ktp_number: {
         validators: {
           notEmpty: {
-            message: 'Please enter KTP number'
+            message: 'KTP number is required'
           }
         }
       }
@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Organization Unit is not deleted!',
+          text: 'The employee is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Organization Unit is not restored!',
+          text: 'The employee is not restored!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'
@@ -831,7 +831,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         Loading.remove();
         Swal.fire({
           title: 'Cancelled',
-          text: 'The Organization Unit is not deleted!',
+          text: 'The employee is not deleted!',
           icon: 'error',
           customClass: {
             confirmButton: 'btn btn-success'

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Events\SystemResourceUpdated;
 use Illuminate\Validation\ValidationException;
 use App\Models\AssetCategory as ModelsAssetCategory;
 
@@ -111,6 +112,14 @@ class AssetCategory extends Controller
         return ModelsAssetCategory::create($validated);
       });
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_categories',
+        action: 'store',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset category: {$assetCategory->category_name} created successfully"], 201);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
@@ -142,6 +151,14 @@ class AssetCategory extends Controller
         $assetCategory->update($validated);
       });
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_categories',
+        action: 'update',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset category: {$assetCategory->category_name} updated successfully"], 200);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
@@ -161,6 +178,14 @@ class AssetCategory extends Controller
     try {
       $assetCategory->delete();
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_categories',
+        action: 'delete',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset category: {$assetCategory->category_name} deleted successfully"], 200);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
@@ -179,6 +204,14 @@ class AssetCategory extends Controller
     try {
       if ($assetCategory->trashed()) {
         $assetCategory->restore();
+
+        event(new SystemResourceUpdated(
+          resource: 'asset_categories',
+          action: 'restore',
+          performedBy: auth()->id(),
+          message: null,
+          notifyAuthor: false
+        ));
 
         return response()->json(['status' => 'success', 'message' => "Asset category: {$assetCategory->category_name} successfully restored"], 200);
       } else {
@@ -201,6 +234,14 @@ class AssetCategory extends Controller
     try {
       if ($assetCategory->trashed()) {
         $assetCategory->forceDelete();
+
+        event(new SystemResourceUpdated(
+          resource: 'asset_categories',
+          action: 'delete',
+          performedBy: auth()->id(),
+          message: null,
+          notifyAuthor: false
+        ));
 
         return response()->json(['status' => 'success', 'message' => 'Asset category permanent delete successfully'], 200);
       } else {

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Events\SystemResourceUpdated;
 use Illuminate\Validation\ValidationException;
 use App\Models\AssetLocation as ModelsAssetLocation;
 
@@ -107,6 +108,14 @@ class AssetLocation extends Controller
         return ModelsAssetLocation::create($validated);
       });
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_locations',
+        action: 'store',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset location: {$assetLocation->location_name} created successfully"], 201);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
@@ -135,6 +144,14 @@ class AssetLocation extends Controller
         $assetLocation->update($validated);
       });
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_locations',
+        action: 'update',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset location: {$assetLocation->location_name} updated successfully"], 200);
     } catch (ValidationException $e) {
       $message = collect($e->errors())->flatten()->implode("\n");
@@ -154,6 +171,14 @@ class AssetLocation extends Controller
     try {
       $assetLocation->delete();
 
+      event(new SystemResourceUpdated(
+        resource: 'asset_locations',
+        action: 'delete',
+        performedBy: auth()->id(),
+        message: null,
+        notifyAuthor: false
+      ));
+
       return response()->json(['status' => 'success', 'message' => "Asset location: {$assetLocation->location_name} deleted successfully"], 200);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
@@ -172,6 +197,14 @@ class AssetLocation extends Controller
     try {
       if ($assetLocation->trashed()) {
         $assetLocation->restore();
+
+        event(new SystemResourceUpdated(
+          resource: 'asset_locations',
+          action: 'restore',
+          performedBy: auth()->id(),
+          message: null,
+          notifyAuthor: false
+        ));
 
         return response()->json(['status' => 'success', 'message' => "Asset location: {$assetLocation->location_name} successfully restored"], 200);
       } else {
@@ -194,6 +227,14 @@ class AssetLocation extends Controller
     try {
       if ($assetLocation->trashed()) {
         $assetLocation->forceDelete();
+
+        event(new SystemResourceUpdated(
+          resource: 'asset_locations',
+          action: 'delete',
+          performedBy: auth()->id(),
+          message: null,
+          notifyAuthor: false
+        ));
 
         return response()->json(['status' => 'success', 'message' => 'Asset location permanent delete successfully'], 200);
       } else {

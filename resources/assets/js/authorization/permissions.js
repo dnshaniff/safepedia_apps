@@ -243,21 +243,21 @@ document.addEventListener('DOMContentLoaded', function (e) {
       display_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter a permission name'
+            message: 'permission name is required'
           }
         }
       },
       name: {
         validators: {
           notEmpty: {
-            message: 'Please enter a permission route'
+            message: 'permission route is required'
           }
         }
       },
       group_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter a permission group'
+            message: 'Permission group is required'
           }
         }
       }

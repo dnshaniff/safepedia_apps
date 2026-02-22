@@ -217,14 +217,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
       company_name: {
         validators: {
           notEmpty: {
-            message: 'Please enter company name'
+            message: 'Company name is required'
           }
         }
       },
       company_code: {
         validators: {
           notEmpty: {
-            message: 'Please enter company code'
+            message: 'Company code is required'
           }
         }
       }

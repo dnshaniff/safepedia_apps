@@ -7,6 +7,7 @@ use App\Http\Controllers\authorization\Role;
 use App\Http\Controllers\authorization\User;
 use App\Http\Controllers\authorization\Permission;
 use App\Http\Controllers\ga\AssetCategory;
+use App\Http\Controllers\ga\AssetItem;
 use App\Http\Controllers\ga\AssetLocation;
 use App\Http\Controllers\ga\AssetType;
 use App\Http\Controllers\hr\Employee;
@@ -17,6 +18,9 @@ use App\Http\Controllers\hr\Company;
 use App\Http\Controllers\hr\JobTitle;
 use App\Http\Controllers\hr\OrgUnit;
 use App\Http\Controllers\hr\TaCandidate;
+
+// Detail Asset by QR
+Route::get('/a/{asset_item:public_code}', [AssetItem::class, 'publicShow'])->name('assets.public.show');
 
 /**
  * Guest
@@ -59,6 +63,13 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   Route::patch('/profile/{username}', [Dashboard::class, 'update'])->name('profile.update');
 
   // General Affairs
+  // Asset Items
+  Route::get('/asset-asset_items', [AssetItem::class, 'view'])->name('asset-asset_items');
+  Route::resource('asset_items', AssetItem::class)->except('create');
+  Route::get('/asset_items/{asset_item}/qr', [AssetItem::class, 'qr'])->name('asset_items.qr');
+  Route::post('asset_items/{asset_item}/restore', [AssetItem::class, 'restore'])->name('asset_items.restore');
+  Route::post('asset_items/{asset_item}/force', [AssetItem::class, 'force'])->name('asset_items.force');
+
   // Asset Categories
   Route::get('/masterga-asset_categories', [AssetCategory::class, 'view'])->name('masterga-asset_categories');
   Route::resource('/asset_categories', AssetCategory::class)->except('create', 'show');
