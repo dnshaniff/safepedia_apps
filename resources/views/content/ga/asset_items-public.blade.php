@@ -47,6 +47,41 @@
                     </ul>
                 </div>
             </div>
+            <div class="card mb-6">
+                <div class="card-body">
+                    <small class="card-text text-uppercase text-body-secondary small">
+                        Current Assignment
+                    </small>
+                    <ul class="list-unstyled mb-0 mt-3 pt-1">
+                        <li class="d-flex align-items-center mb-3">
+                            <i class="icon-base bx bx-user"></i>
+                            <span class="fw-medium mx-2">Assigned To:</span>
+                            <span>Denis</span>
+                        </li>
+
+                        <li class="d-flex align-items-center">
+                            <i class="icon-base bx bx-calendar"></i>
+                            <span class="fw-medium mx-2">Since:</span>
+                            <span>24 February 2026</span>
+                        </li>
+                    </ul>
+                    <small class="card-text text-uppercase text-body-secondary small">
+                        Report This Item
+                    </small>
+                    <div class="d-flex align-items-start mt-3">
+                        <i class="icon-base bx bx-envelope me-2 mt-1"></i>
+                        <div>
+                            <p class="mb-2 text-muted">
+                                If you found this item, please contact:
+                            </p>
+                            <a href="mailto:denis@goodsale.tech?subject=Found Asset - {{ $assetItem->type->type_name }}&body=I found this item:"
+                                class="fw-medium text-decoration-none">
+                                denis@goodsale.tech
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-xl-8 col-lg-7 col-md-7">
             <div class="card card-action mb-6">
