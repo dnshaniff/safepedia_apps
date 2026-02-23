@@ -52,7 +52,7 @@
                     <small class="card-text text-uppercase text-body-secondary small">
                         Current Assignment
                     </small>
-                    <ul class="list-unstyled mb-0 mt-3 pt-1">
+                    <ul class="list-unstyled mb-0 my-3 py-1">
                         <li class="d-flex align-items-center mb-4">
                             <i class="icon-base bx bx-user"></i>
                             <span class="fw-medium mx-2">Assigned To:</span>
@@ -68,8 +68,8 @@
                     <small class="card-text text-uppercase text-body-secondary small">
                         Report This Item
                     </small>
-                    <div class="d-flex align-items-start mt-3">
-                        <i class="icon-base bx bx-envelope me-2 mt-1"></i>
+                    <div class="d-flex align-items-start my-3 py-1">
+                        <i class="icon-base bx bx-envelope me-2 my-2"></i>
                         <div>
                             <p class="mb-2 text-muted">
                                 If you found this item, please contact:
