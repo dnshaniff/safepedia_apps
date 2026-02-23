@@ -30,9 +30,9 @@
                             <tr>
                                 <th width="1px">#</th>
                                 <th class="text-start">Code</th>
-                                <th class="text-start">PT</th>
                                 <th class="text-start">Type</th>
                                 <th class="text-start">Specification</th>
+                                <th class="text-start">Current Placement</th>
                                 <th class="text-start">Status</th>
                                 <th width="1px">Action</th>
                             </tr>

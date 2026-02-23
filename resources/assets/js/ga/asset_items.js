@@ -28,9 +28,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columns: [
         { data: 'fake_id' },
         { data: 'item_code' },
-        { data: 'company' },
         { data: 'asset_type' },
         { data: 'item_specification' },
+        { data: 'placement' },
         { data: 'item_status' },
         { data: 'id' }
       ],
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 3,
+          targets: 2,
           render: function (data, type, row) {
             return `
               <div class="d-flex flex-column">
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 4,
+          targets: 3,
           render: function (data, type, row) {
             return `
               <div class="d-flex flex-column">
@@ -78,10 +78,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
               Active: 'bg-label-primary',
               'In Repair': 'bg-label-success',
               Disposed: 'bg-label-warning',
-              Lost: 'bg-label-danger'
+              Lost: 'bg-label-danger',
+              Retired: 'bg-label-secondary'
             };
 
-            const statusClass = statusMap[data] || 'bg-label-secondary';
+            const statusClass = statusMap[data];
 
             return `<span class="badge ${statusClass}">${data}</span>`;
           }
@@ -231,9 +232,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
     disableSearch: true,
     data: [
       { id: 'Active', text: 'Active' },
-      { id: 'In Repair', text: 'In Repair' },
       { id: 'Disposed', text: 'Disposed' },
-      { id: 'Lost', text: 'Lost' }
+      { id: 'In Repair', text: 'In Repair' },
+      { id: 'Lost', text: 'Lost' },
+      { id: 'Retired', text: 'Retired' }
     ]
   });
 
@@ -260,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       editingId = id;
 
       data.type && data.type.id != null
-        ? setEvaluated($(typeSelect), { id: data.type.id, text: data.type.type_name })
+        ? setValue($(typeSelect), { id: data.type.id, text: data.type.type_name })
         : $(typeSelect).val(null).trigger('change');
 
       itemBrand.value = data.item_brand || '';
@@ -269,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       itemSpecification.value = data.item_specification || '';
 
       data.company && data.company.id != null
-        ? setEvaluated($(companySelect), { id: data.company.id, text: data.company.company_name })
+        ? setValue($(companySelect), { id: data.company.id, text: data.company.company_name })
         : $(companySelect).val(null).trigger('change');
 
       $(statusSelect).val(data.item_status).trigger('change');

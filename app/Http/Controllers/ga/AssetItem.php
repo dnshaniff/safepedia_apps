@@ -65,7 +65,7 @@ class AssetItem extends Controller
         $nestedData['asset_type'] = $item->type->type_name;
         $nestedData['item_brand'] = $item->item_brand;
         $nestedData['item_specification'] = $item->item_model ? "{$item->item_model} {$item->item_specification}" : $item->item_specification;
-        $nestedData['company'] = $item->company->company_code;
+        $nestedData['placement'] = '';
         $nestedData['item_status'] = $item->item_status;
         $nestedData['deleted_at'] = $item->deleted_at;
 
@@ -135,19 +135,28 @@ class AssetItem extends Controller
 
   public function publicShow(ModelsAssetItem $assetItem)
   {
+    if ($assetItem->deleted_at) {
+      abort(404);
+    }
+
     $pageConfigs = ['myLayout' => 'blank'];
 
-    return view('content.ga.asset_items', compact('assetItem', 'pageConfigs'));
+    return view('content.ga.asset_items-public', compact('assetItem', 'pageConfigs'));
   }
 
   public function show(ModelsAssetItem $assetItem)
   {
-    //
+    $publicUrl = route('assets.public.show', $assetItem->public_code);
+    $qrUrl = route('asset_items.qr', $assetItem->id);
+
+    return view('content.ga.asset_items-show', compact('assetItem', 'publicUrl', 'qrUrl'));
   }
 
   public function edit(ModelsAssetItem $assetItem)
   {
-    //
+    $assetItem->load(['type:id,type_name', 'company:id,company_name']);
+
+    return response()->json($assetItem, 200);
   }
 
   public function update(UpdateAssetItemRequest $request, ModelsAssetItem $assetItem)

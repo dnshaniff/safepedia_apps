@@ -45,5 +45,6 @@ class AssetItem extends Model
     'In Repair',
     'Lost',
     'Disposed',
+    'Retired'
   ];
 }

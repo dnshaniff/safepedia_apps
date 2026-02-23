@@ -21,7 +21,7 @@ return new class extends Migration
       $table->string('item_model')->nullable();
       $table->text('item_specification')->nullable();
       $table->foreignId('company_id')->nullable()->constrained('companies', 'id')->onDelete('SET NULL');
-      $table->enum('item_status', ['Active', 'In Repar', 'Disposed', 'Lost'])->default('Active');
+      $table->enum('item_status', ['Active', 'In Repair', 'Disposed', 'Lost', 'Retired'])->default('Active');
       $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->onDelete('SET NULL');
       $table->timestamps();
       $table->softDeletes();
