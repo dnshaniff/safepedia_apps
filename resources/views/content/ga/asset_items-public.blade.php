@@ -6,6 +6,10 @@
 
 @section('title', 'Asset Detail')
 
+@section('vendor-script')
+    @vite(['resources/assets/vendor/libs/fancybox/fancybox.js'])
+@endsection
+
 @section('content')
     <div class="row">
         <div class="col-xl-4 col-lg-5 col-md-5">
