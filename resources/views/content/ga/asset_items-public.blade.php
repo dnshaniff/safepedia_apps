@@ -53,13 +53,13 @@
                         Current Assignment
                     </small>
                     <ul class="list-unstyled mb-0 mt-3 pt-1">
-                        <li class="d-flex align-items-center mb-3">
+                        <li class="d-flex align-items-center mb-4">
                             <i class="icon-base bx bx-user"></i>
                             <span class="fw-medium mx-2">Assigned To:</span>
                             <span>Denis</span>
                         </li>
 
-                        <li class="d-flex align-items-center">
+                        <li class="d-flex align-items-center mb-2">
                             <i class="icon-base bx bx-calendar"></i>
                             <span class="fw-medium mx-2">Since:</span>
                             <span>24 February 2026</span>
