@@ -51,7 +51,7 @@
         <div class="col-xl-8 col-lg-7 col-md-7">
             <div class="card card-action mb-6">
                 <div class="card-header align-items-center">
-                    <h5 class="card-action-title mb-0">Picture & QR</h5>
+                    <h5 class="card-action-title mb-0">Picture</h5>
                 </div>
                 <div class="card-body">
                     <div class="col-md-7 mb-4 mb-md-0 text-center">
