@@ -59,7 +59,7 @@
                             <span>Denis</span>
                         </li>
 
-                        <li class="d-flex align-items-center mb-2">
+                        <li class="d-flex align-items-center mb-4">
                             <i class="icon-base bx bx-calendar"></i>
                             <span class="fw-medium mx-2">Since:</span>
                             <span>24 February 2026</span>
