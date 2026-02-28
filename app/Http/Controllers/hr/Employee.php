@@ -106,6 +106,7 @@ class Employee extends Controller
       $query->where(function ($q) use ($search) {
         $q->where('full_name', 'LIKE', "%{$search}%")
           ->orWhere('employee_code', 'LIKE', "%{$search}%")
+          ->orWhere('employment_status', 'LIKE', "%{$search}%")
           ->orWhereHas('orgUnit', function ($q2) use ($search) {
             $q2->where('unit_name', 'LIKE', "%{$search}%");
           })
