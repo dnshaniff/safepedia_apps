@@ -579,13 +579,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
     $.ajax({
       data: formData,
-      url: `${baseUrl}employees/import`,
+      url: `${baseUrl}job_titles/import`,
       type: 'POST',
       processData: false,
       contentType: false,
       success: function (res) {
         Loading.remove();
-        dt_employees.draw(false);
+        dt_job_titles.draw(false);
         modalImport.modal('hide');
 
         showToast(res.status, res.message);
