@@ -131,6 +131,7 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   // Job Titles
   Route::get('/masterhr-job_titles', [JobTitle::class, 'view'])->name('masterhr-job_titles');
   Route::resource('/job_titles', JobTitle::class)->except('create', 'show');
+  Route::post('/job_titles/import', [JobTitle::class, 'import'])->name('job_titles.import');
   Route::post('/job_titles/{job_title}/restore', [JobTitle::class, 'restore'])->name('job_titles.restore');
   Route::delete('/job_titles/{job_title}/force', [JobTitle::class, 'force'])->name('job_titles.force');
 

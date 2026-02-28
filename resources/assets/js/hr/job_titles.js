@@ -122,10 +122,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
               buttons: [
                 {
                   text: 'Create New',
-                  className: 'add-new btn btn-primary mb-3 mb-md-0',
+                  className: 'add-new btn btn-primary mb-3 mb-md-0 me-3',
                   attr: {
                     'data-bs-toggle': 'modal',
                     'data-bs-target': '#modalJobTitle'
+                  }
+                }
+              ]
+            },
+            {
+              buttons: [
+                {
+                  text: '<i class="bx bx-import"></i>',
+                  className: 'import-record btn btn-primary mb-3 mb-md-0',
+                  attr: {
+                    'data-bs-toggle': 'modal',
+                    'data-bs-target': '#modalImport'
                   }
                 }
               ]
@@ -523,5 +535,83 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       }
     });
+  });
+
+  const modalImport = $('#modalImport'),
+    formImport = document.getElementById('formImport');
+
+  FormValidation.formValidation(formImport, {
+    fields: {
+      file_import: {
+        validators: {
+          file: {
+            extension: 'xls,xlsx',
+            maxSize: 5120 * 1024, // ukuran maksimal dalam byte
+            message: 'Please choose a valid file (xls, xlsx)'
+          }
+        }
+      }
+    },
+    plugins: {
+      trigger: new FormValidation.plugins.Trigger(),
+      bootstrap5: new FormValidation.plugins.Bootstrap5({
+        eleValidClass: '',
+        rowSelector: '.mb-3'
+      }),
+      submitButton: new FormValidation.plugins.SubmitButton(),
+      autoFocus: new FormValidation.plugins.AutoFocus()
+    },
+    init: instance => {
+      instance.on('plugins.message.placed', e => {
+        if (e.element.parentElement.classList.contains('input-group')) {
+          e.element.parentElement.insertAdjacentElement('afterend', e.messageElement);
+        }
+      });
+    }
+  }).on('core.form.valid', function () {
+    Loading.circle({
+      backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+      svgSize: '60px',
+      svgColor: config.colors.white
+    });
+
+    const formData = new FormData(formImport);
+
+    $.ajax({
+      data: formData,
+      url: `${baseUrl}employees/import`,
+      type: 'POST',
+      processData: false,
+      contentType: false,
+      success: function (res) {
+        Loading.remove();
+        dt_employees.draw(false);
+        modalImport.modal('hide');
+
+        showToast(res.status, res.message);
+      },
+      error: function (xhr, status, error) {
+        let res = xhr.responseJSON;
+        if (res) {
+          Loading.remove();
+          showToast(res.status, res.message);
+          if (res.errors) {
+            for (let field in res.errors) {
+              res.errors[field].forEach(errorMessage => {
+                console.log(`${field}: ${errorMessage}`);
+              });
+            }
+          }
+        } else {
+          Loading.remove();
+          showToast('danger', 'An unexpected error occurred');
+        }
+      }
+    });
+  });
+
+  // clearing form data when modal hidden
+  modalImport.on('hidden.bs.modal', function () {
+    formImport.reset();
   });
 });

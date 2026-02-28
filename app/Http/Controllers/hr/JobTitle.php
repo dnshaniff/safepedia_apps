@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ImportJobTitleRequest;
+use App\Jobs\ImportJobTitlesJob;
 use App\Models\JobTitle as ModelsJobTitle;
 use Illuminate\Validation\ValidationException;
 
@@ -206,6 +208,25 @@ class JobTitle extends Controller
       ]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
+  }
+
+  public function import(ImportJobTitleRequest $request)
+  {
+    try {
+      $file = $request->file('file');
+      $path = $file->store('imports/job_titles');
+
+      ImportJobTitlesJob::dispatch($path, auth()->id());
+
+      return response()->json(['status' => 'success', 'message' => 'Import process started'], 201);
+    } catch (Throwable $e) {
+      Log::error('Unexpected error while processing request', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
+
+      return response()->json(['status' => 'danger', 'message' => 'Failed to start import process'], 500);
     }
   }
 }

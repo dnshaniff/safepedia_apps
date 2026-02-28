@@ -65,4 +65,26 @@
             </form>
         </div>
     </div>
+
+    <div class="modal fade" id="modalImport" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <form id="formImport" class="modal-content" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="backDropModalTitle">Import Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="file">Upload File</label>
+                        <input id="file" name="file" class="form-control" type="file"accept=".xls,.xlsx">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="reset" class="btn btn-label-danger" data-bs-dismiss="modal"
+                        aria-label="Close">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
