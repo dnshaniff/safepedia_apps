@@ -38,7 +38,7 @@ class ImportJobTitlesJob implements ShouldQueue
         'inserted' => $import->getInsertedCount(),
       ]);
 
-      Storage::delete($this->path);
+      Storage::disk('local')->delete($this->path);
 
       event(new SystemResourceUpdated(
         resource: 'job_titles',

@@ -37,13 +37,9 @@ class EmployeesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCh
 
   public function prepareForValidation($data, $index)
   {
-    $data['employee_code'] = isset($data['employee_code'])
-      ? ltrim(trim($data['employee_code']), "'")
-      : null;
+    $data['employee_code'] = isset($data['employee_code']) ? ltrim(trim($data['employee_code']), "'") : null;
 
-    $data['phone_number'] = isset($data['phone_number'])
-      ? preg_replace('/\s+/', '', $data['phone_number'])
-      : null;
+    $data['phone_number'] = isset($data['phone_number']) ? preg_replace('/\s+/', '', $data['phone_number']) : null;
 
     return $data;
   }

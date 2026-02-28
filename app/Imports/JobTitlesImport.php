@@ -18,12 +18,19 @@ class JobTitlesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVa
     $this->userId = $userId;
   }
 
+  public function prepareForValidation($data, $index)
+  {
+    $data['title_name'] = isset($data['title_name']) ? trim($data['title_name']) : null;
+
+    return $data;
+  }
+
   public function model(array $row)
   {
     $this->inserted++;
 
     return new JobTitle([
-      'title_name' => trim($row['title_name']),
+      'title_name' => $row['title_name'],
       'created_by' => $this->userId,
     ]);
   }

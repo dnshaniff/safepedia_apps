@@ -12,10 +12,14 @@ document.addEventListener('DOMContentLoaded', function (e) {
     modalJobTitle = $('#modalJobTitle'),
     modalTitle = modalJobTitle.find('.modal-title');
 
-  let dt_job_titles;
+  window.ResourceRegistry = window.ResourceRegistry || {};
+
+  window.ResourceRegistry['job_titles'] = () => {
+    dt_job_titles.ajax.reload();
+  };
 
   if (datatableJobTitles) {
-    dt_job_titles = new DataTable(datatableJobTitles, {
+    window.dt_job_titles = new DataTable(datatableJobTitles, {
       processing: true,
       serverSide: true,
       ajax: {
