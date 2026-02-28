@@ -498,13 +498,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         }
       },
-      phone_number: {
-        validators: {
-          notEmpty: {
-            message: 'Phone number is required'
-          }
-        }
-      },
       gender: {
         validators: {
           notEmpty: {

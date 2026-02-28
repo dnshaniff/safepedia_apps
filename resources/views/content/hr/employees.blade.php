@@ -111,8 +111,7 @@
                             placeholder="johndoe@example.com" />
                     </div>
                     <div class="col-12 col-md-6 mb-3">
-                        <label class="form-label" for="phone_number">Phone Number <strong
-                                class="text-danger">**</strong></label>
+                        <label class="form-label" for="phone_number">Phone Number</label>
                         <input type="text" id="phone_number" name="phone_number"
                             class="form-control phone-number-mask" placeholder="0813 1234 1234" />
                     </div>
