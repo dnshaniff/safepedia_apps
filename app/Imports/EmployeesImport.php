@@ -53,7 +53,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCh
       'join_date' => $this->parseDate($row['join_date']),
       'company_id' => $this->companies->get($row['company']),
       'org_unit_id' => $this->orgUnits->get($row['organization']),
-      'job_title_id' => $this->jobTitles->get($row['job_title']),
+      'job_title_id' => $this->resolveJobTitle($row['job_title']),
       'employment_status' => $row['employment_status'],
       'office_email' => $row['office_email'] ?? null,
       'personal_email' => $row['personal_email'] ?? null,
@@ -77,7 +77,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCh
       '*.join_date' => ['required'],
       '*.company' => ['required', Rule::exists('companies', 'company_code')],
       '*.organization' => ['required', Rule::exists('org_units', 'unit_code')],
-      '*.job_title' => ['required', Rule::exists('job_titles', 'title_name')],
+      '*.job_title' => ['required'],
       '*.employment_status' => [
         'required',
         Rule::in(['Colleague', 'Contract', 'Freelance', 'Intern', 'Probation', 'Resign'])
@@ -89,6 +89,26 @@ class EmployeesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCh
       '*.date_of_birth' => ['required'],
       '*.ktp_number' => ['required', 'distinct', 'unique:employees,ktp_number'],
     ];
+  }
+
+  protected function resolveJobTitle(string $name): string
+  {
+    $name = trim($name);
+
+    $existingId = $this->jobTitles->get($name);
+
+    if ($existingId) {
+      return $existingId;
+    }
+
+    $jobTitle = JobTitle::create([
+      'title_name' => $name,
+      'created_by' => $this->userId,
+    ]);
+
+    $this->jobTitles->put($name, $jobTitle->id);
+
+    return $jobTitle->id;
   }
 
   public function batchSize(): int
