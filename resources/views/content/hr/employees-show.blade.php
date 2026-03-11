@@ -60,7 +60,7 @@
                         <li class="d-flex align-items-center mb-4"><i class="icon-base bx bx-id-card"></i><span
                                 class="fw-medium mx-2">ID:</span> <span>{{ $employee->employee_code }}</span></li>
                         <li class="d-flex align-items-center mb-4"><i class="icon-base bx bx-badge-check"></i><span
-                                class="fw-medium mx-2">Status:</span> <span>{{ $employee->employment_type }}</span></li>
+                                class="fw-medium mx-2">Status:</span> <span>{{ $employee->employment_status }}</span></li>
                         <li class="d-flex align-items-center mb-4"><i class="icon-base bx bx-buildings"></i><span
                                 class="fw-medium mx-2">Company:</span>
                             <span>{{ $employee->company->company_name ?? '-' }}</span>
