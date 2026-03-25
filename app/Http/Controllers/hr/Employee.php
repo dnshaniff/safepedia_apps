@@ -365,7 +365,7 @@ class Employee extends Controller
 
       ImportEmployeesJob::dispatch($path, auth()->id());
 
-      return response()->json(['status' => 'success', 'message' => 'Import process started'], 201);
+      return response()->json(['status' => 'success', 'message' => 'Import process started'], 200);
     } catch (Throwable $e) {
       Log::error('Unexpected error while processing request', [
         'error' => $e->getMessage(),
