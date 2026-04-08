@@ -13,11 +13,9 @@ use App\Http\Controllers\ga\AssetType;
 use App\Http\Controllers\hr\Employee;
 use App\Http\Controllers\hr\EmployeeAgreement;
 use App\Http\Controllers\hr\EmployeeOffboarding;
-use App\Http\Controllers\hr\ManpowerPlan;
 use App\Http\Controllers\hr\Company;
 use App\Http\Controllers\hr\JobTitle;
 use App\Http\Controllers\hr\OrgUnit;
-use App\Http\Controllers\hr\TaCandidate;
 
 // Detail Asset by QR
 Route::get('/a/{asset_item:public_code}', [AssetItem::class, 'publicShow'])->name('assets.public.show');
@@ -104,16 +102,6 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   // Upcoming Offboardings
   Route::get('/employee-offboardings', [EmployeeOffboarding::class, 'view'])->name('employee-offboardings');
   Route::get('/offboardings', [EmployeeOffboarding::class, 'index'])->name('offboardings.index');
-
-  // Manpower Plans
-  Route::get('/recruitment-manpower_plans', [ManpowerPlan::class, 'view'])->name('recruitment-manpower_plans');
-  Route::resource('/manpower_plans', ManpowerPlan::class)->except('create');
-  Route::post('/manpower_plans/{manpower_plan}/restore', [ManpowerPlan::class, 'restore'])->name('manpower_plans.restore');
-  Route::delete('/manpower_plans/{manpower_plan}/force', [ManpowerPlan::class, 'force'])->name('manpower_plans.force');
-  // Ta Candidates
-  Route::resource('/manpower_plans/{manpower_plan}/ta_candidates', TaCandidate::class)->except('create', 'show');
-  Route::post('/manpower_plans/{manpower_plan}/ta_candidates/{ta_candidate}/restore', [TaCandidate::class, 'restore'])->name('ta_candidates.restore');
-  Route::delete('/manpower_plans/{manpower_plan}/ta_candidates/{ta_candidate}/force', [TaCandidate::class, 'force'])->name('ta_candidates.force');
 
   // Companies
   Route::get('/masterhr-companies', [Company::class, 'view'])->name('masterhr-companies');

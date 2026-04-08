@@ -30,7 +30,6 @@
                             <tr>
                                 <th width="1px">#</th>
                                 <th class="text-start" width="60%">Title Name</th>
-                                <th class="text-start">Created By</th>
                                 <th class="text-start" width="13%">Created Date</th>
                                 <th class="text-start" width="13%">Updated Date</th>
                                 <th width="1px">Action</th>

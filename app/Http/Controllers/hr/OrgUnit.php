@@ -7,7 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\OrgUnit as ModelsOrgUnit;
-use Illuminate\Support\Facades\DB;
+use App\Services\OrgUnit\OrgUnitDestroyService;
+use App\Services\OrgUnit\OrgUnitForceService;
+use App\Services\OrgUnit\OrgUnitIndexService;
+use App\Services\OrgUnit\OrgUnitReorderService;
+use App\Services\OrgUnit\OrgUnitRestoreService;
+use App\Services\OrgUnit\OrgUnitSelectService;
+use App\Services\OrgUnit\OrgUnitStoreService;
+use App\Services\OrgUnit\OrgUnitUpdateService;
 use Illuminate\Validation\ValidationException;
 
 class OrgUnit extends Controller
@@ -17,73 +24,24 @@ class OrgUnit extends Controller
     return view('content.hr.org_units');
   }
 
-  public function select(Request $request)
+  public function select(Request $request, OrgUnitSelectService $service)
   {
-    $q     = trim((string) $request->get('q', ''));
-    $page  = max(1, (int) $request->get('page', 1));
-    $per   = max(1, min(100, (int) $request->get('per', 10)));
+    $search = trim((string) $request->get('q', ''));
+    $page = max(1, (int) $request->get('page', 1));
 
-    $query = ModelsOrgUnit::query()->select(['id', 'unit_name']);
+    $perPage = max(1, min(100, (int) $request->get('per', 10)));
 
-    if ($q !== '') {
-      $tokens = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-      foreach ($tokens as $t) {
-        $t = str_replace(['%', '_'], ['\\%', '\\_'], $t);
-        $query->where('unit_name', 'LIKE', "%{$t}%");
-      }
-    }
+    $result = $service->execute($search, $page, $perPage);
 
-    $query->orderBy('unit_name');
-
-    $rows = $query->skip(($page - 1) * $per)->take($per + 1)->get();
-
-    $more = $rows->count() > $per;
-    if ($more) $rows = $rows->slice(0, $per);
-
-    return response()->json([
-      'results' => $rows->map(fn($r) => [
-        'id'   => $r->id,
-        'text' => $r->unit_name,
-      ])->values(),
-      'more' => $more
-    ]);
+    return response()->json($result);
   }
 
-  public function index(Request $request)
+  public function index(Request $request, OrgUnitIndexService $service)
   {
-    $user = auth()->user();
-    $isAdmin = $user->username === 'administrator';
-
-    $parentId = $request->query('parent_id');
-
-    $query = ModelsOrgUnit::query()->orderBy('sort_order');
-
-    if ($isAdmin) {
-      $query->withTrashed();
-    }
-
-    if ($parentId === null) {
-      $query->whereNull('parent_id')->where('unit_type', 'Office');
-      $breadcrumbs = [];
-    } else {
-      $query->where('parent_id', $parentId);
-
-      $path = ModelsOrgUnit::with('parent')->findOrFail($parentId);
-
-      $breadcrumbs = [];
-      while ($path) {
-        $breadcrumbs[] = ['id' => $path->id, 'name' => $path->unit_name];
-        $path = $path->parent;
-      }
-      $breadcrumbs = array_reverse($breadcrumbs);
-    }
-
-    $units = $query->get(['id', 'unit_name', 'unit_code', 'unit_type', 'deleted_at']);
-
-    return response()->json(['status' => 'success', 'data'   => $units, 'breadcrumbs' => $breadcrumbs], 200);
+    return response()->json($service->execute($request->query('parent_id')));
   }
 
-  public function store(Request $request)
+  public function store(Request $request, OrgUnitStoreService $service)
   {
     try {
       $validated = $request->validate([
@@ -93,14 +51,7 @@ class OrgUnit extends Controller
         'parent_id' => 'nullable|exists:org_units,id'
       ]);
 
-      $validated['created_by'] = auth()->user()->id;
-
-      $orgUnit = DB::transaction(function () use ($validated) {
-        $parentId = $validated['parent_id'] ?? null;
-        $validated['sort_order'] = ModelsOrgUnit::nextSortOrder($parentId);
-
-        return ModelsOrgUnit::create($validated);
-      });
+      $orgUnit = $service->execute($validated);
 
       return response()->json(['status' => 'success', 'message' => "Organization Unit: {$orgUnit->unit_name} created successfully"], 201);
     } catch (ValidationException $e) {
@@ -124,7 +75,7 @@ class OrgUnit extends Controller
     return response()->json($orgUnit, 200);
   }
 
-  public function update(ModelsOrgUnit $orgUnit, Request $request)
+  public function update(ModelsOrgUnit $orgUnit, Request $request, OrgUnitUpdateService $service)
   {
     try {
       $validated = $request->validate([
@@ -134,14 +85,7 @@ class OrgUnit extends Controller
         'parent_id' => 'nullable|exists:org_units,id'
       ]);
 
-      DB::transaction(function () use ($orgUnit, $validated) {
-        if ($orgUnit->parent_id !== ($validated['parent_id'] ?? null)) {
-          $orgUnit->parent_id  = $validated['parent_id'] ?? null;
-          $orgUnit->sort_order = ModelsOrgUnit::nextSortOrder($orgUnit->parent_id);
-        }
-
-        $orgUnit->fill($validated)->save();
-      });
+      $service->execute($orgUnit, $validated);
 
       return response()->json(['status' => 'success', 'message' => "Organization Unit: {$orgUnit->unit_name} updated successfully"], 200);
     } catch (ValidationException $e) {
@@ -157,12 +101,10 @@ class OrgUnit extends Controller
     }
   }
 
-  public function destroy(ModelsOrgUnit $orgUnit, Request $request)
+  public function destroy(ModelsOrgUnit $orgUnit, OrgUnitDestroyService $service)
   {
     try {
-      DB::transaction(function () use ($orgUnit) {
-        $orgUnit->delete();
-      });
+      $service->execute($orgUnit);
 
       return response()->json(['status' => 'success', 'message' => "Organization Unit: {$orgUnit->unit_name} deleted successfully"], 200);
     } catch (Throwable $e) {
@@ -175,7 +117,7 @@ class OrgUnit extends Controller
     }
   }
 
-  public function reorder(Request $request)
+  public function reorder(Request $request, OrgUnitReorderService $service)
   {
     try {
       $validated = $request->validate([
@@ -184,17 +126,7 @@ class OrgUnit extends Controller
         'items.*.id'     => ['required', 'integer', 'exists:org_units,id'],
       ]);
 
-      $parentId = $validated['parent_id'] ?? null;
-      $items    = $validated['items'];
-
-      DB::transaction(function () use ($items, $parentId) {
-        foreach ($items as $index => $item) {
-          ModelsOrgUnit::where('id', $item['id'])->update([
-            'sort_order' => $index + 1,
-            'parent_id'  => $parentId,
-          ]);
-        }
-      });
+      $service->execute($validated['parent_id'] ?? null, $validated['items']);
 
       return response()->json(['status'  => 'success', 'message' => 'Organization units reordered successfully'], 200);
     } catch (Throwable $e) {
@@ -208,7 +140,7 @@ class OrgUnit extends Controller
     }
   }
 
-  public function restore(string $id)
+  public function restore(string $id, OrgUnitRestoreService $service)
   {
     $orgUnit = ModelsOrgUnit::withTrashed()->findOrFail($id);
 
@@ -218,10 +150,7 @@ class OrgUnit extends Controller
 
     try {
       if ($orgUnit->trashed()) {
-
-        DB::transaction(function () use ($orgUnit) {
-          $orgUnit->restore();
-        });
+        $service->execute($orgUnit);
 
         return response()->json(['status' => 'success', 'message' => "Organization Unit: {$orgUnit->unit_name} successfully restored"], 200);
       } else {
@@ -237,7 +166,7 @@ class OrgUnit extends Controller
     }
   }
 
-  public function force(string $id)
+  public function force(string $id, OrgUnitForceService $service)
   {
     $orgUnit = ModelsOrgUnit::withTrashed()->findOrFail($id);
 
@@ -247,10 +176,7 @@ class OrgUnit extends Controller
 
     try {
       if ($orgUnit->trashed()) {
-        DB::transaction(function () use ($orgUnit) {
-          $orgUnit->forceDelete();
-        });
-
+        $service->execute($orgUnit);
 
         return response()->json(['status' => 'success', 'message' => 'Organization Unit permanent delete successfully'], 200);
       } else {

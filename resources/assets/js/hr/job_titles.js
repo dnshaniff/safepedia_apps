@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columns: [
         { data: 'fake_id' },
         { data: 'title_name' },
-        { data: 'creator' },
         { data: 'created_at' },
         { data: 'updated_at' },
         { data: 'id' }
@@ -36,15 +35,15 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, -1]
+          targets: [0, 1, 2, 3, -1]
         },
         {
           searchable: true,
           targets: [1]
         },
         {
-          targets: 3,
-          render: function (data, type, full, meta) {
+          targets: 2,
+          render: function (data, type, row) {
             const options = {
               day: '2-digit',
               month: 'short',
@@ -52,12 +51,18 @@ document.addEventListener('DOMContentLoaded', function (e) {
               hour: '2-digit',
               minute: '2-digit'
             };
-            return new Date(data).toLocaleString('en-GB', options);
+
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.creator}</span>
+                <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
+              </div>
+            `;
           }
         },
         {
-          targets: 4,
-          render: function (data, type, full, meta) {
+          targets: 3,
+          render: function (data, type, row) {
             const options = {
               day: '2-digit',
               month: 'short',
@@ -65,7 +70,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
               hour: '2-digit',
               minute: '2-digit'
             };
-            return new Date(data).toLocaleString('en-GB', options);
+
+            if (row.deleted_at !== null) {
+              return `
+                <div class="d-flex flex-column">
+                  <span class="text-muted">${row.deleter}</span>
+                  <span class="fw-medium">${new Date(row.deleted_at).toLocaleString('en-GB', options)}</span>
+                </div>
+              `;
+            } else {
+              return `
+                <div class="d-flex flex-column">
+                  <span class="text-muted">${row.creator}</span>
+                  <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
+                </div>
+              `;
+            }
           }
         },
         {

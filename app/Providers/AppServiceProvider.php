@@ -2,14 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\AssetItem;
-use App\Models\Employee;
-use App\Models\EmployeeAgreement;
-use App\Models\ManpowerPlan;
-use App\Observers\AssetItemObserver;
-use App\Observers\EmployeeAgreementObserver;
-use App\Observers\EmployeeObserver;
-use App\Observers\ManpowerPlanObserver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -40,10 +32,5 @@ class AppServiceProvider extends ServiceProvider
       }
       return [];
     });
-
-    Employee::observe(EmployeeObserver::class);
-    EmployeeAgreement::observe(EmployeeAgreementObserver::class);
-    ManpowerPlan::observe(ManpowerPlanObserver::class);
-    AssetItem::observe(AssetItemObserver::class);
   }
 }

@@ -20,6 +20,8 @@ return new class extends Migration
       $table->rememberToken();
       $table->timestamps();
       $table->softDeletes();
+      $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+      $table->foreignUuid('updated_by')->nullable()->constrained('users', 'id')->nullOnDelete();
     });
 
     Schema::create('password_reset_tokens', function (Blueprint $table) {

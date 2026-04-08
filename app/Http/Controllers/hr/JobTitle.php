@@ -4,13 +4,20 @@ namespace App\Http\Controllers\hr;
 
 use Throwable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ImportJobTitleRequest;
 use App\Jobs\ImportJobTitlesJob;
 use App\Models\JobTitle as ModelsJobTitle;
+use App\Services\JobTitle\JobTitleDestroyService;
+use App\Services\JobTitle\JobTitleForceService;
+use App\Services\JobTitle\JobTitleIndexService;
+use App\Services\JobTitle\JobTitleRestoreService;
+use App\Services\JobTitle\JobTitleSelectService;
+use App\Services\JobTitle\JobTitleStoreService;
+use App\Services\JobTitle\JobTitleUpdateService;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class JobTitle extends Controller
 {
@@ -19,95 +26,34 @@ class JobTitle extends Controller
     return view('content.hr.job_titles');
   }
 
-  public function select(Request $request)
+  public function select(Request $request, JobTitleSelectService $service)
   {
-    $q     = trim((string) $request->get('q', ''));
-    $page  = max(1, (int) $request->get('page', 1));
-    $per   = max(1, min(100, (int) $request->get('per', 10)));
+    $search = trim((string) $request->get('q', ''));
+    $page = max(1, (int) $request->get('page', 1));
 
-    $query = ModelsJobTitle::query()->select(['id', 'title_name']);
+    $perPage = max(1, min(100, (int) $request->get('per', 10)));
 
-    if ($q !== '') {
-      $tokens = preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-      foreach ($tokens as $t) {
-        $t = str_replace(['%', '_'], ['\\%', '\\_'], $t);
-        $query->where('title_name', 'LIKE', "%{$t}%");
-      }
-    }
+    $result = $service->execute($search, $page, $perPage);
 
-    $query->orderBy('title_name');
-
-    $rows = $query->skip(($page - 1) * $per)->take($per + 1)->get();
-
-    $more = $rows->count() > $per;
-    if ($more) $rows = $rows->slice(0, $per);
-
-    return response()->json([
-      'results' => $rows->map(fn($r) => [
-        'id'   => $r->id,
-        'text' => $r->title_name,
-      ])->values(),
-      'more' => $more
-    ]);
+    return response()->json($result);
   }
 
-  public function index(Request $request)
+  public function index(Request $request, JobTitleIndexService $service)
   {
-    $user = auth()->user();
-    $isAdmin = $user->username === 'administrator';
-
-    $search = $request->input('search.value');
-
-    $query = ModelsJobTitle::query()->when($isAdmin, function ($q) {
-      $q->withTrashed();
-    });
-
-    $totalData = $query->count();
-
-    if (!empty($search)) {
-      $query->where('title_name', 'LIKE', "%{$search}%");
-    }
-
-    $totalFiltered = $query->count();
-
-    $jobTitles = $query->offset($request->input('start'))->limit($request->input('length'))->latest()->get();
-
-    $data = [];
-
-    if (!empty($jobTitles)) {
-      $ids = $request->input('start');
-      foreach ($jobTitles as $jobTitle) {
-        $nestedData['fake_id'] = ++$ids;
-        $nestedData['id'] = $jobTitle->id;
-        $nestedData['title_name'] = $jobTitle->title_name;
-        $nestedData['creator'] = $jobTitle->creator?->display_name ?? '-';
-        $nestedData['created_at'] = $jobTitle->created_at;
-        $nestedData['updated_at'] = $jobTitle->updated_at;
-        $nestedData['deleted_at'] = $jobTitle->deleted_at;
-
-        $data[] = $nestedData;
-      }
-    }
-
-    return response()->json([
-      'draw' => intval($request->input('draw')),
-      'recordsTotal' => intval($totalData),
-      'recordsFiltered' => intval($totalFiltered),
-      'code' => 200,
-      'data' => $data,
-    ]);
+    return response()->json($service->execute([
+      'search' => $request->input('search.value'),
+      'start' => $request->input('start'),
+      'length' => $request->input('length'),
+      'draw' => $request->input('draw'),
+    ]));
   }
 
-  public function store(Request $request)
+  public function store(Request $request, JobTitleStoreService $service)
   {
     try {
       $validated = $request->validate(['title_name' => 'required|string|max:100']);
 
-      $validated['created_by'] = auth()->user()->id;
-
-      $jobTitle = DB::transaction(function () use ($validated) {
-        return ModelsJobTitle::create($validated);
-      });
+      $jobTitle = $service->execute($validated);
 
       return response()->json(['status' => 'success', 'message' => "Job title: {$jobTitle->title_name} created successfully"], 201);
     } catch (ValidationException $e) {
@@ -128,14 +74,12 @@ class JobTitle extends Controller
     return response()->json($jobTitle, 200);
   }
 
-  public function update(Request $request, ModelsJobTitle $jobTitle)
+  public function update(Request $request, ModelsJobTitle $jobTitle, JobTitleUpdateService $service)
   {
     try {
       $validated = $request->validate(['title_name' => 'required|string|max:100']);
 
-      DB::transaction(function () use ($jobTitle, $validated) {
-        $jobTitle->update($validated);
-      });
+      $service->execute($jobTitle, $validated);
 
       return response()->json(['status' => 'success', 'message' => "Job title: {$jobTitle->title_name} updated successfully"], 200);
     } catch (ValidationException $e) {
@@ -151,10 +95,10 @@ class JobTitle extends Controller
     }
   }
 
-  public function destroy(ModelsJobTitle $jobTitle)
+  public function destroy(ModelsJobTitle $jobTitle, JobTitleDestroyService $service)
   {
     try {
-      $jobTitle->delete();
+      $service->execute($jobTitle);
 
       return response()->json(['status' => 'success', 'message' => "Job title: {$jobTitle->title_name} deleted successfully"], 200);
     } catch (Throwable $e) {
@@ -167,13 +111,13 @@ class JobTitle extends Controller
     }
   }
 
-  public function restore(string $id)
+  public function restore(string $id, JobTitleRestoreService $service)
   {
     $jobTitle = ModelsJobTitle::withTrashed()->findOrFail($id);
 
     try {
       if ($jobTitle->trashed()) {
-        $jobTitle->restore();
+        $service->execute($jobTitle);
 
         return response()->json(['status' => 'success', 'message' => "Job title: {$jobTitle->title_name} successfully restored"], 200);
       } else {
@@ -189,13 +133,13 @@ class JobTitle extends Controller
     }
   }
 
-  public function force(string $id)
+  public function force(string $id, JobTitleForceService $service)
   {
     $jobTitle = ModelsJobTitle::withTrashed()->findOrFail($id);
 
     try {
       if ($jobTitle->trashed()) {
-        $jobTitle->forceDelete();
+        $service->execute($jobTitle);
 
         return response()->json(['status' => 'success', 'message' => 'Job title permanent delete successfully'], 200);
       } else {
@@ -217,7 +161,7 @@ class JobTitle extends Controller
       $file = $request->file('file');
       $path = $file->store('imports/job_titles');
 
-      ImportJobTitlesJob::dispatch($path, auth()->id());
+      ImportJobTitlesJob::dispatch($path, Auth::id());
 
       return response()->json(['status' => 'success', 'message' => 'Import process started'], 201);
     } catch (Throwable $e) {

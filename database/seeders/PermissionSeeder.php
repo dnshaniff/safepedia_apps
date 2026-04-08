@@ -100,17 +100,6 @@ class PermissionSeeder extends Seeder
       ['name' => 'employee-offboardings', 'display_name' => 'View', 'group_name' => 'Upcoming Offboardings', 'guard_name' => 'web'],
       ['name' => 'offboardings.index', 'display_name' => 'Index', 'group_name' => 'Upcoming Offboardings', 'guard_name' => 'web'],
 
-      // Manpower Plans
-      ['name' => 'recruitment-manpower_plans', 'display_name' => 'View', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-      ['name' => 'manpower_plans.index', 'display_name' => 'Index', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-      ['name' => 'manpower_plans.store', 'display_name' => 'Store', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-      ['name' => 'manpower_plans.show', 'display_name' => 'Show', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-      ['name' => 'manpower_plans.edit', 'display_name' => 'Edit', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-      ['name' => 'manpower_plans.update', 'display_name' => 'Update', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-      ['name' => 'manpower_plans.destroy', 'display_name' => 'Destroy', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-      ['name' => 'manpower_plans.restore', 'display_name' => 'Restore', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-      ['name' => 'manpower_plans.force', 'display_name' => 'Force', 'group_name' => 'Manpower Plans', 'guard_name' => 'web'],
-
       // Asset Categories
       ['name' => 'masterga-asset_categories', 'display_name' => 'View', 'group_name' => 'Asset Categories', 'guard_name' => 'web'],
       ['name' => 'asset_categories.index', 'display_name' => 'Index', 'group_name' => 'Asset Categories', 'guard_name' => 'web'],

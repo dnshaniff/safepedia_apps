@@ -18,9 +18,32 @@ return new class extends Migration
       $table->string('unit_code')->unique();
       $table->enum('unit_type', ['Department', 'Division', 'Office', 'Team'])->default('Department');
       $table->integer('sort_order')->default(0);
-      $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->onDelete('SET NULL');
       $table->timestamps();
       $table->softDeletes();
+      $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+      $table->foreignUuid('updated_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+      $table->foreignUuid('deleted_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+    });
+
+    Schema::create('job_titles', function (Blueprint $table) {
+      $table->id();
+      $table->string('title_name');
+      $table->timestamps();
+      $table->softDeletes();
+      $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+      $table->foreignUuid('updated_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+      $table->foreignUuid('deleted_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+    });
+
+    Schema::create('companies', function (Blueprint $table) {
+      $table->id();
+      $table->string('company_name');
+      $table->string('company_code')->unique();
+      $table->timestamps();
+      $table->softDeletes();
+      $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+      $table->foreignUuid('updated_by')->nullable()->constrained('users', 'id')->nullOnDelete();
+      $table->foreignUuid('deleted_by')->nullable()->constrained('users', 'id')->nullOnDelete();
     });
   }
 
