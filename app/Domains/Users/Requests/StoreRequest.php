@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Domains\Users\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreUserRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
   public function authorize(): bool
   {
@@ -16,8 +16,12 @@ class StoreUserRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'username' => 'required|min:4|max:50|unique:users,username',
+      'name' => 'required|min:4|max:50',
+      'email' => 'required|email:rfc,dns|unique:users,email',
+      'username' => 'required|min:4|max:30|unique:users,username',
+      'password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/|confirmed',
       'role' => 'required',
+      'status' => 'required'
     ];
   }
 

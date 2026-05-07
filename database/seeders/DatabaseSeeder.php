@@ -25,18 +25,19 @@ class DatabaseSeeder extends Seeder
 
     $admin = User::firstOrCreate(
       [
-        'name' => 'Administrator'
+        'email' => 'administrator@dnalighting.co.id',
       ],
       [
-        'email' => 'administrator@dna_lighting.co.id'
-      ],
-      [
+        'name' => 'Administrator',
         'username' => 'administrator',
-      ],
-      [
         'password' => Hash::make('P@ssw0rd123'),
       ]
     );
+
+    $admin->update([
+      'created_by' => $admin->id,
+      'updated_by' => $admin->id,
+    ]);
 
     if (! $admin->hasRole('Administrator')) {
       $admin->assignRole('Administrator');

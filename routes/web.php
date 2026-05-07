@@ -1,11 +1,11 @@
 <?php
 
+use App\Domains\Users\UserController;
+use App\Http\Controllers\authorization\Permission;
+use App\Http\Controllers\authorization\Role;
+use App\Http\Controllers\pages\Dashboard;
 use App\Http\Controllers\pages\Login;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\pages\Dashboard;
-use App\Http\Controllers\authorization\Role;
-use App\Http\Controllers\authorization\User;
-use App\Http\Controllers\authorization\Permission;
 
 /**
  * Guest
@@ -51,8 +51,8 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   Route::resource('/roles', Role::class)->except('create', 'show');
 
   // Users
-  Route::get('/access-users', [User::class, 'view'])->name('access-users');
-  Route::resource('/users', User::class)->except('create', 'store', 'show');
-  Route::post('/users/{user}/restore', [User::class, 'restore'])->name('users.restore');
-  Route::delete('/users/{user}/force', [User::class, 'force'])->name('users.force');
+  Route::get('/access-users', [UserController::class, 'view'])->name('access-users');
+  Route::resource('/users', UserController::class)->except('create', 'show');
+  Route::post('/users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
+  Route::delete('/users/{user}/force', [UserController::class, 'force'])->name('users.force');
 });

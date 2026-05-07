@@ -282,7 +282,7 @@
         <li class="nav-item navbar-dropdown dropdown-user dropdown">
             <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                 <div class="avatar avatar-online">
-                    <img src="{{ Auth::user()->username === 'administrator' ? asset('assets/img/avatars/avatar.png') : (Auth::user()->employee->picture ? asset('storage/' . Auth::user()->employee->picture) : asset('assets/img/avatars/avatar.png')) }}"
+                    <img src="{{ asset('assets/img/avatars/avatar.png') }}"
                         style="object-fit: cover;" alt class="w-px-40 h-px-40 rounded-circle">
                 </div>
             </a>
@@ -293,16 +293,16 @@
                         <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                                 <div class="avatar avatar-online">
-                                    <img src="{{ Auth::user()->username === 'administrator' ? asset('assets/img/avatars/avatar.png') : (Auth::user()->employee->picture ? asset('storage/' . Auth::user()->employee->picture) : asset('assets/img/avatars/avatar.png')) }}"
+                                    <img src="{{ asset('assets/img/avatars/avatar.png') }}"
                                         style="object-fit: cover;" alt class="w-px-40 h-px-40 rounded-circle">
                                 </div>
                             </div>
                             <div class="flex-grow-1">
                                 <span class="fw-medium d-block">
-                                    {{ Auth::user()->username === 'administrator' ? Auth::user()->username : Auth::user()->employee->full_name }}
+                                    {{ Auth::user()->name }}
                                 </span>
                                 <small
-                                    class="text-muted">{{ Auth::user()->username === 'administrator' ? Auth::user()->roles()->first()->name : Auth::user()->employee->jobTitle->title_name }}</small>
+                                    class="text-muted">{{ Auth::user()->roles()->first()->name }}</small>
                             </div>
                         </div>
                     </a>

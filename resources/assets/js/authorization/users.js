@@ -25,8 +25,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
       },
       columns: [
         { data: 'fake_id' },
+        { data: 'name' },
         { data: 'username' },
-        { data: 'full_name' },
         { data: 'role' },
         { data: 'status' },
         { data: 'created_at' },
@@ -43,8 +43,19 @@ document.addEventListener('DOMContentLoaded', function (e) {
           targets: [1, 2]
         },
         {
+          targets: 1,
+          render: function (data, type, row) {
+            return `
+                <div class="d-flex flex-column">
+                  <span class="text-muted">${data}</span>
+                  <span class="fw-medium">${row.email}</span>
+                </div>
+              `;
+          }
+        },
+        {
           targets: 4,
-          render: function (data, type, full, meta) {
+          render: function (data, type, row) {
             const userStatus = data === 'active' ? 'ACTIVE' : 'INACTIVE',
               statusClass = userStatus === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
 
@@ -53,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         },
         {
           targets: 5,
-          render: function (data, type, full, meta) {
+          render: function (data, type, row) {
             const options = {
               day: '2-digit',
               month: 'short',
@@ -61,12 +72,18 @@ document.addEventListener('DOMContentLoaded', function (e) {
               hour: '2-digit',
               minute: '2-digit'
             };
-            return new Date(data).toLocaleString('en-GB', options);
+
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.creator}</span>
+                <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
+              </div>
+            `;
           }
         },
         {
           targets: 6,
-          render: function (data, type, full, meta) {
+          render: function (data, type, row) {
             const options = {
               day: '2-digit',
               month: 'short',
@@ -74,7 +91,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
               hour: '2-digit',
               minute: '2-digit'
             };
-            return new Date(data).toLocaleString('en-GB', options);
+
+            if (row.deleted_at !== null) {
+              return `
+                <div class="d-flex flex-column">
+                  <span class="text-muted">${row.deleter}</span>
+                  <span class="fw-medium">${new Date(row.deleted_at).toLocaleString('en-GB', options)}</span>
+                </div>
+              `;
+            } else {
+              return `
+                <div class="d-flex flex-column">
+                  <span class="text-muted">${row.editor}</span>
+                  <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
+                </div>
+              `;
+            }
           }
         },
         {
@@ -131,7 +163,19 @@ document.addEventListener('DOMContentLoaded', function (e) {
                 text: '_INPUT_'
               }
             },
-            filterRole
+            filterRole,
+            {
+              buttons: [
+                {
+                  text: 'Create New',
+                  className: 'add-new btn btn-primary mb-3 mb-md-0',
+                  attr: {
+                    'data-bs-toggle': 'modal',
+                    'data-bs-target': '#modalUser'
+                  }
+                }
+              ]
+            },
           ]
         },
         bottomStart: {
@@ -217,6 +261,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
   }, 100);
 
   const formUser = document.getElementById('formUser'),
+    fillName = formUser.querySelector('#name'),
+    fillEmail = formUser.querySelector('#email'),
     userName = formUser.querySelector('#username'),
     roleSelect = formUser.querySelector('#role'),
     statusSelect = formUser.querySelector('#status'),
@@ -240,6 +286,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
     hideSearch: true
   });
 
+  // create record
+  $('.add-new').on('click', function () {
+    modalTitle.html('Create User');
+    editingId = null;
+    $(btnSubmit).html('Submit');
+  });
+
   // edit record
   $(document).on('click', '.edit-record', function () {
     const id = $(this).data('id'),
@@ -257,6 +310,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
     // get data
     $.get(`${baseUrl}users/${id}/edit`, function (data) {
       editingId = id;
+      fillName.value = data.name || '';
+      fillEmail.value = data.email || '';
       userName.value = data.username || '';
 
       if (data.status) {
@@ -272,6 +327,27 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   FormValidation.formValidation(formUser, {
     fields: {
+      name: {
+        validators: {
+          notEmpty: {
+            message: 'Name is required'
+          },
+          stringLength: {
+            min: 4,
+            message: 'The name must be at least 4 characters long'
+          }
+        }
+      },
+      email: {
+        validators: {
+          notEmpty: {
+            message: 'Email is required'
+          },
+          emailAddress: {
+            message: 'The email address is not valid'
+          }
+        }
+      },
       username: {
         validators: {
           notEmpty: {
@@ -417,50 +493,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
           url: `${baseUrl}users/${id}`,
           success: function (res) {
             Loading.remove();
-            if (res.message) {
-              Swal.fire({
-                icon: 'success',
-                title: 'Deleted!',
-                text: res.message,
-                customClass: {
-                  confirmButton: 'btn btn-success'
-                }
-              });
-              dt_users.draw(false);
-            } else if (res.errors) {
-              console.log(res.errors);
-              Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: res.error,
-                customClass: {
-                  confirmButton: 'btn btn-danger'
-                }
-              });
-            }
+            showToast(res.status, res.message);
+            dt_users.draw(false);
           },
-          error: function (jqXHR, textStatus, errorThrown) {
+          error: function (jqXHR) {
             Loading.remove();
-            Swal.fire({
-              icon: 'error',
-              title: 'Error!',
-              text: jqXHR.responseJSON.error,
-              customClass: {
-                confirmButton: 'btn btn-danger'
-              }
-            });
+            showToast(jqXHR.responseJSON?.status || 'danger', jqXHR.responseJSON?.message || 'An unexpected error occurred');
           }
         });
       } else {
         Loading.remove();
-        Swal.fire({
-          title: 'Cancelled',
-          text: 'The User is not deleted!',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        });
+        showToast('info', 'The user is not deleted!');
       }
     });
   });
@@ -501,50 +544,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
           url: `${baseUrl}users/${id}/restore`,
           success: function (res) {
             Loading.remove();
-            if (res.message) {
-              Swal.fire({
-                icon: 'success',
-                title: 'Restored!',
-                text: res.message,
-                customClass: {
-                  confirmButton: 'btn btn-success'
-                }
-              });
-              dt_users.draw(false);
-            } else if (res.errors) {
-              console.log(res.errors);
-              Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: res.error,
-                customClass: {
-                  confirmButton: 'btn btn-danger'
-                }
-              });
-            }
+            showToast(res.status, res.message);
+            dt_users.draw(false);
           },
-          error: function (jqXHR, textStatus, errorThrown) {
+          error: function (jqXHR) {
             Loading.remove();
-            Swal.fire({
-              icon: 'error',
-              title: 'Error!',
-              text: jqXHR.responseJSON.error,
-              customClass: {
-                confirmButton: 'btn btn-danger'
-              }
-            });
+            showToast(jqXHR.responseJSON?.status || 'danger', jqXHR.responseJSON?.message || 'An unexpected error occurred');
           }
         });
       } else {
         Loading.remove();
-        Swal.fire({
-          title: 'Cancelled',
-          text: 'The User is not restored!',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        });
+        showToast('info', 'The user is not restored!');
       }
     });
   });
@@ -585,50 +595,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
           url: `${baseUrl}users/${id}/force`,
           success: function (res) {
             Loading.remove();
-            if (res.message) {
-              Swal.fire({
-                icon: 'success',
-                title: 'Permanent Deleted!',
-                text: res.message,
-                customClass: {
-                  confirmButton: 'btn btn-success'
-                }
-              });
-              dt_users.draw(false);
-            } else if (res.errors) {
-              console.log(res.errors);
-              Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: res.error,
-                customClass: {
-                  confirmButton: 'btn btn-danger'
-                }
-              });
-            }
+            showToast(res.status, res.message);
+            dt_users.draw(false);
           },
-          error: function (jqXHR, textStatus, errorThrown) {
+          error: function (jqXHR) {
             Loading.remove();
-            Swal.fire({
-              icon: 'error',
-              title: 'Error!',
-              text: jqXHR.responseJSON.error,
-              customClass: {
-                confirmButton: 'btn btn-danger'
-              }
-            });
+            showToast(jqXHR.responseJSON?.status || 'danger', jqXHR.responseJSON?.message || 'An unexpected error occurred');
           }
         });
       } else {
         Loading.remove();
-        Swal.fire({
-          title: 'Cancelled',
-          text: 'The User is not deleted!',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        });
+        showToast('info', 'The user is not deleted!');
       }
     });
   });

@@ -29,12 +29,12 @@
                         <thead>
                             <tr>
                                 <th width="1px">#</th>
-                                <th class="text-start" width="10%">Username</th>
-                                <th class="text-start" width="30%">Full Name</th>
-                                <th class="text-start" width="14%">Role</th>
-                                <th class="text-start" width="8%">Status</th>
-                                <th class="text-start" width="16%">Created Date</th>
-                                <th class="text-start" width="16%">Updated Date</th>
+                                <th class="text-start">Name</th>
+                                <th class="text-start">Username</th>
+                                <th class="text-start">Role</th>
+                                <th class="text-start">Status</th>
+                                <th class="text-start">Created Date</th>
+                                <th class="text-start">Updated Date</th>
                                 <th width="1px">Action</th>
                             </tr>
                         </thead>
@@ -53,9 +53,16 @@
                 </div>
                 <div class="modal-body row">
                     <div class="col-12 mb-3">
+                        <label class="form-label" for="name">Full Name</label>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="John Doe" autofocus />
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="johndoe@example.com" />
+                    </div>
+                    <div class="col-12 mb-3">
                         <label class="form-label" for="username">Username</label>
-                        <input type="text" id="username" name="username" class="form-control" placeholder="johndoe"
-                            autofocus />
+                        <input type="text" id="username" name="username" class="form-control" placeholder="johndoe" />
                     </div>
                     <div class="col-12 mb-3 form-password-toggle">
                         <label class="form-label" for="password">Password</label>
