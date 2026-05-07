@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f0ebe0763c05880fce8d694c6239bac5",
+    "content-hash": "d09fcffbff010529ebadbff8432a9716",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1833,16 +1833,16 @@
         },
         {
             "name": "laravel/reverb",
-            "version": "v1.7.1",
+            "version": "v1.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/reverb.git",
-                "reference": "a069484cb972dc948518ea359b611ede23d2ce3d"
+                "reference": "a96310ae8b844d4862b2188a3cd6e79434893a6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/reverb/zipball/a069484cb972dc948518ea359b611ede23d2ce3d",
-                "reference": "a069484cb972dc948518ea359b611ede23d2ce3d",
+                "url": "https://api.github.com/repos/laravel/reverb/zipball/a96310ae8b844d4862b2188a3cd6e79434893a6b",
+                "reference": "a96310ae8b844d4862b2188a3cd6e79434893a6b",
                 "shasum": ""
             },
             "require": {
@@ -1906,9 +1906,9 @@
             ],
             "support": {
                 "issues": "https://github.com/laravel/reverb/issues",
-                "source": "https://github.com/laravel/reverb/tree/v1.7.1"
+                "source": "https://github.com/laravel/reverb/tree/v1.10.1"
             },
-            "time": "2026-02-04T15:07:19+00:00"
+            "time": "2026-04-30T12:07:26+00:00"
         },
         {
             "name": "laravel/serializable-closure",
