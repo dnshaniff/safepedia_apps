@@ -289,7 +289,7 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
                     <a class="dropdown-item"
-                        href="{{ Auth::user()->username === 'administrator' ? '#' : route('profile.view', auth()->user()->username) }}">
+                        href="{{ route('profile.view', Auth::user()->username) }}">
                         <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                                 <div class="avatar avatar-online">

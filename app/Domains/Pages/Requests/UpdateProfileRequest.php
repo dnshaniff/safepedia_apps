@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Domains\Pages\Requests;
 
 use App\Models\User;
 use Illuminate\Validation\Rule;
@@ -18,16 +18,12 @@ class UpdateProfileRequest extends FormRequest
   public function rules(): array
   {
     $user = User::where('username', $this->route('username'))->first();
-    $employeeId = $user?->employee?->id;
+    $userId = $user?->id;
 
     return [
-      'username' => [
-        'required',
-        'min:4',
-        'max:50',
-        Rule::unique('users', 'username')->ignore($user?->id),
-      ],
-      'personal_email' => ['nullable', 'email', Rule::unique('employees', 'personal_email')->ignore($employeeId)],
+      'name' => 'required|min:4|max:50',
+      'email' => ['nullable', 'email', Rule::unique('users', 'email')->ignore($userId)],
+      'username' => ['required', 'min:4', 'max:50', Rule::unique('users', 'username')->ignore($userId)],
       'password' => ['nullable', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/', 'confirmed'],
     ];
   }

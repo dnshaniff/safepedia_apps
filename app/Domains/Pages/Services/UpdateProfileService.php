@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Domains\Users\Services;
+namespace App\Domains\Pages\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class UpdateService
+class UpdateProfileService
 {
   public function execute(User $user, array $data): User
   {
@@ -15,7 +15,6 @@ class UpdateService
         'name' => $data['name'],
         'email' => $data['email'],
         'username' => $data['username'],
-        'status' => $data['status'],
       ];
 
       if (!empty($data['password'])) {
@@ -24,9 +23,7 @@ class UpdateService
 
       $user->update($payload);
 
-      $user->syncRoles([$data['role']]);
-
-      return $user->fresh(['roles']);
+      return $user->fresh();
     });
   }
 }

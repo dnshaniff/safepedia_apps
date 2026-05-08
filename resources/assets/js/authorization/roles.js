@@ -395,50 +395,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
           url: `${baseUrl}roles/${id}`,
           success: function (res) {
             Loading.remove();
-            if (res.message) {
-              Swal.fire({
-                icon: 'success',
-                title: 'Deleted!',
-                text: res.message,
-                customClass: {
-                  confirmButton: 'btn btn-success'
-                }
-              });
-              dt_roles.draw(false);
-            } else if (res.errors) {
-              console.log(res.errors);
-              Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: res.error,
-                customClass: {
-                  confirmButton: 'btn btn-danger'
-                }
-              });
-            }
+            showToast(res.status, res.message);
+            dt_roles.draw(false);
           },
-          error: function (jqXHR, textStatus, errorThrown) {
+          error: function (jqXHR) {
             Loading.remove();
-            Swal.fire({
-              icon: 'error',
-              title: 'Error!',
-              text: jqXHR.responseJSON.error,
-              customClass: {
-                confirmButton: 'btn btn-danger'
-              }
-            });
+            showToast(jqXHR.responseJSON?.status || 'danger', jqXHR.responseJSON?.message || 'An unexpected error occurred');
           }
         });
       } else {
         Loading.remove();
-        Swal.fire({
-          title: 'Cancelled',
-          text: 'The Permission is not deleted!',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        });
+        showToast('info', 'The role is not deleted!');
       }
     });
   });

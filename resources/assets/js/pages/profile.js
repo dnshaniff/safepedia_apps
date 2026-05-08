@@ -12,24 +12,35 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   FormValidation.formValidation(formProfile, {
     fields: {
+      name: {
+        validators: {
+          notEmpty: {
+            message: 'Name is required'
+          },
+          stringLength: {
+            min: 4,
+            message: 'The name must be at least 4 characters long'
+          }
+        }
+      },
+      email: {
+        validators: {
+          notEmpty: {
+            message: 'Email is required'
+          },
+          emailAddress: {
+            message: 'The email address is not valid'
+          }
+        }
+      },
       username: {
         validators: {
           notEmpty: {
-            message: 'Please enter an username'
+            message: 'Username is required'
           },
           stringLength: {
             min: 4,
             message: 'The username must be at least 4 characters long'
-          }
-        }
-      },
-      personal_email: {
-        validators: {
-          notEmpty: {
-            message: 'Please enter personal email'
-          },
-          emailAddress: {
-            message: 'The value is not a valid email address'
           }
         }
       },
