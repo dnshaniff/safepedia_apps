@@ -7,6 +7,24 @@
       "slug": "dashboard"
     },
     {
+      "url": "/page-invoices",
+      "name": "Invoices",
+      "icon": "menu-icon tf-icons bx bx-receipt",
+      "slug": "page-invoices"
+    },
+    {
+      "url": "/page-products",
+      "name": "Products",
+      "icon": "menu-icon tf-icons bx bx-package",
+      "slug": "page-products"
+    },
+    {
+      "url": "/page-brands",
+      "name": "Brands",
+      "icon": "menu-icon tf-icons bx bx-bookmark-alt",
+      "slug": "page-brands"
+    },
+    {
       "name": "Authorization",
       "icon": "menu-icon tf-icons bx bx-check-shield",
       "slug": "access",

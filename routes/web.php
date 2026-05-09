@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Brands\BrandController;
 use App\Domains\Pages\DashboardController;
 use App\Domains\Pages\ProfileController;
 use App\Domains\Pages\LoginController;
@@ -31,6 +32,7 @@ Route::middleware(['auth', 'status'])->group(function () {
 
   // Fetch Data
   Route::get('/roles/select', [RoleController::class, 'select']);
+  Route::get('/brands/select', [BrandController::class, 'select']);
 });
 
 /**
@@ -41,6 +43,18 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   Route::get('/', [DashboardController::class, 'view'])->name('dashboard');
   Route::get('/profile/{username}', [ProfileController::class, 'view'])->name('profile.view');
   Route::patch('/profile/{username}', [ProfileController::class, 'update'])->name('profile.update');
+
+  // Invoices
+
+
+  //Products
+
+
+  // Brands
+  Route::get('/page-brands', [BrandController::class, 'view'])->name('page-brands');
+  Route::resource('/brands', BrandController::class)->except('create', 'show');
+  Route::post('/brands/{brand}/restore', [BrandController::class, 'restore'])->name('brands.restore');
+  Route::delete('/brands/{brand}/force', [BrandController::class, 'force'])->name('brands.force');
 
   // Authorization
   // Permissions

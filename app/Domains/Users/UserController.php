@@ -74,11 +74,7 @@ class UserController extends Controller
 
       return response()->json(['status' => 'success', 'message' => "User: {$user->username} deleted successfully"], 200);
     } catch (Throwable $e) {
-      Log::error('Unexpected error while processing request', [
-        'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
-      ]);
+      Log::error('Unexpected error while deleting user', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
@@ -94,14 +90,10 @@ class UserController extends Controller
 
         return response()->json(['status' => 'success', 'message' => "User: {$user->username} successfully restored"], 200);
       } else {
-        return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
+        return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 422);
       }
     } catch (Throwable $e) {
-      Log::error('Unexpected error while processing request', [
-        'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
-      ]);
+      Log::error('Unexpected error while restoring user', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }
@@ -110,10 +102,6 @@ class UserController extends Controller
   public function force(string $id, TerminateService $service)
   {
     $user = User::withTrashed()->findOrFail($id);
-
-    if ($user->employee()->exists()) {
-      return response()->json(['status' => 'info', 'message' => 'Data cannot be deleted because it is associated with other records'], 422);
-    }
 
     try {
       if ($user->trashed()) {
@@ -128,11 +116,7 @@ class UserController extends Controller
         return response()->json(['status' => 'info', 'message' => 'Data is not in trash'], 200);
       }
     } catch (Throwable $e) {
-      Log::error('Unexpected error while processing request', [
-        'error' => $e->getMessage(),
-        'file'  => $e->getFile(),
-        'line'  => $e->getLine(),
-      ]);
+      Log::error('Unexpected error while forcing user deletion', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }

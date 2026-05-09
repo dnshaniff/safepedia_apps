@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create Permission');
+    modalTitle.html('Create New Permission');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
 
     // changing the title of modal
-    modalTitle.html('Edit Permission');
+    modalTitle.html('Edit Existing Permission');
     $(btnSubmit).html('Save');
 
     // get data

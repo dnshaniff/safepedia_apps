@@ -33,13 +33,13 @@ class IndexService
     $data = [];
     $ids = $start;
 
-    foreach ($rows as $role) {
+    foreach ($rows as $row) {
       $data[] = [
         'fake_id' => ++$ids,
-        'id' => $role->id,
-        'name' => $role->name,
-        'created_at' => $role->created_at,
-        'updated_at' => $role->updated_at,
+        'id' => $row->id,
+        'name' => $row->name,
+        'created_at' => $row->created_at,
+        'updated_at' => $row->updated_at,
       ];
     }
 

@@ -91,10 +91,7 @@ class RoleController extends Controller
 
       return response()->json(['status' => 'success', 'message' => "Role deleted successfully"], 200);
     } catch (Throwable $e) {
-      Log::error('Unexpected error while processing request', [
-        'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString(),
-      ]);
+      Log::error('Unexpected error while deleting role', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
     }

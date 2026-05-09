@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create Role');
+    modalTitle.html('Create New Role');
     editingId = null;
     initialDTPermissions();
     $(btnSubmit).html('Submit');
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
     initialDTPermissions();
 
-    modalTitle.html('Edit Role');
+    modalTitle.html('Edit Existing Role');
     $(btnSubmit).html('Save');
 
     // get data

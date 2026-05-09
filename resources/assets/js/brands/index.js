@@ -8,27 +8,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableUsers = $('.datatables-users'),
-    modalUser = $('#modalUser'),
-    modalTitle = modalUser.find('.modal-title');
+  const datatableBrands = $('.datatables-brands'),
+    modalBrand = $('#modalBrand'),
+    modalTitle = modalBrand.find('.modal-title');
 
-  let dt_users, userRoleSelect;
+  let dt_brands;
 
-  if (datatableUsers) {
-    const filterRole = document.createElement('div');
-    filterRole.classList.add('user_roles', 'w-px-200', 'pb-3', 'pb-sm-0', 'me-3');
-    dt_users = new DataTable(datatableUsers, {
+  if (datatableBrands) {
+    dt_brands = new DataTable(datatableBrands, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}users`
+        url: `${baseUrl}brands`
       },
       columns: [
         { data: 'fake_id' },
         { data: 'name' },
-        { data: 'username' },
-        { data: 'role' },
-        { data: 'status' },
         { data: 'created_at' },
         { data: 'updated_at' },
         { data: 'id' }
@@ -36,34 +31,60 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, 5, 6, -1]
+          targets: [0, 1, 2, 3, -1]
         },
         {
           searchable: true,
-          targets: [1, 2]
+          targets: [1]
         },
         {
           targets: 1,
+          responsivePriority: 1,
           render: function (data, type, row) {
-            return `
-                <div class="d-flex flex-column">
-                  <span class="text-muted">${data}</span>
-                  <span class="fw-medium">${row.email}</span>
-                </div>
-              `;
-          }
-        },
-        {
-          targets: 4,
-          render: function (data, type, row) {
-            const userStatus = data === 'active' ? 'ACTIVE' : 'INACTIVE',
-              statusClass = userStatus === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
+            let brandName = data;
+            let logo = row.file_path ? `${baseUrl}storage/${row.file_path}` : null;
 
-            return '<span class="badge ' + statusClass + '">' + userStatus + '</span>';
+            let logoOutput = logo
+            ? `
+              <a href="${logo}" data-fancybox="brand-${row.id}">
+                <img
+                  src="${logo}"
+                  alt="${brandName}"
+                  class="rounded border"
+                  style="width: 42px; height: 42px; object-fit: contain;"
+                />
+              </a>
+            `
+            : `
+              <div
+                class="d-flex align-items-center justify-content-center rounded bg-label-secondary"
+                style="
+                  width: 42px;
+                  height: 42px;
+                  font-size: 16px;
+                  font-weight: 700;
+                "
+              >
+                ${brandName.charAt(0).toUpperCase()}
+              </div>
+            `;
+
+            return `
+              <div class="d-flex align-items-center gap-3">
+                <div class="flex-shrink-0">
+                  ${logoOutput}
+                </div>
+                <div class="d-flex align-items-center">
+                  <span class="fw-medium text-heading mb-0" style=" line-height: 1;" />
+                    ${brandName}
+                  </span>
+                </div>
+              </div>
+            `;
           }
         },
         {
-          targets: 5,
+          targets: 2,
           render: function (data, type, row) {
             const options = {
               day: '2-digit',
@@ -82,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 6,
+          targets: 3,
           render: function (data, type, row) {
             const options = {
               day: '2-digit',
@@ -128,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalUser" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalBrand" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -159,11 +180,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Username',
+                placeholder: 'Search Name',
                 text: '_INPUT_'
               }
             },
-            filterRole,
             {
               buttons: [
                 {
@@ -171,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalUser'
+                    'data-bs-target': '#modalBrand'
                   }
                 }
               ]
@@ -192,39 +212,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
           last: '<i class="icon-base bx bx-chevrons-right scaleX-n1-rtl icon-18px"></i>'
         }
       },
-      initComplete: function (settings, json) {
-        userRoleSelect = $(
-          '<select id="userRole" class="form-select text-capitalize"><option value=""> Select Group </option></select>'
-        )
-          .appendTo('.user_roles')
-          .on('change', function () {
-            var val = $(this).val();
-            dt_users.column(2).search(val).draw();
-          });
-
-        updateUserRoleOptions(json.roles);
-      },
       createdRow: function (row, data) {
         if (data.deleted_at !== null) {
           $(row).addClass('bg-danger-subtle');
         }
-      }
-    });
-
-    function updateUserRoleOptions(roles) {
-      if (!userRoleSelect) return; // Guard clause
-      var currentVal = userRoleSelect.val();
-      userRoleSelect.empty().append('<option value=""> Select Role </option>');
-      roles.forEach(function (role) {
-        userRoleSelect.append('<option value="' + role + '" class="text-capitalize">' + role + '</option>');
-      });
-      userRoleSelect.val(currentVal);
-    }
-
-    dt_users.on('draw.dt', function () {
-      var json = dt_users.ajax.json();
-      if (json && json.roles) {
-        updateUserRoleOptions(json.roles);
       }
     });
   }
@@ -260,35 +251,49 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formUser = document.getElementById('formUser'),
-    fillName = formUser.querySelector('#name'),
-    fillEmail = formUser.querySelector('#email'),
-    userName = formUser.querySelector('#username'),
-    roleSelect = formUser.querySelector('#role'),
-    statusSelect = formUser.querySelector('#status'),
-    btnSubmit = formUser.querySelector('button[type="submit"]');
+  const formBrand = document.getElementById('formBrand'),
+    fillName = formBrand.querySelector('#name'),
+    uploadLogo = formBrand.querySelector('#file_upload'),
+    previewWrapper = formBrand.querySelector('#logoPreviewWrapper'),
+    previewImage = formBrand.querySelector('#logoPreview'),
+    previewLink = formBrand.querySelector('#logoPreviewLink'),
+    btnSubmit = formBrand.querySelector('button[type="submit"]');
 
-  let editingId = null;
+  let editingId = null, currentPreview = null, existingPreview = null;
 
-  initStatic($(statusSelect), {
-    placeholder: 'Select an option',
-    disableSearch: true,
-    data: [
-      { id: 'active', text: 'Active' },
-      { id: 'inactive', text: 'Inactive' }
-    ]
-  });
+  uploadLogo.addEventListener('change', function (e) {
+    const file = e.target.files[0];
 
-  initDropdownPaged($(roleSelect), {
-    url: '/roles/select',
-    placeholder: 'Select an option',
-    perPage: 10,
-    hideSearch: true
+    if (!file) {
+      if (existingPreview) {
+        previewImage.src = existingPreview;
+        previewLink.href = existingPreview;
+        previewWrapper.classList.remove('d-none');
+      }
+
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      showToast('danger', 'Only image files are allowed');
+      uploadLogo.value = '';
+
+      return;
+    }
+
+    if (currentPreview) {
+      URL.revokeObjectURL(currentPreview);
+    }
+
+    currentPreview = URL.createObjectURL(file);
+    previewImage.src = currentPreview;
+    previewLink.href = currentPreview;
+    previewWrapper.classList.remove('d-none');
   });
 
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create New User');
+    modalTitle.html('Create New Brand');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
@@ -298,98 +303,53 @@ document.addEventListener('DOMContentLoaded', function (e) {
     const id = $(this).data('id'),
       dtrModal = $('.dtr-bs-modal.show');
 
-    // hide responsive modal in small screen
+     // hide responsive modal in small screen
     if (dtrModal.length) {
       dtrModal.modal('hide');
     }
 
     // changing the title of modal
-    modalTitle.html('Edit Existing User');
+    modalTitle.html('Edit Existing Brand');
     $(btnSubmit).html('Save');
 
     // get data
-    $.get(`${baseUrl}users/${id}/edit`, function (data) {
+    $.get(`${baseUrl}brands/${id}/edit`, function (data) {
       editingId = id;
       fillName.value = data.name || '';
-      fillEmail.value = data.email || '';
-      userName.value = data.username || '';
+      existingPreview = data.file_path ? `${baseUrl}storage/${data.file_path}` : null;
 
-      if (data.status) {
-        $(statusSelect).val(data.status).trigger('change');
-      }
-
-      const role = Array.isArray(data.roles) && data.roles.length ? data.roles[0] : null;
-      if (role && role.id != null) {
-        setValue($(roleSelect), { id: role.name, text: role.name });
+      if (existingPreview) {
+        previewImage.src = existingPreview;
+        previewLink.href = existingPreview;
+        previewWrapper.classList.remove('d-none');
+      } else {
+        previewImage.src = '';
+        previewLink.href = '';
+        previewWrapper.classList.add('d-none');
       }
     });
   });
 
-  FormValidation.formValidation(formUser, {
+  FormValidation.formValidation(formBrand, {
     fields: {
       name: {
         validators: {
           notEmpty: {
-            message: 'Name is required'
+            message: 'Brand name is required'
           },
           stringLength: {
             min: 4,
-            message: 'The name must be at least 4 characters long'
+            message: 'Brand name must be at least 4 characters long'
           }
         }
       },
-      email: {
+      file_upload: {
         validators: {
-          notEmpty: {
-            message: 'Email is required'
-          },
-          emailAddress: {
-            message: 'The email address is not valid'
-          }
-        }
-      },
-      username: {
-        validators: {
-          notEmpty: {
-            message: 'Username is required'
-          },
-          stringLength: {
-            min: 4,
-            message: 'The username must be at least 4 characters long'
-          }
-        }
-      },
-      password: {
-        validators: {
-          stringLength: {
-            min: 8,
-            message: 'The password must be at least 8 characters long'
-          },
-          regexp: {
-            regexp: /^(?=.*[a-z])(?=.*[A-Z]).+$/,
-            message: 'The password must contain at least one uppercase letter and one lowercase letter'
-          }
-        }
-      },
-      password_confirmation: {
-        validators: {
-          identical: {
-            compare: () => formUser.querySelector('[name="password"]').value,
-            message: 'The password and its confirmation do not match'
-          }
-        }
-      },
-      role: {
-        validators: {
-          notEmpty: {
-            message: 'Role must be selected'
-          }
-        }
-      },
-      status: {
-        validators: {
-          notEmpty: {
-            message: 'Status must be selected'
+          file: {
+            extenstion: 'png',
+            type: 'image/png',
+            maxSize: 4 * 1024 * 1024, // 4MB
+            message: 'Please select a valid image file (png) less than 4MB'
           }
         }
       }
@@ -417,17 +377,21 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    let url = editingId ? `${baseUrl}users/${editingId}` : `${baseUrl}users`;
+    const formData = new FormData(formBrand);
+
+    let url = editingId ? `${baseUrl}brands/${editingId}` : `${baseUrl}brands`;
     let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
-      data: $(formUser).serialize(),
+      data: formData,
       url: url,
       type: method,
+      processData: false,
+      contentType: false,
       success: function (res) {
         Loading.remove();
-        dt_users.draw(false);
-        modalUser.modal('hide');
+        dt_brands.draw(false);
+        modalBrand.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -452,10 +416,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
   });
 
   // clearing form data when modal hidden
-  modalUser.on('hidden.bs.modal', function () {
-    formUser.reset();
-    $(formUser).find('select').val('').trigger('change');
+  modalBrand.on('hidden.bs.modal', function () {
+    formBrand.reset();
+    editingId = null;
+
+    if (currentPreview) {
+      URL.revokeObjectURL(currentPreview);
+    }
+
+    previewImage.src = '';
+    previewLink.href = '';
+    previewWrapper.classList.add('d-none');
+    currentPreview = null;
+    existingPreview = null;
   });
+
+
 
   // delete record
   $(document).on('click', '.delete-record', function () {
@@ -490,11 +466,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}users/${id}`,
+          url: `${baseUrl}brands/${id}`,
           success: function (res) {
             Loading.remove();
             showToast(res.status, res.message);
-            dt_users.draw(false);
+            dt_brands.draw(false);
           },
           error: function (jqXHR) {
             Loading.remove();
@@ -503,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       } else {
         Loading.remove();
-        showToast('info', 'The user is not deleted!');
+        showToast('info', 'The brand is not deleted!');
       }
     });
   });
@@ -541,11 +517,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // restore the data
         $.ajax({
           method: 'POST',
-          url: `${baseUrl}users/${id}/restore`,
+          url: `${baseUrl}brands/${id}/restore`,
           success: function (res) {
             Loading.remove();
             showToast(res.status, res.message);
-            dt_users.draw(false);
+            dt_brands.draw(false);
           },
           error: function (jqXHR) {
             Loading.remove();
@@ -554,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       } else {
         Loading.remove();
-        showToast('info', 'The user is not restored!');
+        showToast('info', 'The brand is not restored!');
       }
     });
   });
@@ -592,11 +568,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // permanent delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}users/${id}/force`,
+          url: `${baseUrl}brands/${id}/force`,
           success: function (res) {
             Loading.remove();
             showToast(res.status, res.message);
-            dt_users.draw(false);
+            dt_brands.draw(false);
           },
           error: function (jqXHR) {
             Loading.remove();
@@ -605,7 +581,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       } else {
         Loading.remove();
-        showToast('info', 'The user is not deleted!');
+        showToast('info', 'The brand is not deleted!');
       }
     });
   });

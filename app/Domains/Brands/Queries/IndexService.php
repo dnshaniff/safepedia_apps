@@ -1,40 +1,36 @@
 <?php
 
-namespace App\Domains\Permissions\Queries;
+namespace App\Domains\Brands\Queries;
 
-use Spatie\Permission\Models\Permission;
+use App\Models\Brand;
+use Illuminate\Support\Facades\Auth;
 
 class IndexService
 {
   public function execute(array $params): array
   {
-    $search = $params['search'] ?? '';
+    $user = Auth::user();
 
-    $groupFilter = $params['group'] ?? '';
+    $isAdmin = $user->username === 'administrator';
+
+    $search = $params['search'] ?? '';
 
     $start = (int) ($params['start'] ?? 0);
 
     $length = (int) ($params['length'] ?? 10);
 
-    $getAllPermissions = $params['getAllPermissions'] ?? false;
+    $baseQuery = Brand::query()->with(['creator', 'editor', 'deleter']);
 
-    if ($getAllPermissions) {
-      return ['allPermissions' => Permission::pluck('name')->toArray()];
+    if ($isAdmin) {
+      $baseQuery->withTrashed();
     }
-
-    $baseQuery = Permission::query();
 
     $totalData = (clone $baseQuery)->count();
 
     if (!empty($search)) {
       $baseQuery->where(function ($q) use ($search) {
-        $q->where('name', 'LIKE', "%{$search}%")
-          ->orWhere('display_name', 'LIKE', "%{$search}%");
+        $q->where('name', 'LIKE', "%{$search}%");
       });
-    }
-
-    if (!empty($groupFilter)) {
-      $baseQuery->where('group_name', $groupFilter);
     }
 
     $totalFiltered = (clone $baseQuery)->count();
@@ -48,11 +44,15 @@ class IndexService
       $data[] = [
         'fake_id' => ++$ids,
         'id' => $row->id,
-        'display_name' => $row->display_name,
         'name' => $row->name,
-        'group_name' => $row->group_name,
+        'file_name' => $row->file_name,
+        'file_path' => $row->file_path,
+        'creator' => $row->creator?->name ?? '-',
+        'editor' => $row->editor?->name ?? '-',
+        'deleter' => $row->deleter?->name ?? '-',
         'created_at' => $row->created_at,
         'updated_at' => $row->updated_at,
+        'deleted_at' => $row->deleted_at,
       ];
     }
 
@@ -62,7 +62,6 @@ class IndexService
       'recordsFiltered' => $totalFiltered,
       'code' => 200,
       'data' => $data,
-      'groups' => Permission::query()->select('group_name')->distinct()->orderBy('group_name')->pluck('group_name'),
     ];
   }
 }
