@@ -17,7 +17,7 @@ return new class extends Migration
       $table->string('slug')->unique();
       $table->text('description')->nullable();
       $table->foreignId('brand_id')->nullable()->constrained('brands', 'id')->nullOnDelete();
-      $table->enum('status', ['Active', 'Inactive'])->default('Active');
+      $table->enum('status', ['active', 'inactive'])->default('active');
       $table->timestamps();
       $table->softDeletes();
       $table->foreignUuid('created_by')->nullable()->constrained('users', 'id')->nullOnDelete();

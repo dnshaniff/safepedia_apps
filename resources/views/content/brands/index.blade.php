@@ -50,12 +50,12 @@
                 </div>
                 <div class="modal-body row">
                     <div class="col-12 mb-3">
-                        <label class="form-label" for="name">Name</label>
-                        <input type="text" id="name" name="name" class="form-control" placeholder="John Doe"
+                        <label class="form-label" for="name">Name <strong class="text-danger">**</strong></label>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="Philips"
                             autofocus />
                     </div>
                     <div class="col-12 mb-3">
-                        <label class="form-label" for="file_upload">Logo</label>
+                        <label class="form-label" for="file_upload">Logo <strong class="text-danger">**</strong></label>
                         <input id="file_upload" name="file_upload" class="form-control" type="file" accept=".png">
                     </div>
                     <div id="logoPreviewWrapper" class="mt-3 d-none">

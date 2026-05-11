@@ -18,6 +18,7 @@ return new class extends Migration
       $table->string('file_path');
       $table->string('file_mime');
       $table->unsignedBigInteger('file_size');
+      $table->boolean('is_primary')->default(false);
       $table->timestamps();
     });
   }

@@ -454,6 +454,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
   // clearing form data when modal hidden
   modalUser.on('hidden.bs.modal', function () {
     formUser.reset();
+    editingId = null
     $(formUser).find('select').val('').trigger('change');
   });
 

@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Name',
+                placeholder: 'Search Brand',
                 text: '_INPUT_'
               }
             },
@@ -430,8 +430,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
     currentPreview = null;
     existingPreview = null;
   });
-
-
 
   // delete record
   $(document).on('click', '.delete-record', function () {

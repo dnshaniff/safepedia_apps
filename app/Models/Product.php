@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Blameable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-  use SoftDeletes;
+  use SoftDeletes, Blameable;
 
   protected $table = 'products';
 
   protected $fillable = [
     'name',
+    'slug',
     'description',
     'brand_id',
     'status',
@@ -24,6 +26,11 @@ class Product extends Model
   public function brand()
   {
     return $this->belongsTo(Brand::class);
+  }
+
+  public function thumbnail()
+  {
+    return $this->hasOne(ProductImage::class)->where('is_primary', true);
   }
 
   public function images()

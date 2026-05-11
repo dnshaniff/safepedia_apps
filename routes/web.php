@@ -5,6 +5,7 @@ use App\Domains\Pages\DashboardController;
 use App\Domains\Pages\ProfileController;
 use App\Domains\Pages\LoginController;
 use App\Domains\Permissions\PermissionController;
+use App\Domains\Products\ProductController;
 use App\Domains\Roles\RoleController;
 use App\Domains\Users\UserController;
 use Illuminate\Support\Facades\Route;
@@ -48,7 +49,10 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
 
 
   //Products
-
+  Route::get('/page-products', [ProductController::class, 'view'])->name('page-products');
+  Route::resource('/products', ProductController::class)->except('create');
+  Route::post('/products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');
+  Route::delete('/products/{product}/force', [ProductController::class, 'force'])->name('products.force');
 
   // Brands
   Route::get('/page-brands', [BrandController::class, 'view'])->name('page-brands');

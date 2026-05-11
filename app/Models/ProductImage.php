@@ -13,8 +13,11 @@ class ProductImage extends Model
     'file_name',
     'file_path',
     'file_mime',
-    'file_size'
+    'file_size',
+    'is_primary'
   ];
+
+  protected $casts = ['is_primary' => 'boolean'];
 
   public function product()
   {
