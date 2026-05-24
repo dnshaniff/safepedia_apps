@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Articles\ArticleController;
 use App\Domains\Brands\BrandController;
 use App\Domains\Pages\DashboardController;
 use App\Domains\Pages\ProfileController;
@@ -48,7 +49,13 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   // Invoices
 
 
-  //Products
+  // Articles
+  Route::get('/page-articles', [ArticleController::class, 'view'])->name('page-articles');
+  Route::resource('/articles', ArticleController::class)->except('create');
+  Route::post('/articles/{article}/restore', [ArticleController::class, 'restore'])->name('articles.restore');
+  Route::delete('/articles/{article}/force', [ArticleController::class, 'force'])->name('articles.force');
+
+  // Products
   Route::get('/page-products', [ProductController::class, 'view'])->name('page-products');
   Route::resource('/products', ProductController::class)->except('create');
   Route::post('/products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');

@@ -1,6 +1,5 @@
 import './bootstrap';
-import './echo';
-import './realtime';
+// import './echo';\
 
 /*
   Add custom scripts here

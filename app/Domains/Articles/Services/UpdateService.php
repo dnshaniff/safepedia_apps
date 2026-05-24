@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Domains\Products\Services;
+namespace App\Domains\Articles\Services;
 
 use Throwable;
-use App\Models\Product;
-use App\Models\ProductImage;
+use App\Models\Article;
+use App\Models\ArticleImage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,29 +14,30 @@ use Intervention\Image\Encoders\WebpEncoder;
 
 class UpdateService
 {
-  public function execute(Product $product, array $data): Product
+  public function execute(Article $article, array $data): Article
   {
     $newUploadedPaths = [];
     $deletedPaths = [];
 
     try {
-      $updatedProduct = DB::transaction(function () use ($product, $data, &$newUploadedPaths) {
-        $slug = $product->slug;
+      $updatedProduct = DB::transaction(function () use ($article, $data, &$newUploadedPaths) {
+        $slug = $article->slug;
 
-        if ($product->name !== $data['name']) {
-          $slug = Str::slug($data['name']) . '-' . Str::ulid();
+        if ($article->title !== $data['title']) {
+          $slug = Str::slug($data['title']) . '-' . Str::ulid();
         }
 
-        $product->update([
-          'name' => $data['name'],
+        $article->update([
+          'title' => $data['title'],
           'slug' => $slug,
-          'description' => $data['description'],
-          'brand_id' => $data['brand_id'],
+          'content' => $data['content'],
+          'project_at' => $data['project_at'],
+          'location' => $data['location'],
           'status' => $data['status'],
         ]);
 
         if (!empty($data['removed_images'])) {
-          $imagesToDelete = ProductImage::whereIn('id', $data['removed_images'])->get();
+          $imagesToDelete = ArticleImage::whereIn('id', $data['removed_images'])->get();
 
           foreach ($imagesToDelete as $image) {
             Storage::disk('public')->delete($image->file_path);
@@ -61,7 +62,7 @@ class UpdateService
 
             $newUploadedPaths[] = $filePath;
 
-            $image = $product->images()->create([
+            $image = $article->images()->create([
               'file_name' => $generatedName,
               'file_path' => $filePath,
               'file_mime' => 'image/webp',
@@ -73,17 +74,17 @@ class UpdateService
           }
         }
 
-        $product->images()->update(['is_primary' => false]);
+        $article->images()->update(['is_primary' => false]);
 
         $thumbnailIndex = $data['thumbnail_index'] ?? 0;
 
-        $allImages = $product->images()->get()->values();
+        $allImages = $article->images()->get()->values();
 
         if (isset($allImages[$thumbnailIndex])) {
           $allImages[$thumbnailIndex]->update(['is_primary' => true]);
         }
 
-        return $product->fresh(['brand', 'images']);
+        return $article->fresh(['images']);
       });
 
       foreach ($deletedPaths as $path) {

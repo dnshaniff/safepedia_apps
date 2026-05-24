@@ -41,9 +41,9 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalBrand" tabindex="-1" data-bs-backdrop="static" enctype="multipart/form-data">
+    <div class="modal fade" id="modalBrand" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
-            <form id="formBrand" class="modal-content">
+            <form id="formBrand" class="modal-content" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title" id="backDropModalTitle">Brand</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

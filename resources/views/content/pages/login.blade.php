@@ -44,7 +44,7 @@
                 <!-- Login -->
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="mb-1">Welcome to {{ env('APP_NAME') }}! 👋</h4>
+                        <h4 class="mb-1">Welcome to {{ config('app.name') }}! 👋</h4>
                         <p class="mb-6">Please sign-in to your account</p>
 
                         <form id="formAuthentication" class="mb-6" action="{{ route('login.store') }}" method="POST">

@@ -8,23 +8,23 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const datatableProducts = $('.datatables-products'),
-    modalProduct = $('#modalProduct'),
-    modalTitle = modalProduct.find('.modal-title');
+  const datatableArticles = $('.datatables-articles'),
+    modalArticle = $('#modalArticle'),
+    modalTitle = modalArticle.find('.modal-title');
 
-  let dt_products;
+  let dt_articles;
 
-  if (datatableProducts) {
-    dt_products = new DataTable(datatableProducts, {
+  if (datatableArticles) {
+    dt_articles = new DataTable(datatableArticles, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}products`
+        url: `${baseUrl}articles`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'name' },
-        { data: 'brand' },
+        { data: 'title' },
+        { data: 'project_at' },
         { data: 'status' },
         { data: 'created_at' },
         { data: 'updated_at' },
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           targets: 1,
           responsivePriority: 1,
           render: function (data, type, row) {
-            let productName = data;
+            let titleArticle = data;
             let thumbnail = row.thumbnail ?? null;
 
             let thumbnailOutput = thumbnail
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               <a href="${thumbnail}" data-fancybox="brand-${row.id}">
                 <img
                   src="${thumbnail}"
-                  alt="${productName}"
+                  alt="${titleArticle}"
                   class="rounded border"
                   style="width: 42px; height: 42px; object-fit: contain;"
                 />
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   font-weight: 700;
                 "
               >
-                ${productName.charAt(0).toUpperCase()}
+                ${titleArticle.charAt(0).toUpperCase()}
               </div>
             `;
 
@@ -77,8 +77,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   ${thumbnailOutput}
                 </div>
                 <div class="d-flex align-items-center">
-                  <span class="fw-medium text-primary cursor-pointer show-record mb-0" data-id="${row.id}" style="line-height: 1;" />
-                    ${productName}
+                  <span class="fw-medium text-primary cursor-pointer show-record mb-0" data-id="${row.id}" style=" line-height: 1;" />
+                    ${titleArticle}
                   </span>
                 </div>
               </div>
@@ -86,12 +86,23 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
+          targets: 2,
+          render: function (data, type, row) {
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${data}</span>
+                <span class="fw-medium">${row.location}</span>
+              </div>
+            `;
+          }
+        },
+        {
           targets: 3,
           render: function (data, type, row) {
-            const productStatus = data === 'active' ? 'ACTIVE' : 'INACTIVE',
-              statusClass = productStatus === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
+            const articleStatus = data === 'draft' ? 'DRAFT' : 'PUBLISHED',
+              statusClass = articleStatus === 'DRAFT' ? 'bg-label-info' : 'bg-label-success';
 
-            return '<span class="badge ' + statusClass + '">' + productStatus + '</span>';
+            return '<span class="badge ' + statusClass + '">' + articleStatus + '</span>';
           }
         },
         {
@@ -160,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalProduct" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalArticle" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -191,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Product',
+                placeholder: 'Search Article',
                 text: '_INPUT_'
               }
             },
@@ -202,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalProduct'
+                    'data-bs-target': '#modalArticle'
                   }
                 }
               ]
@@ -262,20 +273,21 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formProduct = document.getElementById('formProduct'),
-    fillName = formProduct.querySelector('#name'),
-    selectBrand = formProduct.querySelector('#brand_id'),
-    selectStatus = formProduct.querySelector('#status'),
-    dropzoneElement = formProduct.querySelector('#productDropzone'),
-    btnSubmit = formProduct.querySelector('button[type="submit"]');
+  const formArticle = document.getElementById('formArticle'),
+    fillTitle = formArticle.querySelector('#title'),
+    projectDate = formArticle.querySelector('#project_at'),
+    fillLocation = formArticle.querySelector('#location'),
+    selectStatus = formArticle.querySelector('#status'),
+    dropzoneElement = formArticle.querySelector('#articleDropzone'),
+    btnSubmit = formArticle.querySelector('button[type="submit"]');
 
   let editingId = null,
     selectedThumbnail = null,
     removedImages = [];
 
   const quillToolbar = [['bold', 'italic', 'underline', 'strike'], [{ list: 'ordered' }]];
-  const descEditor = new Quill('#description-editor', {
-    bounds: '#description-editor',
+  const contentEditor = new Quill('#content-editor', {
+    bounds: '#content-editor',
     placeholder: 'Type Something...',
     modules: {
       syntax: true,
@@ -283,26 +295,33 @@ document.addEventListener('DOMContentLoaded', function (e) {
     },
     theme: 'snow'
   });
-  const hiddenContent = document.getElementById('description');
-  descEditor.on('text-change', function () {
-    hiddenContent.value = descEditor.root.innerHTML;
-  });
-
-  initDropdownPaged($(selectBrand), {
-    url: '/brands/select',
-    placeholder: 'Select an option',
-    perPage: 10,
-    hideSearch: false
+  const hiddenContent = document.getElementById('content');
+  contentEditor.on('text-change', function () {
+    hiddenContent.value = contentEditor.root.innerHTML;
   });
 
   initStatic($(selectStatus), {
     placeholder: 'Select an option',
     disableSearch: true,
     data: [
-      { id: 'active', text: 'Active' },
-      { id: 'inactive', text: 'Inactive' }
+      { id: 'draft', text: 'Draft' },
+      { id: 'published', text: 'Published' }
     ]
   });
+
+  function initFP(element) {
+    if (!element) return;
+
+    flatpickr(element, {
+      altInput: true,
+      altFormat: 'j F, Y',
+      dateFormat: 'Y-m-d',
+      static: true,
+      allowInput: false
+    });
+  }
+
+  initFP(projectDate);
 
   Dropzone.autoDiscover = false;
 
@@ -406,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create New Product');
+    modalTitle.html('Create New Article');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
@@ -422,20 +441,16 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
 
     // changing the title of modal
-    modalTitle.html('Edit Existing Product');
+    modalTitle.html('Edit Existing Article');
     $(btnSubmit).html('Save');
 
     // get data
-    $.get(`${baseUrl}products/${id}/edit`, function (data) {
+    $.get(`${baseUrl}articles/${id}/edit`, function (data) {
       editingId = id;
-      fillName.value = data.name || '';
-      descEditor.root.innerHTML = data.description;
-
-      if (data.brand) {
-        const option = new Option(data.brand.name, data.brand.id, true, true);
-
-        $(selectBrand).append(option).trigger('change');
-      }
+      fillTitle.value = data.title || '';
+      contentEditor.root.innerHTML = data.content;
+      fillLocation.value = data.location || '';
+      projectDate._flatpickr.setDate(data.project_at || null);
 
       if (data.status) {
         $(selectStatus).val(data.status).trigger('change');
@@ -472,20 +487,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   });
 
-  FormValidation.formValidation(formProduct, {
+  FormValidation.formValidation(formArticle, {
     fields: {
-      name: {
+      title: {
         validators: {
           notEmpty: {
-            message: 'Product name is required'
+            message: 'Title is required'
           },
           stringLength: {
             min: 4,
-            message: 'Product name must be at least 4 characters long'
+            message: 'Title must be at least 4 characters long'
           }
         }
       },
-      description: {
+      content: {
         validators: {
           callback: {
             message: 'Content is required',
@@ -497,10 +512,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         }
       },
-      brand_id: {
+      project_at: {
         validators: {
           notEmpty: {
-            message: 'Brand must be selected'
+            message: 'Date must be selected'
+          }
+        }
+      },
+      location: {
+        validators: {
+          notEmpty: {
+            message: 'Location is required'
           }
         }
       },
@@ -529,9 +551,9 @@ document.addEventListener('DOMContentLoaded', function (e) {
       });
     }
   }).on('core.form.valid', function () {
-    const formData = new FormData(formProduct);
+    const formData = new FormData(formArticle);
 
-    let url = editingId ? `${baseUrl}products/${editingId}` : `${baseUrl}products`;
+    let url = editingId ? `${baseUrl}articles/${editingId}` : `${baseUrl}articles`;
 
     if (editingId) {
       formData.append('_method', 'PATCH');
@@ -544,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
     const activeFiles = myDropzone.files;
 
     if (activeFiles.length === 0) {
-      showToast('info', 'At least one product image is required');
+      showToast('info', 'At least one article image is required');
 
       return;
     }
@@ -573,8 +595,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
       contentType: false,
       success: function (res) {
         Loading.remove();
-        dt_products.draw(false);
-        modalProduct.modal('hide');
+        dt_articles.draw(false);
+        modalArticle.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -598,19 +620,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   });
 
-  modalProduct.on('hidden.bs.modal', function () {
-    formProduct.reset();
+  modalArticle.on('hidden.bs.modal', function () {
+    formArticle.reset();
     editingId = null;
-    $(formProduct).find('select').val('').trigger('change');
-
-    descEditor.setContents([]);
-    hiddenContent.value = '';
+    $(formArticle).find('select').val('').trigger('change');
+    projectDate._flatpickr.clear(false);
 
     myDropzone.removeAllFiles(true);
     myDropzone.files = [];
     $(dropzoneElement).find('.dz-preview').remove();
     selectedThumbnail = null;
     removedImages = [];
+
+    contentEditor.setContents([]);
+    hiddenContent.value = '';
   });
 
   // delete record
@@ -646,11 +669,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}products/${id}`,
+          url: `${baseUrl}articles/${id}`,
           success: function (res) {
             Loading.remove();
             showToast(res.status, res.message);
-            dt_products.draw(false);
+            dt_articles.draw(false);
           },
           error: function (jqXHR) {
             Loading.remove();
@@ -662,7 +685,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       } else {
         Loading.remove();
-        showToast('info', 'The product is not deleted!');
+        showToast('info', 'The article is not deleted!');
       }
     });
   });
@@ -700,11 +723,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // restore the data
         $.ajax({
           method: 'POST',
-          url: `${baseUrl}products/${id}/restore`,
+          url: `${baseUrl}articles/${id}/restore`,
           success: function (res) {
             Loading.remove();
             showToast(res.status, res.message);
-            dt_products.draw(false);
+            dt_articles.draw(false);
           },
           error: function (jqXHR) {
             Loading.remove();
@@ -716,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       } else {
         Loading.remove();
-        showToast('info', 'The product is not restored!');
+        showToast('info', 'The article is not restored!');
       }
     });
   });
@@ -754,11 +777,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // permanent delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}products/${id}/force`,
+          url: `${baseUrl}articles/${id}/force`,
           success: function (res) {
             Loading.remove();
             showToast(res.status, res.message);
-            dt_products.draw(false);
+            dt_articles.draw(false);
           },
           error: function (jqXHR) {
             Loading.remove();
@@ -770,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       } else {
         Loading.remove();
-        showToast('info', 'The product is not deleted!');
+        showToast('info', 'The article is not deleted!');
       }
     });
   });
@@ -787,7 +810,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    $.get(`${baseUrl}products/${id}/edit`, function (data) {
+    $.get(`${baseUrl}articles/${id}/edit`, function (data) {
       let imagesHtml = `<div class="d-flex flex-wrap gap-3">`;
 
       data.images.forEach(image => {
@@ -804,23 +827,30 @@ document.addEventListener('DOMContentLoaded', function (e) {
       modalBody.html(`
         <div class="col-12 mb-3">
           <h3 class="mb-1">
-            ${data.name}
+            ${data.title}
           </h3>
+          <div class="text-muted">
+            ${data.location}
+          </div>
         </div>
 
         <div class="col-12 mb-4">
           <div class="d-flex gap-2">
-            <span class="badge bg-label-primary">
-              ${data.brand.name}
-            </span>
-            <span class="badge bg-label-secondary text-capitalize">
+            <span class="badge bg-label-primary text-capitalize">
               ${data.status}
+            </span>
+            <span class="badge bg-label-secondary">
+              ${new Intl.DateTimeFormat('en-GB', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              }).format(new Date(data.project_at))}
             </span>
           </div>
         </div>
 
         <div class="col-12 mb-4">
-          ${data.description}
+          ${data.content}
         </div>
         <div class="col-12">
           <div class="row">
