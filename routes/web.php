@@ -7,6 +7,7 @@ use App\Domains\Pages\ProfileController;
 use App\Domains\Pages\LoginController;
 use App\Domains\Permissions\PermissionController;
 use App\Domains\Products\ProductController;
+use App\Domains\Invoices\InvoiceController;
 use App\Domains\Roles\RoleController;
 use App\Domains\Users\UserController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'status'])->group(function () {
   // Fetch Data
   Route::get('/roles/select', [RoleController::class, 'select']);
   Route::get('/brands/select', [BrandController::class, 'select']);
+  Route::get('/products/select', [ProductController::class, 'select']);
 });
 
 /**
@@ -47,7 +49,11 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   Route::patch('/profile/{username}', [ProfileController::class, 'update'])->name('profile.update');
 
   // Invoices
-
+  Route::get('/page-invoices', [InvoiceController::class, 'view'])->name('page-invoices');
+  Route::resource('/invoices', InvoiceController::class)->except('create');
+  Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+  Route::post('/invoices/{invoice}/restore', [InvoiceController::class, 'restore'])->name('invoices.restore');
+  Route::delete('/invoices/{invoice}/force', [InvoiceController::class, 'force'])->name('invoices.force');
 
   // Articles
   Route::get('/page-articles', [ArticleController::class, 'view'])->name('page-articles');

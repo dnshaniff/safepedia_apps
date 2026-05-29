@@ -3,6 +3,7 @@
 namespace App\Domains\Products;
 
 use App\Domains\Products\Queries\IndexService;
+use App\Domains\Products\Queries\SelectService;
 use App\Domains\Products\Requests\StoreRequest;
 use App\Domains\Products\Requests\UpdateRequest;
 use App\Domains\Products\Services\StoreService;
@@ -19,6 +20,18 @@ class ProductController extends Controller
   public function view()
   {
     return view('content.products.index');
+  }
+
+  public function select(Request $request, SelectService $service)
+  {
+    $search = trim((string) $request->get('q', ''));
+    $page = max(1, (int) $request->get('page', 1));
+
+    $perPage = max(1, min(100, (int) $request->get('per', 10)));
+
+    $result = $service->execute($search, $page, $perPage);
+
+    return response()->json($result);
   }
 
   public function index(Request $request, IndexService $service)

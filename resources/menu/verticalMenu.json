@@ -7,12 +7,6 @@
       "slug": "dashboard"
     },
     {
-      "url": "/page-proforma_invoices",
-      "name": "Proforma Invoices",
-      "icon": "menu-icon tf-icons bx bx-receipt",
-      "slug": "page-proforma_invoices"
-    },
-    {
       "url": "/page-invoices",
       "name": "Invoices",
       "icon": "menu-icon tf-icons bx bx-file",
