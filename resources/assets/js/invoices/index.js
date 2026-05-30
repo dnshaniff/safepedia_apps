@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   let dt_invoices;
 
-  function formatRupiahCurrency(value) {
+  function formatCurrency(value) {
     const number = Number(value) || 0;
 
     return new Intl.NumberFormat('id-ID', {
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         { data: 'customer_name' },
         { data: 'grand_total' },
         { data: 'issued_date' },
-        { data: 'grand_total' },
+        { data: 'remaining_amount' },
         { data: 'id' }
       ],
       columnDefs: [
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         {
           targets: 0,
           render: function (data, type, row) {
-            return `<small class="fw-medium">${data}</small>`;
+            return `<a href="${baseUrl}invoices/${row.id}"><small class="fw-medium">${data}</small></a>`;
           }
         },
         {
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               return Number(data) || 0;
             }
 
-            return formatRupiahCurrency(data);
+            return formatCurrency(data);
           }
         },
         {
@@ -322,14 +322,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   function parseRupiah(value) {
     return Number(String(value).replace(/\./g, '').replace(/\D/g, '')) || 0;
-  }
-
-  function formatCurrency(value) {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(value);
   }
 
   function initDiscount(row) {

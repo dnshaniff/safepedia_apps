@@ -46,6 +46,13 @@ class InvoiceController extends Controller
     }
   }
 
+  public function show(Invoice $invoice)
+  {
+    $invoice->load('items.product');
+
+    return view('content.invoices.show', compact('invoice'));
+  }
+
   public function edit(Invoice $invoice)
   {
     $invoice->load('items.product');
@@ -84,6 +91,10 @@ class InvoiceController extends Controller
   public function destroy(Invoice $invoice, TerminateService $service)
   {
     try {
+      if ($invoice->payments()->exists()) {
+        return response()->json(['status' => 'danger', 'message' => 'Invoice cannot be deleted because payment has already been recorded'], 422);
+      }
+
       $service->delete($invoice);
 
       return response()->json(['status' => 'success', 'message' => "Invoice deleted successfully"], 200);

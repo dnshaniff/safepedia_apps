@@ -40,9 +40,6 @@ class UpdateService
         ];
       });
 
-      $paidAmount = (float) $invoice->paid_amount;
-      $remainingAmount = max($grandTotal - $paidAmount, 0);
-
       $newPeriod = Carbon::parse($data['issued_date'])->format('ym');
       $currentProformaPeriod = $this->documentPeriod($invoice->proforma_number);
 
@@ -62,9 +59,10 @@ class UpdateService
         'issued_date' => $data['issued_date'],
         'valid_until' => $data['valid_until'],
         'subtotal' => $subtotal,
-        'discount' => $discountTotal,
+        'discount_total' => $discountTotal,
         'grand_total' => $grandTotal,
-        'remaining_amount' => $remainingAmount,
+        'paid_amount' => 0,
+        'remaining_amount' => $grandTotal,
       ]);
 
       $invoice->items()->delete();

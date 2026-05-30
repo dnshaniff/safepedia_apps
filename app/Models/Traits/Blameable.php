@@ -2,7 +2,9 @@
 
 namespace App\Models\Traits;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 trait Blameable
 {
@@ -34,7 +36,15 @@ trait Blameable
 
     static::deleting(function ($model) {
 
-      if (! Auth::check()) {
+      if (!Auth::check()) {
+        return;
+      }
+
+      if (!in_array(SoftDeletes::class, class_uses_recursive($model))) {
+        return;
+      }
+
+      if (!Schema::hasColumn($model->getTable(), 'deleted_by')) {
         return;
       }
 

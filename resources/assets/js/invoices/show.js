@@ -2,83 +2,96 @@
 
 document.addEventListener('DOMContentLoaded', function (e) {
   // ajax setup
+
   $.ajaxSetup({
     headers: {
       'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
     }
   });
 
-  const datatableBrands = $('.datatables-brands'),
-    modalBrand = $('#modalBrand'),
-    modalTitle = modalBrand.find('.modal-title');
+  const currentPath = `${window.location.pathname}/`;
 
-  let dt_brands;
+  const datatablePayments = $('.datatables-payments'),
+    modalPayment = $('#modalPayment'),
+    modalTitle = modalPayment.find('.modal-title');
 
-  if (datatableBrands) {
-    dt_brands = new DataTable(datatableBrands, {
+  let dt_payments;
+
+  function formatCurrency(value) {
+    const number = Number(value) || 0;
+
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(number);
+  }
+
+  if (datatablePayments) {
+    dt_payments = new DataTable(datatablePayments, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}brands`
+        url: `${currentPath}invoice_payments`
       },
-      columns: [{ data: 'fake_id' }, { data: 'name' }, { data: 'created_at' }, { data: 'updated_at' }, { data: 'id' }],
+      columns: [
+        { data: 'fake_id' },
+        { data: 'payment_date' },
+        { data: 'amount' },
+        { data: 'payment_method' },
+        { data: 'file_path' },
+        { data: 'created_at' },
+        { data: 'updated_at' },
+        { data: 'id' }
+      ],
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, -1]
+          searchable: false,
+          targets: [0, 1, 2, 3, 4, 5, 6, -1]
         },
         {
-          searchable: true,
-          targets: [1]
-        },
-        {
-          targets: 1,
-          responsivePriority: 1,
+          targets: 2,
           render: function (data, type, row) {
-            let brandName = data;
-            let logo = row.file_path ? `${baseUrl}storage/${row.file_path}` : null;
+            if (type === 'sort' || type === 'type') {
+              return Number(data) || 0;
+            }
 
-            let logoOutput = logo
-              ? `
-              <a href="${logo}" data-fancybox="brand-${row.id}">
+            return formatCurrency(data);
+          }
+        },
+        {
+          targets: 3,
+          render: function (data, type, row) {
+            const methods = {
+              cash: 'Cash',
+              bank_transfer: 'Bank Transfer'
+            };
+
+            return methods[data] || '-';
+          }
+        },
+        {
+          targets: 4,
+          render: function (data, type, row) {
+            if (!data) {
+              return '-';
+            }
+
+            return `
+              <a href="${data}" data-fancybox="file-${row.id}">
                 <img
-                  src="${logo}"
-                  alt="${brandName}"
+                  src="${data}"
+                  alt="${row.file_name}"
                   class="rounded border"
                   style="width: 42px; height: 42px; object-fit: contain;"
                 />
               </a>
-            `
-              : `
-              <div
-                class="d-flex align-items-center justify-content-center rounded bg-label-secondary"
-                style="
-                  width: 42px;
-                  height: 42px;
-                  font-size: 16px;
-                  font-weight: 700;
-                "
-              >
-                ${brandName.charAt(0).toUpperCase()}
-              </div>
-            `;
-
-            return `
-              <div class="d-flex align-items-center gap-3">
-                <div class="flex-shrink-0">
-                  ${logoOutput}
-                </div>
-                <div class="d-flex align-items-center">
-                  <span class="fw-medium text-heading mb-0" style=" line-height: 1;" />
-                    ${brandName}
-                  </span>
-                </div>
-              </div>
             `;
           }
         },
         {
-          targets: 2,
+          targets: 5,
           render: function (data, type, row) {
             const options = {
               day: '2-digit',
@@ -97,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 3,
+          targets: 6,
           render: function (data, type, row) {
             const options = {
               day: '2-digit',
@@ -107,43 +120,21 @@ document.addEventListener('DOMContentLoaded', function (e) {
               minute: '2-digit'
             };
 
-            if (row.deleted_at !== null) {
-              return `
-                <div class="d-flex flex-column">
-                  <span class="text-muted">${row.deleter}</span>
-                  <span class="fw-medium">${new Date(row.deleted_at).toLocaleString('en-GB', options)}</span>
-                </div>
-              `;
-            } else {
-              return `
-                <div class="d-flex flex-column">
-                  <span class="text-muted">${row.editor}</span>
-                  <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
-                </div>
-              `;
-            }
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.editor}</span>
+                <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
+              </div>
+            `;
           }
         },
         {
           targets: -1,
           title: 'Actions',
           render: function (data, type, full, meta) {
-            if (full.deleted_at !== null) {
-              return `
-                <span class="text-nowrap">
-                  <button class="btn btn-icon me-2 restore-record" data-id="${data}">
-                    <i class="bx bx-recycle"></i>
-                  </button>
-                  <button class="btn btn-icon force-record" data-id="${data}">
-                    <i class="bx bx-trash"></i>
-                  </button>
-                </span>
-              `;
-            }
-
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalBrand" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalPayment" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -173,19 +164,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
         topEnd: {
           features: [
             {
-              search: {
-                placeholder: 'Search Brand',
-                text: '_INPUT_'
-              }
-            },
-            {
               buttons: [
                 {
                   text: 'Create New',
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalBrand'
+                    'data-bs-target': '#modalPayment'
                   }
                 }
               ]
@@ -204,11 +189,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
           previous: '<i class="icon-base bx bx-chevron-left scaleX-n1-rtl icon-18px"></i>',
           first: '<i class="icon-base bx bx-chevrons-left scaleX-n1-rtl icon-18px"></i>',
           last: '<i class="icon-base bx bx-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-        }
-      },
-      createdRow: function (row, data) {
-        if (data.deleted_at !== null) {
-          $(row).addClass('bg-danger-subtle');
         }
       }
     });
@@ -245,19 +225,63 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formBrand = document.getElementById('formBrand'),
-    fillName = formBrand.querySelector('#name'),
-    uploadLogo = formBrand.querySelector('#file_upload'),
-    previewWrapper = formBrand.querySelector('#logoPreviewWrapper'),
-    previewImage = formBrand.querySelector('#logoPreview'),
-    previewLink = formBrand.querySelector('#logoPreviewLink'),
-    btnSubmit = formBrand.querySelector('button[type="submit"]');
+  const formPayment = document.getElementById('formPayment'),
+    paymentDate = formPayment.querySelector('#payment_date'),
+    fillAmount = formPayment.querySelector('#amount'),
+    paymentMethod = formPayment.querySelector('#payment_method'),
+    uploadFile = formPayment.querySelector('#file_upload'),
+    previewWrapper = formPayment.querySelector('#uploadPreviewWrapper'),
+    previewImage = formPayment.querySelector('#uploadPreview'),
+    previewLink = formPayment.querySelector('#uploadPreviewLink'),
+    btnSubmit = formPayment.querySelector('button[type="submit"]');
 
   let editingId = null,
     currentPreview = null,
     existingPreview = null;
 
-  uploadLogo.addEventListener('change', function (e) {
+  function initFP(element) {
+    if (!element) return;
+
+    flatpickr(element, {
+      altInput: true,
+      altFormat: 'j F, Y',
+      dateFormat: 'Y-m-d',
+      static: true,
+      allowInput: false
+    });
+  }
+
+  initFP(paymentDate);
+
+  function formatAmount(value) {
+    const cleanValue = String(value).replace(/\D/g, '');
+
+    if (!cleanValue) return '';
+
+    return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  if (fillAmount) {
+    fillAmount.addEventListener('input', event => {
+      fillAmount.value = formatAmount(event.target.value);
+    });
+
+    registerCursorTracker({
+      input: fillAmount,
+      delimiter: '.'
+    });
+  }
+
+  initStatic($(paymentMethod), {
+    placeholder: 'Select an option',
+    disableSearch: true,
+    data: [
+      { id: 'bank_transfer', text: 'Bank Transfer' },
+      { id: 'cash', text: 'Cash' }
+    ]
+  });
+
+  uploadFile.addEventListener('change', function (e) {
     const file = e.target.files[0];
 
     if (!file) {
@@ -272,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
     if (!file.type.startsWith('image/')) {
       showToast('danger', 'Only image files are allowed');
-      uploadLogo.value = '';
+      uploadFile.value = '';
 
       return;
     }
@@ -289,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create New Brand');
+    modalTitle.html('Create New Payment');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
@@ -305,14 +329,21 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
 
     // changing the title of modal
-    modalTitle.html('Edit Existing Brand');
+    modalTitle.html('Edit Existing Invoice');
     $(btnSubmit).html('Save');
 
-    // get data
-    $.get(`${baseUrl}brands/${id}/edit`, function (data) {
+    $.get(`${currentPath}invoice_payments/${id}/edit`, function (data) {
       editingId = id;
-      fillName.value = data.name || '';
-      existingPreview = data.file_path ? `${baseUrl}storage/${data.file_path}` : null;
+
+      paymentDate._flatpickr.setDate(data.payment_date || null);
+
+      fillAmount.value = data.amount ? Math.round(Number(data.amount)).toLocaleString('id-ID') : '';
+
+      if (data.payment_method) {
+        $(paymentMethod).val(data.payment_method).trigger('change');
+      }
+
+      existingPreview = data.file_path || null;
 
       if (existingPreview) {
         previewImage.src = existingPreview;
@@ -326,26 +357,46 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   });
 
-  FormValidation.formValidation(formBrand, {
+  FormValidation.formValidation(formPayment, {
     fields: {
-      name: {
+      payment_date: {
         validators: {
           notEmpty: {
-            message: 'Brand name is required'
-          },
-          stringLength: {
-            min: 4,
-            message: 'Brand name must be at least 4 characters long'
+            message: 'Date must be selected'
+          }
+        }
+      },
+      amount: {
+        validators: {
+          notEmpty: {
+            message: 'Amount is required'
+          }
+        }
+      },
+      payment_method: {
+        validators: {
+          notEmpty: {
+            message: 'Payment method must be selected'
           }
         }
       },
       file_upload: {
         validators: {
+          callback: {
+            message: 'Evidence is required',
+            callback: function (input) {
+              if (editingId) {
+                return true;
+              }
+
+              return input.value.length > 0;
+            }
+          },
           file: {
-            extension: 'png',
-            type: 'image/png',
-            maxSize: 4 * 1024 * 1024, // 4MB
-            message: 'Please select a valid image file (png) less than 4MB'
+            extension: 'jpg,jpeg,png',
+            type: 'image/jpeg,image/png',
+            maxSize: 1 * 1024 * 1024, // 1MB
+            message: 'Please select a valid image file (jpg,jpeg,png) less than 1MB'
           }
         }
       }
@@ -373,12 +424,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    const formData = new FormData(formBrand);
+    const formData = new FormData(formPayment);
     if (editingId) {
       formData.append('_method', 'PATCH');
     }
 
-    let url = editingId ? `${baseUrl}brands/${editingId}` : `${baseUrl}brands`;
+    let url = editingId ? `${currentPath}invoice_payments/${editingId}` : `${currentPath}invoice_payments`;
+    let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
       data: formData,
@@ -387,9 +439,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
       processData: false,
       contentType: false,
       success: function (res) {
+        $('#paid-value').text(formatCurrency(res.invoice.paid_amount));
+
+        $('#balance-value').text(formatCurrency(res.invoice.remaining_amount));
+
         Loading.remove();
-        dt_brands.draw(false);
-        modalBrand.modal('hide');
+        dt_payments.draw(false);
+        modalPayment.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -414,9 +470,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
   });
 
   // clearing form data when modal hidden
-  modalBrand.on('hidden.bs.modal', function () {
-    formBrand.reset();
+  modalPayment.on('hidden.bs.modal', function () {
+    formPayment.reset();
     editingId = null;
+    paymentDate._flatpickr.clear(false);
+    $(formPayment).find('select').val('').trigger('change');
 
     if (currentPreview) {
       URL.revokeObjectURL(currentPreview);
@@ -462,11 +520,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}brands/${id}`,
+          url: `${currentPath}invoice_payments/${id}`,
           success: function (res) {
             Loading.remove();
             showToast(res.status, res.message);
-            dt_brands.draw(false);
+            dt_payments.draw(false);
           },
           error: function (jqXHR) {
             Loading.remove();
@@ -478,115 +536,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       } else {
         Loading.remove();
-        showToast('info', 'The brand is not deleted!');
-      }
-    });
-  });
-
-  // restore record
-  $(document).on('click', '.restore-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
-
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of restore
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, restore it!',
-      customClass: {
-        confirmButton: 'btn btn-primary me-3',
-        cancelButton: 'btn btn-label-secondary'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      Loading.circle({
-        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
-        svgSize: '60px',
-        svgColor: config.colors.white
-      });
-
-      if (result.value) {
-        // restore the data
-        $.ajax({
-          method: 'POST',
-          url: `${baseUrl}brands/${id}/restore`,
-          success: function (res) {
-            Loading.remove();
-            showToast(res.status, res.message);
-            dt_brands.draw(false);
-          },
-          error: function (jqXHR) {
-            Loading.remove();
-            showToast(
-              jqXHR.responseJSON?.status || 'danger',
-              jqXHR.responseJSON?.message || 'An unexpected error occurred'
-            );
-          }
-        });
-      } else {
-        Loading.remove();
-        showToast('info', 'The brand is not restored!');
-      }
-    });
-  });
-
-  // permanent delete record
-  $(document).on('click', '.force-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
-
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of permanent delete
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, permanent delete!',
-      customClass: {
-        confirmButton: 'btn btn-primary me-3',
-        cancelButton: 'btn btn-label-secondary'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      Loading.circle({
-        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
-        svgSize: '60px',
-        svgColor: config.colors.white
-      });
-
-      if (result.value) {
-        // permanent delete the data
-        $.ajax({
-          method: 'DELETE',
-          url: `${baseUrl}brands/${id}/force`,
-          success: function (res) {
-            Loading.remove();
-            showToast(res.status, res.message);
-            dt_brands.draw(false);
-          },
-          error: function (jqXHR) {
-            Loading.remove();
-            showToast(
-              jqXHR.responseJSON?.status || 'danger',
-              jqXHR.responseJSON?.message || 'An unexpected error occurred'
-            );
-          }
-        });
-      } else {
-        Loading.remove();
-        showToast('info', 'The brand is not deleted!');
+        showToast('info', 'The payment is not deleted!');
       }
     });
   });

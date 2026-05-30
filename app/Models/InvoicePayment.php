@@ -25,7 +25,7 @@ class InvoicePayment extends Model
     'updated_by'
   ];
 
-  protected $casts = ['amount' => 'decimal:2'];
+  protected $casts = ['amount' => 'decimal:2', 'payment_date' => 'date'];
 
   public function invoice()
   {

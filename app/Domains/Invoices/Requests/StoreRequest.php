@@ -21,9 +21,7 @@ class StoreRequest extends FormRequest
           'product_id' => $item['product_id'] ?? null,
           'quantity' => $item['quantity'] ?? null,
           'uom' => $item['uom'] ?? null,
-          'unit_price' => isset($item['unit_price'])
-            ? str_replace('.', '', $item['unit_price'])
-            : null,
+          'unit_price' => isset($item['unit_price']) ? str_replace('.', '', $item['unit_price']) : null,
           'discount' => $item['discount'] ?? 0,
         ];
       })

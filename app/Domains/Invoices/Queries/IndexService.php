@@ -41,7 +41,6 @@ class IndexService
     $rows = $baseQuery->latest()->offset($start)->limit($length)->get();
 
     $data = [];
-    $ids = $start;
 
     foreach ($rows as $row) {
       $data[] = [
@@ -52,6 +51,7 @@ class IndexService
         'customer_phone' => $row->customer_phone,
         'issued_date' => Carbon::parse($row->issued_date)->format('d F Y'),
         'grand_total' => $row->grand_total,
+        'remaining_amount' => $row->remaining_amount,
         'deleted_at' => $row->deleted_at,
       ];
     }

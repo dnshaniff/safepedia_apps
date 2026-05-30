@@ -25,6 +25,8 @@ class Invoice extends Model
     'subtotal',
     'discount_total',
     'grand_total',
+    'paid_amount',
+    'remaining_amount',
     'created_by',
     'updated_by',
     'deleted_by'
@@ -35,7 +37,9 @@ class Invoice extends Model
     'valid_until' => 'date',
     'subtotal' => 'decimal:2',
     'discount_total' => 'decimal:2',
-    'grand_total' => 'decimal:2'
+    'grand_total' => 'decimal:2',
+    'paid_amount' => 'decimal:2',
+    'remaining_amount' => 'decimal:2'
   ];
 
   public function items()

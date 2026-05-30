@@ -8,6 +8,7 @@ use App\Domains\Pages\LoginController;
 use App\Domains\Permissions\PermissionController;
 use App\Domains\Products\ProductController;
 use App\Domains\Invoices\InvoiceController;
+use App\Domains\Invoices\InvoicePayments\InvoicePaymentController;
 use App\Domains\Roles\RoleController;
 use App\Domains\Users\UserController;
 use Illuminate\Support\Facades\Route;
@@ -55,15 +56,20 @@ Route::middleware(['auth', 'status', 'permission'])->group(function () {
   Route::post('/invoices/{invoice}/restore', [InvoiceController::class, 'restore'])->name('invoices.restore');
   Route::delete('/invoices/{invoice}/force', [InvoiceController::class, 'force'])->name('invoices.force');
 
+  // Invoice Payments
+  Route::resource('/invoices/{invoice}/invoice_payments', InvoicePaymentController::class)->except('create', 'show');
+  Route::post('/invoices/{invoice}/invoice_payments/{invoice_payment}/restore', [InvoicePaymentController::class, 'restore'])->name('invoice_payments.restore');
+  Route::delete('/invoices/{invoice}/invoice_payments/{invoice_payment}/force', [InvoicePaymentController::class, 'force'])->name('invoice_payments.force');
+
   // Articles
   Route::get('/page-articles', [ArticleController::class, 'view'])->name('page-articles');
-  Route::resource('/articles', ArticleController::class)->except('create');
+  Route::resource('/articles', ArticleController::class)->except('create', 'show');
   Route::post('/articles/{article}/restore', [ArticleController::class, 'restore'])->name('articles.restore');
   Route::delete('/articles/{article}/force', [ArticleController::class, 'force'])->name('articles.force');
 
   // Products
   Route::get('/page-products', [ProductController::class, 'view'])->name('page-products');
-  Route::resource('/products', ProductController::class)->except('create');
+  Route::resource('/products', ProductController::class)->except('create', 'show');
   Route::post('/products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');
   Route::delete('/products/{product}/force', [ProductController::class, 'force'])->name('products.force');
 
