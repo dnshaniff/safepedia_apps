@@ -9,9 +9,18 @@ use App\Domains\Permissions\PermissionController;
 use App\Domains\Products\ProductController;
 use App\Domains\Invoices\InvoiceController;
 use App\Domains\Invoices\InvoicePayments\InvoicePaymentController;
+use App\Domains\Pages\LandingController;
 use App\Domains\Roles\RoleController;
 use App\Domains\Users\UserController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/', [LandingController::class, 'index'])->name('landing.index');
+
+Route::get('/our-products', [LandingController::class, 'products'])->name('landing.products');
+Route::get('/our-products/{slug}', [LandingController::class, 'product'])->name('landing.product');
+
+Route::get('/projects', [LandingController::class, 'projects'])->name('landing.projects');
+Route::get('/projects/{slug}', [LandingController::class, 'project'])->name('landing.project');
 
 /**
  * Guest
@@ -45,7 +54,7 @@ Route::middleware(['auth', 'status'])->group(function () {
  */
 Route::middleware(['auth', 'status', 'permission'])->group(function () {
   // Dashboard
-  Route::get('/', [DashboardController::class, 'view'])->name('dashboard');
+  Route::get('/dashboard', [DashboardController::class, 'view'])->name('dashboard');
   Route::get('/profile/{username}', [ProfileController::class, 'view'])->name('profile.view');
   Route::patch('/profile/{username}', [ProfileController::class, 'update'])->name('profile.update');
 

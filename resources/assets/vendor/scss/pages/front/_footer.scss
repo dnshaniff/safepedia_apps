@@ -1,73 +1,83 @@
 // variables
-@import "./variables";
+@import './variables';
 
-.landing-footer {
-  --#{$prefix}footer-text: var(--#{$prefix}white);
-  --#{$prefix}footer-bottom-text: #d3d4dc;
-  --#{$prefix}footer-bottom-bg: #282c3e;
-  --#{$prefix}footer-top-bg: #241d31;
-  .footer-link,
-  .footer-text {
-    color: var(--#{$prefix}footer-text);
-    opacity: .78;
+.footer-section {
+  background: #06246f;
+  padding-top: 64px;
+  padding-bottom: 28px;
+  color: #fff;
+}
+
+.footer-logo {
+  max-height: 68px;
+  margin-bottom: 18px;
+}
+
+.footer-brand-text {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  display: inline-block;
+
+  span {
+    color: #e30613;
   }
-  .footer-title {
-    color: var(--#{$prefix}footer-text);
-    opacity: .92;
+}
+
+.footer-description {
+  max-width: 300px;
+  line-height: 1.85;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+}
+
+.footer-title {
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.footer-links {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  li {
+    margin-bottom: 11px;
   }
-  .footer-bottom-text {
-    color: var(--#{$prefix}footer-bottom-text);
-  }
-  .footer-bottom {
-    background-color: var(--#{$prefix}footer-bottom-bg);
-  }
-  .footer-link {
-    transition: $btn-transition;
+
+  a {
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 
     &:hover {
-      opacity: 1;
+      color: #ffc107;
     }
   }
+}
 
-  .footer-top {
-    padding-block: 3.3rem 2.3rem;
-    @include border-top-radius($section-radius);
-    @include media-breakpoint-down(md) {
-      padding-block: 3rem;
-      padding-inline: 0;
-    }
+.footer-divider {
+  margin-top: 48px;
+  margin-bottom: 24px;
+  border-color: rgba(255, 255, 255, 0.12);
+}
 
-    .footer-bg {
-      object-position: center;
-    }
-  }
+.footer-bottom {
+  text-align: center;
 
-  @include media-breakpoint-up(lg) {
-    .footer-logo-description {
-      max-inline-size: 385px;
-    }
-  }
-
-  /* use dark variables as front footer having dark background */
-  .footer-form {
-    max-inline-size: 22.25rem;
-    input {
-      background-color: transparent;
-      color: var(--#{$prefix}footer-text);
-      &,
-      &:hover:not(:focus):not(:disabled) {
-        border-color: color-mix(in srgb, $base-dark 22%, $paper-bg-dark);
-      }
-      &:focus {
-        border-color: var(--#{$prefix}primary);
-        box-shadow: 0 .125rem .25rem color-mix(in srgb, var(--#{$prefix}primary) $input-btn-focus-color-opacity, $paper-bg-dark);
-      }
-      &::placeholder {
-        color: rgba(var(--#{$prefix}white-rgb), .5);
-      }
-    }
-    label {
-      color: $headings-color-dark;
-    }
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.88rem;
   }
 }

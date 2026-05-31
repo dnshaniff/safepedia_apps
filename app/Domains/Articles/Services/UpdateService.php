@@ -27,11 +27,17 @@ class UpdateService
           $slug = Str::slug($data['title']) . '-' . Str::ulid();
         }
 
+        $published = null;
+        if ($data['status'] === 'published') {
+          $published = now();
+        }
+
         $article->update([
           'title' => $data['title'],
           'slug' => $slug,
           'content' => $data['content'],
           'project_at' => $data['project_at'],
+          'published_at' => $published,
           'location' => $data['location'],
           'status' => $data['status'],
         ]);

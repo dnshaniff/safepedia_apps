@@ -73,7 +73,7 @@ class PdfService
     $pdf->Cell($right - 98, 6, 'Spesialis APILL, Rambu, dan Tiang', 0, 1, 'R');
 
     $pdf->SetX(98);
-    $pdf->Cell($right - 98, 6, '0852 1000 1116', 0, 1, 'R');
+    $pdf->Cell($right - 98, 6, '0818 414 410', 0, 1, 'R');
 
     $pdf->SetFont('Arial', '', 8);
 

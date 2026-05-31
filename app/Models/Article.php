@@ -25,7 +25,7 @@ class Article extends Model
     'deleted_by'
   ];
 
-  protected $casts = ['project_at' => 'date'];
+  protected $casts = ['project_at' => 'date', 'published_at' => 'date'];
 
   public function thumbnail()
   {

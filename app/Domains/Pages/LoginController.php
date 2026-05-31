@@ -25,7 +25,7 @@ class LoginController extends Controller
     try {
       $service->execute($request);
 
-      return redirect()->intended('/');
+      return redirect()->intended('/dashboard');
     } catch (ValidationException $e) {
       throw $e;
     } catch (Throwable $e) {
