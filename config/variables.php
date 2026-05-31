@@ -1,13 +1,10 @@
 <?php
 // Variables
 return [
-  "creatorName" => "ThemeSelection",
-  "creatorUrl" => "https://themeselection.com",
-  "templateName" => "sneat",
-  "templateSuffix" => "Sneat Bootstrap 5 HTML + Laravel Admin Template",
-  "templateVersion" => "4.0.0",
-  "templateFree" => false,
-  "templateDescription" => "Most Powerful & Comprehensive Bootstrap 5 + Laravel HTML Admin Dashboard Template built for developers!",
-  "templateKeyword" => "dashboard, bootstrap 5 dashboard, bootstrap 5 design, bootstrap 5",
-  "productPage" => "https://themeselection.com/item/sneat-dashboard-pro-laravel/",
+  'creatorName' => 'DNA Lighting',
+  "creatorUrl" => "https://dna-lighting.com",
+  'templateDescription' =>
+  'DNA Lighting menyediakan produk lighting component, APILL, traffic light, electrical accessories, dan layanan instalasi profesional.',
+  'templateKeyword' => 'DNA Lighting, APILL, Traffic Light, Lampu Jalan, Lighting Component, Electrical Accessories, Instalasi APILL',
+  'ogTitle' => 'DNA Lighting | Lighting Component & APILL Solution'
 ];

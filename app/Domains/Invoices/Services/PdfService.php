@@ -83,6 +83,13 @@ class PdfService
     $pdf->SetX(98);
     $pdf->Cell($right - 98, 4, 'Jl Raya Mauk, Kec. Sepatan, Kab. Tangerang', 0, 1, 'R');
 
+    $pdf->SetY(50);
+
+    // garis
+    $pdf->SetLineWidth(0.5);
+
+    $pdf->Line(11, 50, 200, 50);
+
     $pdf->SetY(56);
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell(0, 8, $documentTitle, 0, 1, 'C');
