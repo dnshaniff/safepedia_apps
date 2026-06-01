@@ -38,7 +38,7 @@ class SelectService
 
     return [
       'results' => $rows->map(fn($row) => [
-        'id' => $row->id,
+        'id' => $row->name,
         'text' => $row->name,
       ])->values(),
       'more' => $hasMore,
