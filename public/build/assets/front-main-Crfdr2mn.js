@@ -1,0 +1,1 @@
+document.addEventListener("DOMContentLoaded",()=>{const e=document.querySelector(".landing-navbar"),n=()=>{window.scrollY>30?e.classList.add("scrolled"):e.classList.remove("scrolled")};n(),window.addEventListener("scroll",n)});
