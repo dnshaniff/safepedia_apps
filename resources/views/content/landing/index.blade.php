@@ -4,7 +4,7 @@
 
 @extends('layouts/layoutMaster')
 
-@section('title', 'DNA Lighting')
+@section('title')
 
 @section('vendor-style')
 
