@@ -52,7 +52,7 @@
     <meta property="og:title" content="{{ config('variables.ogTitle') ? config('variables.ogTitle') : '' }}" />
     <meta property="og:type" content="{{ config('variables.ogType') ? config('variables.ogType') : '' }}" />
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ asset('assets/img/branding/logo-dna.png') }}">
+    <meta property="og:image" content="{{ asset('assets/img/branding/logo-dna-3.png') }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:alt" content="DNA Lighting">
     <meta property="og:description" content="{{ config('variables.templateDescription') }}" />
