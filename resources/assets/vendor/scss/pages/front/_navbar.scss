@@ -161,8 +161,8 @@
   }
 
   .landing-navbar:not(.scrolled) {
-    .navbar-toggler {
-      color: #fff;
+    .navbar-toggler-icon {
+      filter: brightness(0) invert(1);
     }
   }
 

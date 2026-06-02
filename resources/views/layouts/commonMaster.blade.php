@@ -45,19 +45,20 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>@yield('title')</title>
-    <meta name="description"
-        content="{{ config('variables.templateDescription') ? config('variables.templateDescription') : '' }}" />
+    <title>@yield('title', 'DNA Lighting | Lighting Component & APILL Solution')</title>
+    <meta name="description" content="{{ config('variables.templateDescription') }}" />
     <meta name="keywords"
         content="{{ config('variables.templateKeyword') ? config('variables.templateKeyword') : '' }}" />
     <meta property="og:title" content="{{ config('variables.ogTitle') ? config('variables.ogTitle') : '' }}" />
     <meta property="og:type" content="{{ config('variables.ogType') ? config('variables.ogType') : '' }}" />
-    <meta property="og:url" content="{{ config('variables.productPage') ? config('variables.productPage') : '' }}" />
-    <meta property="og:description"
-        content="{{ config('variables.templateDescription') ? config('variables.templateDescription') : '' }}" />
-    <meta property="og:site_name"
-        content="{{ config('variables.creatorName') ? config('variables.creatorName') : '' }}" />
-    <meta name="robots" content="index, nofollow" />
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('assets/img/branding/logo-dna.png') }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="DNA Lighting">
+    <meta property="og:description" content="{{ config('variables.templateDescription') }}" />
+    <meta property="og:site_name" content="{{ config('variables.creatorName') }}" />
+    <meta property="og:locale" content="id_ID">
+    <meta name="robots" content="index, follow" />
     <!-- laravel CRUD token -->
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <!-- Canonical SEO -->

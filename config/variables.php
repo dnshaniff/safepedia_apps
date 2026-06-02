@@ -6,5 +6,7 @@ return [
   'templateDescription' =>
   'DNA Lighting menyediakan produk lighting component, APILL, traffic light, electrical accessories, dan layanan instalasi profesional.',
   'templateKeyword' => 'DNA Lighting, APILL, Traffic Light, Lampu Jalan, Lighting Component, Electrical Accessories, Instalasi APILL',
-  'ogTitle' => 'DNA Lighting | Lighting Component & APILL Solution'
+  'ogTitle' => 'DNA Lighting | Lighting Component & APILL Solution',
+  'ogType' => 'website',
+  'productPage' => 'https://dna-lighting.com',
 ];
