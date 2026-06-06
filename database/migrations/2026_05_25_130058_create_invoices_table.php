@@ -13,8 +13,8 @@ return new class extends Migration
   {
     Schema::create('invoices', function (Blueprint $table) {
       $table->id();
-      $table->string('proforma_number')->unique();
-      $table->string('invoice_number')->unique()->nullable();
+      $table->string('proforma_number');
+      $table->string('invoice_number')->nullable();
       $table->string('customer_name');
       $table->string('customer_address');
       $table->string('customer_phone')->nullable();

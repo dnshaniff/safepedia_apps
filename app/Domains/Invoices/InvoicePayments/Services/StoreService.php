@@ -94,11 +94,17 @@ class StoreService
   private function generateDocumentNumber(string $prefix, string $column, string $issuedDate): string
   {
     $period = Carbon::parse($issuedDate)->format('ym');
+
     $baseNumber = "{$prefix}/DNA/{$period}-";
 
-    $latest = Invoice::where($column, 'like', $baseNumber . '%')->lockForUpdate()->orderByDesc($column)->first();
+    $lastNumber = Invoice::whereNotNull($column)->where($column, 'like', "{$baseNumber}%")
+      ->get()->map(function ($invoice) use ($column) {
+        preg_match('/(\d+)$/', $invoice->{$column}, $matches);
 
-    $nextNumber = $latest ? ((int) substr($latest->{$column}, -3)) + 1 : 1;
+        return (int) ($matches[1] ?? 0);
+      })->max();
+
+    $nextNumber = ($lastNumber ?? 0) + 1;
 
     return $baseNumber . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
   }

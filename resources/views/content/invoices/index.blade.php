@@ -92,7 +92,7 @@
                     </div>
                     <div class="col-12 invoice-repeater mb-4">
                         <div class="mb-4" data-repeater-list="item-invoice">
-                            <div class="repeater-wrapper pt-0 pt-md-9" data-repeater-item>
+                            <div class="repeater-wrapper pt-0 pt-md-9 mb-3" data-repeater-item>
                                 <div class="d-flex border rounded position-relative pe-0">
                                     <div class="row w-100 p-6 g-6">
                                         <div class="col-md-5 col-12 mb-md-0 mb-4">
