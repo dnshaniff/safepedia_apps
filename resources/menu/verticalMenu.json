@@ -7,30 +7,6 @@
       "slug": "dashboard"
     },
     {
-      "url": "/page-invoices",
-      "name": "Invoices",
-      "icon": "menu-icon tf-icons bx bx-file",
-      "slug": "page-invoices"
-    },
-    {
-      "url": "/page-articles",
-      "name": "Articles",
-      "icon": "menu-icon tf-icons bx bx-notepad",
-      "slug": "page-articles"
-    },
-    {
-      "url": "/page-products",
-      "name": "Products",
-      "icon": "menu-icon tf-icons bx bx-package",
-      "slug": "page-products"
-    },
-    {
-      "url": "/page-brands",
-      "name": "Brands",
-      "icon": "menu-icon tf-icons bx bx-bookmark-alt",
-      "slug": "page-brands"
-    },
-    {
       "name": "Authorization",
       "icon": "menu-icon tf-icons bx bx-check-shield",
       "slug": "access",
