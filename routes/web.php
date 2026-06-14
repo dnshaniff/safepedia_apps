@@ -1,26 +1,12 @@
 <?php
 
-use App\Domains\Articles\ArticleController;
-use App\Domains\Brands\BrandController;
 use App\Domains\Pages\DashboardController;
 use App\Domains\Pages\ProfileController;
 use App\Domains\Pages\LoginController;
 use App\Domains\Permissions\PermissionController;
-use App\Domains\Products\ProductController;
-use App\Domains\Invoices\InvoiceController;
-use App\Domains\Invoices\InvoicePayments\InvoicePaymentController;
-use App\Domains\Pages\LandingController;
 use App\Domains\Roles\RoleController;
 use App\Domains\Users\UserController;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/', [LandingController::class, 'index'])->name('landing.index');
-
-Route::get('/our-products', [LandingController::class, 'products'])->name('landing.products');
-Route::get('/our-products/{slug}', [LandingController::class, 'product'])->name('landing.product');
-
-Route::get('/projects', [LandingController::class, 'projects'])->name('landing.projects');
-Route::get('/projects/{slug}', [LandingController::class, 'project'])->name('landing.project');
 
 /**
  * Guest
@@ -37,56 +23,29 @@ Route::middleware(['guest'])->group(function () {
  */
 
 /**
- * without permissions
+ * without permissionsw
  */
 Route::middleware(['auth', 'status'])->group(function () {
+  // Two Factor
+  Route::get('/auth/two-factor', [LoginController::class, 'twofactorView'])->name('twofactor.index');
+  Route::post('/auth/two-factor', [LoginController::class, 'twofactorStore'])->name('twofactor.store');
+
   // Logout
   Route::post('/auth/logout', [LoginController::class, 'destroy'])->name('login.destroy');
 
   // Fetch Data
   Route::get('/roles/select', [RoleController::class, 'select']);
-  Route::get('/brands/select', [BrandController::class, 'select']);
-  Route::get('/products/select', [ProductController::class, 'select']);
 });
 
 /**
  * with permissions
  */
-Route::middleware(['auth', 'status', 'permission'])->group(function () {
+Route::middleware(['auth', 'status', 'permission', 'twofactor'])->group(function () {
   // Dashboard
-  Route::get('/dashboard', [DashboardController::class, 'view'])->name('dashboard');
+  Route::get('/', [DashboardController::class, 'view'])->name('dashboard');
   Route::get('/profile/{username}', [ProfileController::class, 'view'])->name('profile.view');
   Route::patch('/profile/{username}', [ProfileController::class, 'update'])->name('profile.update');
-
-  // Invoices
-  Route::get('/page-invoices', [InvoiceController::class, 'view'])->name('page-invoices');
-  Route::resource('/invoices', InvoiceController::class)->except('create');
-  Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
-  Route::post('/invoices/{invoice}/restore', [InvoiceController::class, 'restore'])->name('invoices.restore');
-  Route::delete('/invoices/{invoice}/force', [InvoiceController::class, 'force'])->name('invoices.force');
-
-  // Invoice Payments
-  Route::resource('/invoices/{invoice}/invoice_payments', InvoicePaymentController::class)->except('create', 'show');
-  Route::post('/invoices/{invoice}/invoice_payments/{invoice_payment}/restore', [InvoicePaymentController::class, 'restore'])->name('invoice_payments.restore');
-  Route::delete('/invoices/{invoice}/invoice_payments/{invoice_payment}/force', [InvoicePaymentController::class, 'force'])->name('invoice_payments.force');
-
-  // Articles
-  Route::get('/page-articles', [ArticleController::class, 'view'])->name('page-articles');
-  Route::resource('/articles', ArticleController::class)->except('create', 'show');
-  Route::post('/articles/{article}/restore', [ArticleController::class, 'restore'])->name('articles.restore');
-  Route::delete('/articles/{article}/force', [ArticleController::class, 'force'])->name('articles.force');
-
-  // Products
-  Route::get('/page-products', [ProductController::class, 'view'])->name('page-products');
-  Route::resource('/products', ProductController::class)->except('create', 'show');
-  Route::post('/products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');
-  Route::delete('/products/{product}/force', [ProductController::class, 'force'])->name('products.force');
-
-  // Brands
-  Route::get('/page-brands', [BrandController::class, 'view'])->name('page-brands');
-  Route::resource('/brands', BrandController::class)->except('create', 'show');
-  Route::post('/brands/{brand}/restore', [BrandController::class, 'restore'])->name('brands.restore');
-  Route::delete('/brands/{brand}/force', [BrandController::class, 'force'])->name('brands.force');
+  Route::post('/profile/{username}/generate-two-factor', [ProfileController::class, 'generateTwoFactor'])->name('profile.two_factor');
 
   // Authorization
   // Permissions

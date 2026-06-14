@@ -3,7 +3,7 @@
 @section('title', 'Profile ' . $user->name)
 
 @section('vendor-style')
-    @vite(['resources/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.scss', 'resources/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.scss', 'resources/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.scss', 'resources/assets/vendor/libs/@form-validation/form-validation.scss', 'resources/assets/vendor/libs/notyf/notyf.scss', 'resources/assets/vendor/libs/animate-css/animate.scss', 'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss', 'resources/assets/vendor/libs/spinkit/spinkit.scss'])
+    @vite(['resources/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.scss', 'resources/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.scss', 'resources/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.scss', 'resources/assets/vendor/libs/select2/select2.scss', 'resources/assets/vendor/libs/@form-validation/form-validation.scss', 'resources/assets/vendor/libs/notyf/notyf.scss', 'resources/assets/vendor/libs/animate-css/animate.scss', 'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss', 'resources/assets/vendor/libs/spinkit/spinkit.scss'])
 @endsection
 
 @section('page-style')
@@ -11,7 +11,7 @@
 @endsection
 
 @section('vendor-script')
-    @vite(['resources/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js', 'resources/assets/vendor/libs/@form-validation/popular.js', 'resources/assets/vendor/libs/@form-validation/bootstrap5.js', 'resources/assets/vendor/libs/@form-validation/auto-focus.js', 'resources/assets/vendor/libs/notyf/notyf.js', 'resources/assets/vendor/libs/sweetalert2/sweetalert2.js', 'resources/assets/vendor/libs/notiflix/notiflix.js'])
+    @vite(['resources/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js', 'resources/assets/vendor/libs/select2/select2.js', 'resources/assets/vendor/libs/@form-validation/popular.js', 'resources/assets/vendor/libs/@form-validation/bootstrap5.js', 'resources/assets/vendor/libs/@form-validation/auto-focus.js', 'resources/assets/vendor/libs/notyf/notyf.js', 'resources/assets/vendor/libs/sweetalert2/sweetalert2.js', 'resources/assets/vendor/libs/notiflix/notiflix.js'])
 @endsection
 
 @section('page-script')
@@ -20,7 +20,7 @@
 
 @section('content')
     <div class="row">
-        <div class="col-xl-8 col-lg-7 col-md-7">
+        <div class="col-12 col-md-8 col-lg-6">
             <div class="card card-action mb-6">
                 <div class="card-header align-items-center">
                     <h5 class="card-action-title mb-0">Update Account</h5>
@@ -28,18 +28,12 @@
                 <div class="card-body">
                     <form id="formProfile" class="modal-content">
                         <div class="row">
-                          <div class="col-12 mb-3">
+                            <div class="col-12 mb-3">
                                 <label class="form-label" for="name">Name</label>
                                 <input type="text" id="name" name="name" class="form-control"
                                     placeholder="johndoe" value="{{ old('name', $user->name) }}" autofocus />
                             </div>
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label" for="email">Email</label>
-                                <input type="email" id="email" name="email" class="form-control"
-                                    placeholder="johndoe@example.com"
-                                    value="{{ old('email', optional($user)->email) }}" />
-                            </div>
-                            <div class="col-12 col-md-6 mb-3">
+                            <div class="col-12 mb-3">
                                 <label class="form-label" for="username">Username</label>
                                 <input type="text" id="username" name="username" class="form-control"
                                     placeholder="johndoe" value="{{ old('username', $user->username) }}" />
@@ -63,6 +57,27 @@
                                         aria-describedby="password_confirmation" />
                                     <span class="input-group-text cursor-pointer"><i
                                             class="icon-base bx bx-hide"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label" for="two_factor_enabled">2FA</label>
+                                <select id="two_factor_enabled" name="two_factor_enabled" class="select2 form-select"
+                                    data-allow-clear="true">
+                                    <option value="0" {{ !$user->two_factor_enabled ? 'selected' : '' }}>
+                                        Disabled
+                                    </option>
+                                    <option value="1" {{ $user->two_factor_enabled ? 'selected' : '' }}>
+                                        Enabled
+                                    </option>
+                                </select>
+                            </div>
+                            <div id="twoFactorSection" class="col-12 mb-3 d-none">
+                                <div id="qrContainer"></div>
+                                <div class="mt-3">
+                                    <label class="form-label" for="otp">Verification Code</label>
+                                    <input type="text" id="otp" name="otp"
+                                        data-username="{{ $user->username }}" class="form-control" maxlength="6"
+                                        placeholder="123456">
                                 </div>
                             </div>
                         </div>

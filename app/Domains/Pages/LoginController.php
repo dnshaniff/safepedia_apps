@@ -7,8 +7,10 @@ use App\Domains\Pages\Services\LoginService;
 use App\Domains\Pages\Services\LogoutService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use PragmaRX\Google2FA\Google2FA;
 use Throwable;
 
 class LoginController extends Controller
@@ -23,9 +25,13 @@ class LoginController extends Controller
   public function store(LoginRequest $request, LoginService $service)
   {
     try {
-      $service->execute($request);
+      $requires2FA = $service->execute($request);
 
-      return redirect()->intended('/dashboard');
+      if ($requires2FA) {
+        return redirect()->route('twofactor.index');
+      }
+
+      return redirect()->intended('/');
     } catch (ValidationException $e) {
       throw $e;
     } catch (Throwable $e) {
@@ -43,5 +49,47 @@ class LoginController extends Controller
     $service->execute($request);
 
     return redirect()->route('login')->with('success', 'You have been successfully logged out');
+  }
+
+  public function twofactorView()
+  {
+    $pageConfigs = ['myLayout' => 'blank'];
+
+    if (! Auth::check()) {
+      return redirect()->route('login');
+    }
+
+    if (
+      session('two_factor_verified')
+    ) {
+      return redirect('/');
+    }
+
+    return view('content.pages.twofactor', compact('pageConfigs'));
+  }
+
+  public function twofactorStore(Request $request)
+  {
+    $request->validate(['otp' => ['required', 'digits:6']]);
+
+    $user = Auth::user();
+
+    if (! $user) {
+      Auth::logout();
+
+      return redirect()->route('login.index');
+    }
+
+    $google2fa = new Google2FA();
+
+    $valid = $google2fa->verifyKey($user->google2fa_secret, $request->otp, 0);
+
+    if (! $valid) {
+      return back()->withErrors(['otp' => 'Invalid verification code']);
+    }
+
+    $request->session()->put('two_factor_verified', true);
+
+    return redirect()->intended('/');
   }
 }

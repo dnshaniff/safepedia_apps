@@ -8,7 +8,43 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
   });
 
-  const formProfile = document.getElementById('formProfile');
+  const formProfile = document.getElementById('formProfile'),
+    twoFactorSelect = formProfile.querySelector('#two_factor_enabled'),
+    twoFactorSection = formProfile.querySelector('#twoFactorSection'),
+    qrContainer = formProfile.querySelector('#qrContainer'),
+    otpField = formProfile.querySelector('#otp');
+
+  let qrGenerated = false;
+
+  $(twoFactorSelect).on('change', function () {
+    if ($(this).val() === '1') {
+
+      $(twoFactorSection).removeClass('d-none');
+
+      if (qrGenerated) {
+        return;
+      }
+
+      const username = otpField.dataset.username;
+
+      axios.post(`/profile/${username}/generate-two-factor`).then(response => {
+          qrGenerated = true;
+
+          $(qrContainer).html(
+            response.data.qr_svg
+          );
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    } else {
+      $(twoFactorSection).addClass('d-none');
+
+      $(otpField).val('');
+
+      qrGenerated = false;
+    }
+  });
 
   FormValidation.formValidation(formProfile, {
     fields: {
@@ -61,6 +97,25 @@ document.addEventListener('DOMContentLoaded', function (e) {
           identical: {
             compare: () => formUser.querySelector('[name="password"]').value,
             message: 'The password and its confirmation do not match'
+          }
+        }
+      },
+      otp: {
+        validators: {
+          callback: {
+            message: 'Verification code is required when 2FA is enabled',
+            callback: function (input) {
+              if ($(twoFactorSelect).val() === '0') {
+                return true;
+              }
+
+              return input.value.trim() !== '';
+            }
+          },
+          stringLength: {
+            min: 6,
+            max: 6,
+            message: 'Verification code must be 6 digits'
           }
         }
       }

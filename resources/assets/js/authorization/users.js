@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         { data: 'name' },
         { data: 'username' },
         { data: 'role' },
+        { data: 'two_factor_enabled' },
         { data: 'status' },
         { data: 'created_at' },
         { data: 'updated_at' },
@@ -36,25 +37,23 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, 5, 6, -1]
+          targets: [0, 1, 2, 3, 4, 5, 6, 7, -1]
         },
         {
           searchable: true,
           targets: [1, 2]
         },
         {
-          targets: 1,
+          targets: 4,
           render: function (data, type, row) {
-            return `
-                <div class="d-flex flex-column">
-                  <span class="text-muted">${data}</span>
-                  <span class="fw-medium">${row.email}</span>
-                </div>
-              `;
+            const twoFactor = data === true ? 'ENABLED' : 'DISABLED',
+              twoFactorClass = twoFactor === 'ENABLED' ? 'bg-label-success' : 'bg-label-danger';
+
+            return '<span class="badge ' + twoFactorClass + '">' + twoFactor + '</span>';
           }
         },
         {
-          targets: 4,
+          targets: 5,
           render: function (data, type, row) {
             const userStatus = data === 'active' ? 'ACTIVE' : 'INACTIVE',
               statusClass = userStatus === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
@@ -63,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 5,
+          targets: 6,
           render: function (data, type, row) {
             const options = {
               day: '2-digit',
@@ -82,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         },
         {
-          targets: 6,
+          targets: 7,
           render: function (data, type, row) {
             const options = {
               day: '2-digit',
@@ -270,6 +269,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   let editingId = null;
 
+  initDropdownPaged($(roleSelect), {
+    url: '/roles/select',
+    placeholder: 'Select an option',
+    perPage: 10,
+    hideSearch: true
+  });
+
   initStatic($(statusSelect), {
     placeholder: 'Select an option',
     disableSearch: true,
@@ -277,13 +283,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
       { id: 'active', text: 'Active' },
       { id: 'inactive', text: 'Inactive' }
     ]
-  });
-
-  initDropdownPaged($(roleSelect), {
-    url: '/roles/select',
-    placeholder: 'Select an option',
-    perPage: 10,
-    hideSearch: true
   });
 
   // create record
@@ -311,7 +310,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
     $.get(`${baseUrl}users/${id}/edit`, function (data) {
       editingId = id;
       fillName.value = data.name || '';
-      fillEmail.value = data.email || '';
       userName.value = data.username || '';
 
       if (data.status) {
@@ -335,16 +333,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
           stringLength: {
             min: 4,
             message: 'The name must be at least 4 characters long'
-          }
-        }
-      },
-      email: {
-        validators: {
-          notEmpty: {
-            message: 'Email is required'
-          },
-          emailAddress: {
-            message: 'The email address is not valid'
           }
         }
       },
@@ -386,6 +374,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         }
       },
+      // two_factor_enabled: {
+      //   validators: {
+      //     notEmpty: {
+      //       message: '2FA must be selected'
+      //     }
+      //   }
+      // },
       status: {
         validators: {
           notEmpty: {

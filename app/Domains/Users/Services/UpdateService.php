@@ -13,7 +13,6 @@ class UpdateService
     return DB::transaction(function () use ($user, $data) {
       $payload = [
         'name' => $data['name'],
-        'email' => $data['email'],
         'username' => $data['username'],
         'status' => $data['status'],
       ];

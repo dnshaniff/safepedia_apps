@@ -3,6 +3,7 @@
 namespace App\Domains\Pages;
 
 use App\Domains\Pages\Requests\UpdateProfileRequest;
+use App\Domains\Pages\Services\TwoFactorService;
 use App\Domains\Pages\Services\UpdateProfileService;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -32,6 +33,21 @@ class ProfileController extends Controller
         'trace' => $e->getTraceAsString(),
       ]);
       return response()->json(['status' => 'danger', 'message' => 'An error occurred while processing your request', 'errors' => $e], 500);
+    }
+  }
+
+  public function generateTwoFactor(string $username, TwoFactorService $service)
+  {
+    try {
+      $user = User::where('username', $username)->firstOrFail();
+
+      $service = $service->execute($user);
+
+      return response()->json(['status' => 'success', 'secret' => $service, 'qr_url' => $service['qr_url'], 'qr_svg' => $service['qr_svg']], 200);
+    } catch (Throwable $e) {
+      Log::error($e);
+
+      return response()->json(['status' => 'danger', 'message' => 'Failed to generate secret'], 500);
     }
   }
 }

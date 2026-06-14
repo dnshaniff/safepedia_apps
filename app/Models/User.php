@@ -2,23 +2,21 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use App\Models\Traits\Blameable;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-  use HasRoles, HasUuids, SoftDeletes, Blameable;
+  use SoftDeletes, Blameable, HasRoles;
 
   protected $fillable = [
     'name',
-    'email',
     'username',
     'password',
+    'two_factor_enabled',
+    'google2fa_secret',
     'status',
     'created_by',
     'updated_by',
@@ -34,6 +32,7 @@ class User extends Authenticatable
   {
     return [
       'password' => 'hashed',
+      'two_factor_enabled' => 'boolean'
     ];
   }
 

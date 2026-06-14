@@ -17,11 +17,11 @@ class StoreRequest extends FormRequest
   {
     return [
       'name' => 'required|min:4|max:50',
-      'email' => 'required|email:rfc,dns|unique:users,email',
       'username' => 'required|min:4|max:30|unique:users,username',
       'password' => 'required|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/|confirmed',
       'role' => 'required',
-      'status' => 'required'
+      'two_factor_enabled' => 'required|boolean',
+      'status' => 'required|in:active,inactive'
     ];
   }
 

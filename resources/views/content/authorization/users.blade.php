@@ -32,6 +32,7 @@
                                 <th class="text-start">Name</th>
                                 <th class="text-start">Username</th>
                                 <th class="text-start">Role</th>
+                                <th class="text-start">2FA</th>
                                 <th class="text-start">Status</th>
                                 <th class="text-start">Created Date</th>
                                 <th class="text-start">Updated Date</th>
@@ -54,11 +55,8 @@
                 <div class="modal-body row">
                     <div class="col-12 mb-3">
                         <label class="form-label" for="name">Full Name</label>
-                        <input type="text" id="name" name="name" class="form-control" placeholder="John Doe" autofocus />
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label class="form-label" for="email">Email</label>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="johndoe@example.com" />
+                        <input type="text" id="name" name="name" class="form-control" placeholder="John Doe"
+                            autofocus />
                     </div>
                     <div class="col-12 mb-3">
                         <label class="form-label" for="username">Username</label>

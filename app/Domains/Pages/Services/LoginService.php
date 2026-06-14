@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class LoginService
 {
-  public function execute(Request $request): void
+  public function execute(Request $request): bool
   {
     $credentials = $request->validated();
 
@@ -27,6 +27,17 @@ class LoginService
     RateLimiter::clear($this->throttleKey($request));
 
     $request->session()->regenerate();
+
+    $user = Auth::user();
+    if ($user->two_factor_enabled) {
+      $request->session()->put('two_factor_verified', false);
+
+      return true;
+    }
+
+    $request->session()->put('two_factor_verified', true);
+
+    return false;
   }
 
   protected function throttleKey(Request $request): string

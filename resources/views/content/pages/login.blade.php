@@ -70,9 +70,6 @@
                                         <input class="form-check-input" type="checkbox" id="remember-me" name="remember" />
                                         <label class="form-check-label" for="remember-me"> Remember Me </label>
                                     </div>
-                                    <a href="javascript:;">
-                                        <span>Forgot Password?</span>
-                                    </a>
                                 </div>
                             </div>
                             <div class="mb-6">

@@ -1,4 +1,5 @@
 'use strict';
+
 const formAuthentication = document.querySelector('#formAuthentication');
 
 document.addEventListener('DOMContentLoaded', function (e) {

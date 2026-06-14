@@ -25,6 +25,8 @@ class UpdateProfileRequest extends FormRequest
       'email' => ['nullable', 'email', Rule::unique('users', 'email')->ignore($userId)],
       'username' => ['required', 'min:4', 'max:50', Rule::unique('users', 'username')->ignore($userId)],
       'password' => ['nullable', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/', 'confirmed'],
+      'two_factor_enabled' => 'required|boolean',
+      'otp' => 'nullable|digits:6',
     ];
   }
 

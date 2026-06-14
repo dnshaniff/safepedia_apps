@@ -20,11 +20,11 @@ class UpdateRequest extends FormRequest
 
     return [
       'name' => 'required|min:4|max:50',
-      'email' => ['required', 'email:rfc,dns', Rule::unique('users', 'email')->ignore($userId)],
       'username' => ['required', 'min:4', 'max:50', Rule::unique('users', 'username')->ignore($userId)],
-      'role' => ['required'],
-      'status' => ['required'],
-      'password' => ['nullable', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/', 'confirmed'],
+      'password' => 'nullable|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z]).+$/|confirmed',
+      'role' => 'required',
+      'otp' => 'nullable|digits:6',
+      'status' => 'required|in:active,inactive'
     ];
   }
 

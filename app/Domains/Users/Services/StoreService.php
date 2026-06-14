@@ -13,9 +13,9 @@ class StoreService
     return DB::transaction(function () use ($data) {
       $user = User::create([
         'name' => $data['name'],
-        'email' => $data['email'],
         'username' => $data['username'],
         'password' => Hash::make($data['password']),
+        'two_factor_enabled' => $data['two_factor_enabled'],
         'status' => $data['status'],
       ]);
 
