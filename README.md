@@ -1,66 +1,291 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# WAS Apps
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Warehouse Approval System (WAS Apps) adalah aplikasi pengajuan pembangunan gudang distribusi dengan proses approval berjenjang.
 
-## About Laravel
+Dibangun menggunakan:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 12
+- PostgreSQL
+- Bootstrap 5
+- jQuery
+- DataTables
+- Leaflet Maps
+- ApexCharts
+- Dropzone
+- FormValidation
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Features
 
-## Learning Laravel
+### Authentication
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Login system
+- Role based access control
+- Permission management
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Warehouse Construction
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Create warehouse construction request
+- Select warehouse location using interactive map (Leaflet)
+- Upload multiple supporting documents (minimum 3 files)
+- Construction budget estimation
+- Dynamic budget item repeater
+- Automatic budget calculation
 
-## Laravel Sponsors
+### Approval Workflow
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Approval dilakukan sesuai urutan berikut:
 
-### Premium Partners
+1. Requestor
+2. SPV Gudang
+3. Kepala Gudang
+4. Manager Operasional
+5. Direktur Operasional
+6. Direktur Keuangan
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Fitur approval:
 
-## Contributing
+- Approve
+- Reject / Return
+- Approval history
+- Approval notes
+- Status tracking
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Dashboard
 
-## Code of Conduct
+- Total Construction
+- In Progress Construction
+- Approved Construction
+- Monthly Construction Statistics
+- Latest Construction Monitoring
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Requirements
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Pastikan environment memiliki:
 
-## License
+- PHP 8.3+
+- Composer
+- PostgreSQL 14+
+- NodeJS 20+
+- NPM
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Installation
+
+Clone repository:
+
+```bash
+git clone <repository-url>
+```
+
+Masuk ke folder project:
+
+```bash
+cd was-apps
+```
+
+Install dependency PHP:
+
+```bash
+composer install
+```
+
+Install dependency frontend:
+
+```bash
+npm install
+```
+
+---
+
+## Environment Setup
+
+Copy file environment:
+
+```bash
+cp .env.example .env
+```
+
+Generate application key:
+
+```bash
+php artisan key:generate
+```
+
+Sesuaikan konfigurasi database PostgreSQL:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=safepedia_apps
+DB_USERNAME=your_postgres_username
+DB_PASSWORD=your_postgres_password
+```
+
+> Pastikan `DB_USERNAME` dan `DB_PASSWORD` disesuaikan dengan PostgreSQL yang tersedia pada komputer Anda.
+
+---
+
+## Database Setup
+
+Jalankan migrasi dan seeder:
+
+```bash
+php artisan migrate --seed
+```
+
+Seeder yang tersedia:
+
+- PermissionSeeder
+- EmployeeSeeder
+- ApprovalSeeder
+
+---
+
+## Storage Link
+
+Jalankan perintah berikut untuk mengakses file upload:
+
+```bash
+php artisan storage:link
+```
+
+---
+
+## Frontend Build
+
+Development:
+
+```bash
+npm run dev
+```
+
+---
+
+## Running Application
+
+Jalankan server Laravel:
+
+```bash
+php artisan serve
+```
+
+Aplikasi akan tersedia pada:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## Important Notes
+
+Sebelum melakukan pengujian aplikasi:
+
+1. Login menggunakan akun hasil seeder.
+2. Aktifkan Two Factor Authentication (2FA) melalui menu **Profile**.
+3. Gunakan Google Authenticator atau aplikasi TOTP sejenis untuk menghasilkan kode OTP.
+4. Setelah 2FA aktif, logout dan login kembali untuk menguji proses verifikasi OTP.
+
+---
+
+## Login Accounts
+
+Dummy user tersedia melalui seeder.
+
+Silakan gunakan data employee yang dihasilkan oleh seeder untuk mencoba masing-masing role approval.
+
+---
+
+## Two Factor Authentication (2FA)
+
+Aplikasi menggunakan TOTP (Time-based One Time Password) yang kompatibel dengan:
+
+- Google Authenticator
+- Microsoft Authenticator
+- Authy
+- Aplikasi TOTP lainnya
+
+### Aktivasi 2FA
+
+1. Login menggunakan akun yang tersedia dari seeder.
+2. Klik menu **Profile**.
+3. Buka bagian **Two Factor Authentication**.
+4. Scan QR Code menggunakan aplikasi authenticator.
+5. Masukkan kode OTP yang dihasilkan aplikasi.
+6. Simpan konfigurasi.
+
+Setelah aktif, user akan diminta memasukkan kode OTP setiap kali login.
+
+---
+
+## Approval Status
+
+| Status | Description |
+|----------|-------------|
+| Draft | Pengajuan baru dibuat |
+| Pending | Menunggu approval berikutnya |
+| Approved | Seluruh approval selesai |
+| Returned | Dikembalikan untuk revisi |
+| Canceled | Pengajuan dibatalkan |
+
+---
+
+## Project Structure
+
+```text
+app/
+├── Domains
+│   ├── Approvals
+│   ├── Employees
+│   ├── Pages
+│   ├── Roles
+│   ├── Users
+│   └── WarehouseConstructions
+```
+
+Setiap domain dipisahkan berdasarkan:
+
+- Controllers
+- Requests
+- Services
+- Models
+
+Pendekatan ini digunakan untuk menjaga modularitas dan mempermudah maintenance.
+
+---
+
+## Third Party Libraries
+
+- Laravel Permission
+- DataTables
+- Select2
+- Flatpickr
+- Leaflet
+- Dropzone
+- ApexCharts
+- FormValidation
+
+---
+
+## Notes
+
+- File upload disimpan menggunakan Laravel Storage.
+- Koordinat gudang menggunakan Leaflet dan OpenStreetMap.
+- Budget dihitung otomatis berdasarkan item budget yang diinput.
+- Approval history tersimpan untuk setiap tahapan approval.
+- Dashboard menampilkan statistik dan monitoring pengajuan pembangunan gudang.
+
+---
+
+## Technical Test
+
+Project ini dibuat sebagai submission untuk:
+
+**Technical Test PHP Developer**  
+PT Safepedia Global Teknologi
