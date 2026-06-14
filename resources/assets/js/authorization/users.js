@@ -448,15 +448,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // delete record
   $(document).on('click', '.delete-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
+    var id = $(this).data('id');
 
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of delete
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -499,15 +492,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // restore record
   $(document).on('click', '.restore-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
+    var id = $(this).data('id');
 
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of restore
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -550,15 +536,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // permanent delete record
   $(document).on('click', '.force-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
+    var id = $(this).data('id');
 
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of permanent delete
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",

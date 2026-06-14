@@ -362,15 +362,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // delete record
   $(document).on('click', '.delete-record', function () {
-    const id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
+    const id = $(this).data('id');
 
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of delete
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",

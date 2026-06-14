@@ -7,6 +7,12 @@
       "slug": "dashboard"
     },
     {
+      "url": "/page-warehouse_constructions",
+      "name": "Constructions",
+      "icon": "menu-icon tf-icons bx bx-buildings",
+      "slug": "page-warehouse_constructions"
+    },
+    {
       "url": "/page-employees",
       "name": "Employees",
       "icon": "menu-icon tf-icons bx bxs-user-detail",

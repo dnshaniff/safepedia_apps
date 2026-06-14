@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domains\Approvals\Queries;
+namespace App\Domains\WarehouseConstructions\Queries;
 
-use App\Models\Approval;
+use App\Models\WarehouseConstruction;
 use Illuminate\Support\Facades\Auth;
 
 class IndexService
@@ -19,8 +19,8 @@ class IndexService
 
     $length = (int) ($params['length'] ?? 10);
 
-    $baseQuery = Approval::query()->with([
-      'employee:id,full_name',
+    $baseQuery = WarehouseConstruction::query()->with([
+      'approvals.employee:id,full_name',
       'creator:id,name',
       'editor:id,name',
       'deleter:id,name',
@@ -34,33 +34,34 @@ class IndexService
 
     if (!empty($search)) {
       $baseQuery->where(function ($q) use ($search) {
-        $q->where('approval_role', 'LIKE', "%{$search}%")
-          ->orWhere('sequence', 'LIKE', "%{$search}%")
-          ->orWhereHas('employee', function ($employee) use ($search) {
-            $employee->where('full_name', 'LIKE', "%{$search}%");
-          });
+        $q->where('construction_number', 'LIKE', "%{$search}%")
+          ->orWhere('warehouse_name', 'LIKE', "%{$search}%");
       });
     }
 
     $totalFiltered = (clone $baseQuery)->count();
 
-    $rows = $baseQuery->orderBy('sequence')->offset($start)->limit($length)->get();
+    $rows = $baseQuery->latest()->offset($start)->limit($length)->get();
 
     $data = [];
-    $ids = $start;
 
     foreach ($rows as $row) {
+      $pendingApproval = $row->approvals()->where('action', 'pending')->latest('id')->first();
+
+      $lastAction = $row->approvals()->latest('id')->first();
+
+      $approval = $pendingApproval ?: $lastAction;
+
       $data[] = [
-        'fake_id' => ++$ids,
         'id' => $row->id,
-        'approval_role' => $row->approval_role,
-        'sequence' => $row->sequence,
-        'employee' => $row->employee->full_name ?? '-',
+        'construction_number' => $row->construction_number,
+        'warehouse_name' => $row->warehouse_name,
+        'grand_total_budget' => $row->grand_total_budget,
+        'approval' => $approval?->employee?->full_name ?? '-',
+        'status' => $row->status,
         'creator' => $row->creator?->name ?? '-',
-        'editor' => $row->editor?->name ?? '-',
         'deleter' => $row->deleter?->name ?? '-',
         'created_at' => $row->created_at,
-        'updated_at' => $row->updated_at,
         'deleted_at' => $row->deleted_at,
       ];
     }

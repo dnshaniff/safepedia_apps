@@ -15,6 +15,10 @@ class UpdateService
         'position' => $data['position'],
       ]);
 
+      if ($employee->user_id) {
+        $employee->user()->update(['name' => $data['full_name']]);
+      }
+
       return $employee->fresh();
     });
   }

@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
         },
         {
           targets: 4,
-          render: function (data, type, full, meta) {
+          render: function (data, type, row) {
             const options = {
               day: '2-digit',
               month: 'short',
@@ -49,12 +49,18 @@ document.addEventListener('DOMContentLoaded', function (e) {
               hour: '2-digit',
               minute: '2-digit'
             };
-            return new Date(data).toLocaleString('en-GB', options);
+
+            return `
+              <div class="d-flex flex-column">
+                <span class="text-muted">${row.creator}</span>
+                <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
+              </div>
+            `;
           }
         },
         {
           targets: 5,
-          render: function (data, type, full, meta) {
+          render: function (data, type, row) {
             const options = {
               day: '2-digit',
               month: 'short',
@@ -62,7 +68,22 @@ document.addEventListener('DOMContentLoaded', function (e) {
               hour: '2-digit',
               minute: '2-digit'
             };
-            return new Date(data).toLocaleString('en-GB', options);
+
+            if (row.deleted_at !== null) {
+              return `
+                <div class="d-flex flex-column">
+                  <span class="text-muted">${row.deleter}</span>
+                  <span class="fw-medium">${new Date(row.deleted_at).toLocaleString('en-GB', options)}</span>
+                </div>
+              `;
+            } else {
+              return `
+                <div class="d-flex flex-column">
+                  <span class="text-muted">${row.editor}</span>
+                  <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
+                </div>
+              `;
+            }
           }
         },
         {
@@ -311,15 +332,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // delete record
   $(document).on('click', '.delete-record', function () {
-    const id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
+    const id = $(this).data('id');
 
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of delete
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -361,15 +375,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // restore record
   $(document).on('click', '.restore-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
+    var id = $(this).data('id');
 
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of restore
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -415,15 +422,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
 
   // permanent delete record
   $(document).on('click', '.force-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
+    var id = $(this).data('id');
 
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of permanent delete
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",

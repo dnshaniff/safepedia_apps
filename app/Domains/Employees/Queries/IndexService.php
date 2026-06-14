@@ -19,7 +19,11 @@ class IndexService
 
     $length = (int) ($params['length'] ?? 10);
 
-    $baseQuery = Employee::query()->with(['creator', 'editor', 'deleter']);
+    $baseQuery = Employee::query()->with([
+      'creator:id,name',
+      'editor:id,name',
+      'deleter:id,name',
+    ]);
 
     if ($isAdmin) {
       $baseQuery->withTrashed();

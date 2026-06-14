@@ -36,6 +36,11 @@ class User extends Authenticatable
     ];
   }
 
+  public function employee()
+  {
+    return $this->hasOne(Employee::class, 'user_id', 'id');
+  }
+
   public function creator()
   {
     return $this->belongsTo(User::class, 'created_by', 'id');

@@ -8,6 +8,7 @@ use App\Domains\Pages\ProfileController;
 use App\Domains\Permissions\PermissionController;
 use App\Domains\Roles\RoleController;
 use App\Domains\Users\UserController;
+use App\Domains\WarehouseConstructions\WarehouseConstructionController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -46,20 +47,31 @@ Route::middleware(['auth', 'status'])->group(function () {
 Route::middleware(['auth', 'status', 'permission', 'twofactor'])->group(function () {
   // Dashboard
   Route::get('/', [DashboardController::class, 'view'])->name('dashboard');
+  Route::get('/dashboard-index', [DashboardController::class, 'index'])->name('dashboard.index');
+  Route::get('/dashboard-chart', [DashboardController::class, 'chart'])->name('dashboard.chart');
   Route::get('/profile/{username}', [ProfileController::class, 'view'])->name('profile.view');
   Route::patch('/profile/{username}', [ProfileController::class, 'update'])->name('profile.update');
   Route::post('/profile/{username}/generate-two-factor', [ProfileController::class, 'generateTwoFactor'])->name('profile.two_factor');
 
+  // Warehouse Constructions
+  Route::get('/page-warehouse_constructions', [WarehouseConstructionController::class, 'view'])->name('page-warehouse_constructions');
+  Route::resource('/warehouse_constructions', WarehouseConstructionController::class)->except('create');
+  Route::post('/warehouse_constructions/{warehouse_construction}/submit', [WarehouseConstructionController::class, 'submit'])->name('warehouse_constructions.submit');
+  Route::post('/warehouse_constructions/{warehouse_construction}/cancel', [WarehouseConstructionController::class, 'cancel'])->name('warehouse_constructions.cancel');
+  Route::patch('/warehouse_constructions/{warehouse_construction}/warehouse_construction_approvals/{warehouse_construction_approval}', [WarehouseConstructionController::class, 'approval'])->name('warehouse_constructions.approval');
+  Route::post('/warehouse_constructions/{warehouse_construction}/restore', [WarehouseConstructionController::class, 'restore'])->name('warehouse_constructions.restore');
+  Route::delete('/warehouse_constructions/{warehouse_construction}/force', [WarehouseConstructionController::class, 'force'])->name('warehouse_constructions.force');
+
   // Employees
   Route::get('/page-employees', [EmployeeController::class, 'view'])->name('page-employees');
-  Route::resource('/employees', EmployeeController::class)->except('create');
+  Route::resource('/employees', EmployeeController::class)->except('create', 'show');
   Route::post('/employees/{employee}/user', [EmployeeController::class, 'user'])->name('employees.user');
   Route::post('/employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
   Route::delete('/employees/{employee}/force', [EmployeeController::class, 'force'])->name('employees.force');
 
   // Approvals
   Route::get('/page-approvals', [ApprovalController::class, 'view'])->name('page-approvals');
-  Route::resource('/approvals', ApprovalController::class)->except('create');
+  Route::resource('/approvals', ApprovalController::class)->except('create', 'show');
   Route::post('/approvals/{employee}/restore', [ApprovalController::class, 'restore'])->name('approvals.restore');
   Route::delete('/approvals/{employee}/force', [ApprovalController::class, 'force'])->name('approvals.force');
 

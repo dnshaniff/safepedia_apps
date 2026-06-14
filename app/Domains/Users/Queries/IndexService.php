@@ -22,7 +22,7 @@ class IndexService
 
     $length = (int) ($params['length'] ?? 10);
 
-    $baseQuery = User::query()->with(['roles', 'creator', 'editor', 'deleter']);
+    $baseQuery = User::query()->with(['roles', 'creator:id,name', 'editor:id,name', 'deleter:id,name']);
 
     if ($isAdmin) {
       $baseQuery->withTrashed();

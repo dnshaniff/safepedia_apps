@@ -23,6 +23,12 @@ class UpdateService
 
       $user->update($payload);
 
+      if ($user->employee) {
+        $user->employee()->update([
+          'full_name' => $data['name'],
+        ]);
+      }
+
       $user->syncRoles([$data['role']]);
 
       return $user->fresh(['roles']);
