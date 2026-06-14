@@ -15,6 +15,8 @@ class PermissionSeeder extends Seeder
     $permissions = [
       //Dashboard
       ['name' => 'dashboard', 'display_name' => 'View', 'group_name' => 'Dashboard', 'guard_name' => 'web'],
+      ['name' => 'dashboard.index', 'display_name' => 'Index', 'group_name' => 'Dashboard', 'guard_name' => 'web'],
+      ['name' => 'dashboard.chart', 'display_name' => 'Chart', 'group_name' => 'Dashboard', 'guard_name' => 'web'],
       ['name' => 'profile.view', 'display_name' => 'View', 'group_name' => 'Profile', 'guard_name' => 'web'],
       ['name' => 'profile.update', 'display_name' => 'Update', 'group_name' => 'Profile', 'guard_name' => 'web'],
 
@@ -44,6 +46,41 @@ class PermissionSeeder extends Seeder
       ['name' => 'users.destroy', 'display_name' => 'Destroy', 'group_name' => 'Users', 'guard_name' => 'web'],
       ['name' => 'users.restore', 'display_name' => 'Restore', 'group_name' => 'Users', 'guard_name' => 'web'],
       ['name' => 'users.force', 'display_name' => 'Force', 'group_name' => 'Users', 'guard_name' => 'web'],
+
+      // Employees
+      ['name' => 'page-employees', 'display_name' => 'View', 'group_name' => 'Employees', 'guard_name' => 'web'],
+      ['name' => 'employees.index', 'display_name' => 'Index', 'group_name' => 'Employees', 'guard_name' => 'web'],
+      ['name' => 'employees.store', 'display_name' => 'Store', 'group_name' => 'Employees', 'guard_name' => 'web'],
+      ['name' => 'employees.user', 'display_name' => 'User', 'group_name' => 'Employees', 'guard_name' => 'web'],
+      ['name' => 'employees.edit', 'display_name' => 'Edit', 'group_name' => 'Employees', 'guard_name' => 'web'],
+      ['name' => 'employees.update', 'display_name' => 'Update', 'group_name' => 'Employees', 'guard_name' => 'web'],
+      ['name' => 'employees.destroy', 'display_name' => 'Destroy', 'group_name' => 'Employees', 'guard_name' => 'web'],
+      ['name' => 'employees.restore', 'display_name' => 'Restore', 'group_name' => 'Employees', 'guard_name' => 'web'],
+      ['name' => 'employees.force', 'display_name' => 'Force', 'group_name' => 'Employees', 'guard_name' => 'web'],
+
+      // Approvals
+      ['name' => 'page-employees', 'display_name' => 'View', 'group_name' => 'Approvals', 'guard_name' => 'web'],
+      ['name' => 'approvals.index', 'display_name' => 'Index', 'group_name' => 'Approvals', 'guard_name' => 'web'],
+      ['name' => 'approvals.store', 'display_name' => 'Store', 'group_name' => 'Approvals', 'guard_name' => 'web'],
+      ['name' => 'approvals.edit', 'display_name' => 'Edit', 'group_name' => 'Approvals', 'guard_name' => 'web'],
+      ['name' => 'approvals.update', 'display_name' => 'Update', 'group_name' => 'Approvals', 'guard_name' => 'web'],
+      ['name' => 'approvals.destroy', 'display_name' => 'Destroy', 'group_name' => 'Approvals', 'guard_name' => 'web'],
+      ['name' => 'approvals.restore', 'display_name' => 'Restore', 'group_name' => 'Approvals', 'guard_name' => 'web'],
+      ['name' => 'approvals.force', 'display_name' => 'Force', 'group_name' => 'Approvals', 'guard_name' => 'web'],
+
+      // Waarehouse Construction
+      ['name' => 'page-warehouse_constructions', 'display_name' => 'View', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.index', 'display_name' => 'Index', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.store', 'display_name' => 'Store', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.show', 'display_name' => 'Show', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.edit', 'display_name' => 'Edit', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.update', 'display_name' => 'Update', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.destroy', 'display_name' => 'Destroy', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.restore', 'display_name' => 'Restore', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.force', 'display_name' => 'Force', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.submit', 'display_name' => 'Submit', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.cancel', 'display_name' => 'Cancel', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
+      ['name' => 'warehouse_constructions.approval', 'display_name' => 'Approval', 'group_name' => 'Warehouse Construction', 'guard_name' => 'web'],
     ];
 
     usort($permissions, function ($a, $b) {
