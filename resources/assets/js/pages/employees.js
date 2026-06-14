@@ -1,35 +1,31 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function (e) {
-  // ajax setup
+    // ajax setup
   $.ajaxSetup({
     headers: {
       'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
     }
   });
 
-  const datatableUsers = $('.datatables-users'),
-    modalUser = $('#modalUser'),
-    modalTitle = modalUser.find('.modal-title');
+  const datatableEmployees = $('.datatables-employees'),
+    modalEmployee = $('#modalEmployee'),
+    modalTitle = modalEmployee.find('.modal-title');
 
-  let dt_users, userRoleSelect;
+  let dt_employees;
 
-  if (datatableUsers) {
-    const filterRole = document.createElement('div');
-    filterRole.classList.add('user_roles', 'w-px-200', 'pb-3', 'pb-sm-0', 'me-3');
-    dt_users = new DataTable(datatableUsers, {
+  if (datatableEmployees) {
+    dt_employees = new DataTable(datatableEmployees, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}users`
+        url: `${baseUrl}employees`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'name' },
-        { data: 'username' },
-        { data: 'role' },
-        { data: 'two_factor_enabled' },
-        { data: 'status' },
+        { data: 'employee_number' },
+        { data: 'full_name' },
+        { data: 'position' },
         { data: 'created_at' },
         { data: 'updated_at' },
         { data: 'id' }
@@ -37,33 +33,28 @@ document.addEventListener('DOMContentLoaded', function (e) {
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, 5, 6, 7, -1]
+          targets: [0, 1, 2, 3, 4, 5, -1]
         },
         {
           searchable: true,
-          targets: [1, 2]
+          targets: [1, 2, 3]
         },
         {
           targets: 4,
-          render: function (data, type, row) {
-            const twoFactor = data === true ? 'ENABLED' : 'DISABLED',
-              twoFactorClass = twoFactor === 'ENABLED' ? 'bg-label-success' : 'bg-label-danger';
-
-            return '<span class="badge ' + twoFactorClass + '">' + twoFactor + '</span>';
+          render: function (data, type, full, meta) {
+            const options = {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            };
+            return new Date(data).toLocaleString('en-GB', options);
           }
         },
         {
           targets: 5,
-          render: function (data, type, row) {
-            const userStatus = data === 'active' ? 'ACTIVE' : 'INACTIVE',
-              statusClass = userStatus === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
-
-            return '<span class="badge ' + statusClass + '">' + userStatus + '</span>';
-          }
-        },
-        {
-          targets: 6,
-          render: function (data, type, row) {
+          render: function (data, type, full, meta) {
             const options = {
               day: '2-digit',
               month: 'short',
@@ -71,41 +62,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
               hour: '2-digit',
               minute: '2-digit'
             };
-
-            return `
-              <div class="d-flex flex-column">
-                <span class="text-muted">${row.creator}</span>
-                <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
-              </div>
-            `;
-          }
-        },
-        {
-          targets: 7,
-          render: function (data, type, row) {
-            const options = {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            };
-
-            if (row.deleted_at !== null) {
-              return `
-                <div class="d-flex flex-column">
-                  <span class="text-muted">${row.deleter}</span>
-                  <span class="fw-medium">${new Date(row.deleted_at).toLocaleString('en-GB', options)}</span>
-                </div>
-              `;
-            } else {
-              return `
-                <div class="d-flex flex-column">
-                  <span class="text-muted">${row.editor}</span>
-                  <span class="fw-medium">${new Date(data).toLocaleString('en-GB', options)}</span>
-                </div>
-              `;
-            }
+            return new Date(data).toLocaleString('en-GB', options);
           }
         },
         {
@@ -125,9 +82,20 @@ document.addEventListener('DOMContentLoaded', function (e) {
               `;
             }
 
+            let createUserButton = '';
+
+            if (!full.hasUser) {
+              createUserButton = `
+                <button class="btn btn-icon me-2 create-user" data-id="${data}" data-bs-toggle="modal" data-bs-target="#modalUser">
+                  <i class="bx bx-user-plus"></i>
+                </button>
+              `;
+            }
+
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalUser" data-bs-toggle="modal" data-bs-dismiss="modal">
+                ${createUserButton}
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalEmployee" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
@@ -158,11 +126,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Username',
+                placeholder: 'Search Employee',
                 text: '_INPUT_'
               }
             },
-            filterRole,
             {
               buttons: [
                 {
@@ -170,11 +137,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalUser'
+                    'data-bs-target': '#modalEmployee'
                   }
                 }
               ]
-            },
+            }
           ]
         },
         bottomStart: {
@@ -191,39 +158,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
           last: '<i class="icon-base bx bx-chevrons-right scaleX-n1-rtl icon-18px"></i>'
         }
       },
-      initComplete: function (settings, json) {
-        userRoleSelect = $(
-          '<select id="userRole" class="form-select text-capitalize"><option value=""> Select Group </option></select>'
-        )
-          .appendTo('.user_roles')
-          .on('change', function () {
-            var val = $(this).val();
-            dt_users.column(2).search(val).draw();
-          });
-
-        updateUserRoleOptions(json.roles);
-      },
       createdRow: function (row, data) {
         if (data.deleted_at !== null) {
           $(row).addClass('bg-danger-subtle');
         }
-      }
-    });
-
-    function updateUserRoleOptions(roles) {
-      if (!userRoleSelect) return; // Guard clause
-      var currentVal = userRoleSelect.val();
-      userRoleSelect.empty().append('<option value=""> Select Role </option>');
-      roles.forEach(function (role) {
-        userRoleSelect.append('<option value="' + role + '" class="text-capitalize">' + role + '</option>');
-      });
-      userRoleSelect.val(currentVal);
-    }
-
-    dt_users.on('draw.dt', function () {
-      var json = dt_users.ajax.json();
-      if (json && json.roles) {
-        updateUserRoleOptions(json.roles);
       }
     });
   }
@@ -259,35 +197,16 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formUser = document.getElementById('formUser'),
-    fillName = formUser.querySelector('#name'),
-    fillEmail = formUser.querySelector('#email'),
-    userName = formUser.querySelector('#username'),
-    roleSelect = formUser.querySelector('#role'),
-    statusSelect = formUser.querySelector('#status'),
-    btnSubmit = formUser.querySelector('button[type="submit"]');
+  const formEmployee = document.getElementById('formEmployee'),
+    fullName = formEmployee.querySelector('#full_name'),
+    fieldPosition = formEmployee.querySelector('#position'),
+    btnSubmit = formEmployee.querySelector('button[type="submit"]');
 
   let editingId = null;
 
-  initDropdownPaged($(roleSelect), {
-    url: '/roles/select',
-    placeholder: 'Select an option',
-    perPage: 10,
-    hideSearch: true
-  });
-
-  initStatic($(statusSelect), {
-    placeholder: 'Select an option',
-    disableSearch: true,
-    data: [
-      { id: 'active', text: 'Active' },
-      { id: 'inactive', text: 'Inactive' }
-    ]
-  });
-
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create New User');
+    modalTitle.html('Create New Employee');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
@@ -303,39 +222,284 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
 
     // changing the title of modal
-    modalTitle.html('Edit Existing User');
+    modalTitle.html('Edit Existing Employee');
     $(btnSubmit).html('Save');
 
     // get data
-    $.get(`${baseUrl}users/${id}/edit`, function (data) {
+    $.get(`${baseUrl}employees/${id}/edit`, function (data) {
       editingId = id;
-      fillName.value = data.name || '';
-      userName.value = data.username || '';
+      fullName.value = data.full_name;
+      fieldPosition.value = data.position;
+    });
+  });
 
-      if (data.status) {
-        $(statusSelect).val(data.status).trigger('change');
-      }
+  FormValidation.formValidation(formEmployee, {
+    fields: {
+      full_name: {
+        validators: {
+          notEmpty: {
+            message: 'Name is required'
+          }
+        }
+      },
+      position: {
+        validators: {
+          notEmpty: {
+            message: 'Position is required'
+          }
+        }
+      },
+    },
+    plugins: {
+      trigger: new FormValidation.plugins.Trigger(),
+      bootstrap5: new FormValidation.plugins.Bootstrap5({
+        eleValidClass: '',
+        rowSelector: function (field, ele) {
+          return '.mb-3';
+        }
+      }),
+      submitButton: new FormValidation.plugins.SubmitButton(),
+      autoFocus: new FormValidation.plugins.AutoFocus()
+    }
+  }).on('core.form.valid', function () {
+    Loading.circle({
+      backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+      svgSize: '60px',
+      svgColor: config.colors.white
+    });
 
-      const role = Array.isArray(data.roles) && data.roles.length ? data.roles[0] : null;
-      if (role && role.id != null) {
-        setValue($(roleSelect), { id: role.name, text: role.name });
+    // adding/updating when form successfully validate
+    let url = editingId ? `${baseUrl}employees/${editingId}` : `${baseUrl}employees`;
+    let method = editingId ? 'PATCH' : 'POST';
+
+    $.ajax({
+      data: $(formEmployee).serialize(),
+      url: url,
+      type: method,
+      success: function (res) {
+        Loading.remove();
+        dt_employees.draw(false);
+        modalEmployee.modal('hide');
+
+        showToast(res.status, res.message);
+      },
+      error: function (xhr, status, error) {
+        let res = xhr.responseJSON;
+        if (res) {
+          Loading.remove();
+          showToast(res.status, res.message);
+          if (res.errors) {
+            for (let field in res.errors) {
+              res.errors[field].forEach(errorMessage => {
+                console.log(`${field}: ${errorMessage}`);
+              });
+            }
+          }
+        } else {
+          Loading.remove();
+          showToast('danger', 'An unexpected error occurred');
+        }
       }
+    });
+  });
+
+  // clearing form data when modal hidden
+  modalEmployee.on('hidden.bs.modal', function () {
+    formEmployee.reset();
+    editingId = null;
+  });
+
+  // delete record
+  $(document).on('click', '.delete-record', function () {
+    const id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // sweetalert for confirmation of delete
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        confirmButton: 'btn btn-primary me-3',
+        cancelButton: 'btn btn-label-secondary'
+      },
+      buttonsStyling: false
+    }).then(function (result) {
+      if (result.value) {
+        Loading.standard({
+          backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+          svgSize: '0px'
+        });
+
+        // delete the data
+        $.ajax({
+          method: 'DELETE',
+          url: `${baseUrl}employees/${id}`,
+          success: function (res) {
+            Loading.remove();
+            showToast(res.status, res.message);
+            dt_employees.draw(false);
+          },
+          error: function (jqXHR) {
+            Loading.remove();
+            showToast(jqXHR.responseJSON?.status || 'danger', jqXHR.responseJSON?.message || 'An unexpected error occurred');
+          }
+        });
+      } else {
+        Loading.remove();
+        showToast('info', 'The employee is not deleted!');
+      }
+    });
+  });
+
+  // restore record
+  $(document).on('click', '.restore-record', function () {
+    var id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // sweetalert for confirmation of restore
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, restore it!',
+      customClass: {
+        confirmButton: 'btn btn-primary me-3',
+        cancelButton: 'btn btn-label-secondary'
+      },
+      buttonsStyling: false
+    }).then(function (result) {
+      Loading.circle({
+        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+        svgSize: '60px',
+        svgColor: config.colors.white
+      });
+
+      if (result.value) {
+        // restore the data
+        $.ajax({
+          method: 'POST',
+          url: `${baseUrl}employees/${id}/restore`,
+          success: function (res) {
+            Loading.remove();
+            showToast(res.status, res.message);
+            dt_employees.draw(false);
+          },
+          error: function (jqXHR) {
+            Loading.remove();
+            showToast(
+              jqXHR.responseJSON?.status || 'danger',
+              jqXHR.responseJSON?.message || 'An unexpected error occurred'
+            );
+          }
+        });
+      } else {
+        Loading.remove();
+        showToast('info', 'The employee is not restored!');
+      }
+    });
+  });
+
+  // permanent delete record
+  $(document).on('click', '.force-record', function () {
+    var id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // sweetalert for confirmation of permanent delete
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, permanent delete!',
+      customClass: {
+        confirmButton: 'btn btn-primary me-3',
+        cancelButton: 'btn btn-label-secondary'
+      },
+      buttonsStyling: false
+    }).then(function (result) {
+      Loading.circle({
+        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+        svgSize: '60px',
+        svgColor: config.colors.white
+      });
+
+      if (result.value) {
+        // permanent delete the data
+        $.ajax({
+          method: 'DELETE',
+          url: `${baseUrl}employees/${id}/force`,
+          success: function (res) {
+            Loading.remove();
+            showToast(res.status, res.message);
+            dt_employees.draw(false);
+          },
+          error: function (jqXHR) {
+            Loading.remove();
+            showToast(
+              jqXHR.responseJSON?.status || 'danger',
+              jqXHR.responseJSON?.message || 'An unexpected error occurred'
+            );
+          }
+        });
+      } else {
+        Loading.remove();
+        showToast('info', 'The employee is not deleted!');
+      }
+    });
+  });
+
+  const modalUser = $('#modalUser'),
+  modalTitleUser = modalUser.find('.modal-title');
+
+  const formUser = document.getElementById('formUser'),
+    userName = formUser.querySelector('#username'),
+    roleSelect = formUser.querySelector('#role');
+
+  initDropdownPaged($(roleSelect), {
+    url: '/roles/select',
+    placeholder: 'Select an option',
+    perPage: 10,
+    hideSearch: true
+  });
+
+  // edit record
+  $(document).on('click', '.create-user', function () {
+    const id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // get data
+    $.get(`${baseUrl}employees/${id}/edit`, function (data) {
+      editingId = id;
+      modalTitleUser.html(`Create User for ${data.full_name}`);
     });
   });
 
   FormValidation.formValidation(formUser, {
     fields: {
-      name: {
-        validators: {
-          notEmpty: {
-            message: 'Name is required'
-          },
-          stringLength: {
-            min: 4,
-            message: 'The name must be at least 4 characters long'
-          }
-        }
-      },
       username: {
         validators: {
           notEmpty: {
@@ -374,13 +538,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
           }
         }
       },
-      status: {
-        validators: {
-          notEmpty: {
-            message: 'Status must be selected'
-          }
-        }
-      }
     },
     plugins: {
       trigger: new FormValidation.plugins.Trigger(),
@@ -405,16 +562,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
       svgColor: config.colors.white
     });
 
-    let url = editingId ? `${baseUrl}users/${editingId}` : `${baseUrl}users`;
-    let method = editingId ? 'PATCH' : 'POST';
-
     $.ajax({
       data: $(formUser).serialize(),
-      url: url,
-      type: method,
+      url: `${baseUrl}employees/${editingId}/user`,
+      type: 'POST',
       success: function (res) {
         Loading.remove();
-        dt_users.draw(false);
+        dt_employees.draw(false);
         modalUser.modal('hide');
 
         showToast(res.status, res.message);
@@ -442,160 +596,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
   // clearing form data when modal hidden
   modalUser.on('hidden.bs.modal', function () {
     formUser.reset();
-    editingId = null
+    editingId = null;
+    modalTitleUser.html('Create New User');
     $(formUser).find('select').val('').trigger('change');
-  });
-
-  // delete record
-  $(document).on('click', '.delete-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
-
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of delete
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      customClass: {
-        confirmButton: 'btn btn-primary me-3',
-        cancelButton: 'btn btn-label-secondary'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      Loading.circle({
-        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
-        svgSize: '60px',
-        svgColor: config.colors.white
-      });
-
-      if (result.value) {
-        // delete the data
-        $.ajax({
-          method: 'DELETE',
-          url: `${baseUrl}users/${id}`,
-          success: function (res) {
-            Loading.remove();
-            showToast(res.status, res.message);
-            dt_users.draw(false);
-          },
-          error: function (jqXHR) {
-            Loading.remove();
-            showToast(jqXHR.responseJSON?.status || 'danger', jqXHR.responseJSON?.message || 'An unexpected error occurred');
-          }
-        });
-      } else {
-        Loading.remove();
-        showToast('info', 'The user is not deleted!');
-      }
-    });
-  });
-
-  // restore record
-  $(document).on('click', '.restore-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
-
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of restore
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, restore it!',
-      customClass: {
-        confirmButton: 'btn btn-primary me-3',
-        cancelButton: 'btn btn-label-secondary'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      Loading.circle({
-        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
-        svgSize: '60px',
-        svgColor: config.colors.white
-      });
-
-      if (result.value) {
-        // restore the data
-        $.ajax({
-          method: 'POST',
-          url: `${baseUrl}users/${id}/restore`,
-          success: function (res) {
-            Loading.remove();
-            showToast(res.status, res.message);
-            dt_users.draw(false);
-          },
-          error: function (jqXHR) {
-            Loading.remove();
-            showToast(jqXHR.responseJSON?.status || 'danger', jqXHR.responseJSON?.message || 'An unexpected error occurred');
-          }
-        });
-      } else {
-        Loading.remove();
-        showToast('info', 'The user is not restored!');
-      }
-    });
-  });
-
-  // permanent delete record
-  $(document).on('click', '.force-record', function () {
-    var id = $(this).data('id'),
-      dtrModal = $('.dtr-bs-modal.show');
-
-    // hide responsive modal in small screen
-    if (dtrModal.length) {
-      dtrModal.modal('hide');
-    }
-
-    // sweetalert for confirmation of permanent delete
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, permanent delete!',
-      customClass: {
-        confirmButton: 'btn btn-primary me-3',
-        cancelButton: 'btn btn-label-secondary'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      Loading.circle({
-        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
-        svgSize: '60px',
-        svgColor: config.colors.white
-      });
-
-      if (result.value) {
-        // permanent delete the data
-        $.ajax({
-          method: 'DELETE',
-          url: `${baseUrl}users/${id}/force`,
-          success: function (res) {
-            Loading.remove();
-            showToast(res.status, res.message);
-            dt_users.draw(false);
-          },
-          error: function (jqXHR) {
-            Loading.remove();
-            showToast(jqXHR.responseJSON?.status || 'danger', jqXHR.responseJSON?.message || 'An unexpected error occurred');
-          }
-        });
-      } else {
-        Loading.remove();
-        showToast('info', 'The user is not deleted!');
-      }
-    });
   });
 });

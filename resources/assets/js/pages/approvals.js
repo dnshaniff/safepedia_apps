@@ -1,33 +1,31 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function (e) {
-  // ajax setup
+      // ajax setup
   $.ajaxSetup({
     headers: {
       'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
     }
   });
 
-  const datatablePermissions = $('.datatables-permissions'),
-    modalPermission = $('#modalPermission'),
-    modalTitle = modalPermission.find('.modal-title');
+  const datatableApprovals = $('.datatables-approvals'),
+    modalApproval = $('#modalApproval'),
+    modalTitle = modalApproval.find('.modal-title');
 
-  let dt_permissions, permissionGroupSelect;
+  let dt_approvals;
 
-  if (datatablePermissions) {
-    const filterGroup = document.createElement('div');
-    filterGroup.classList.add('permission_group', 'w-px-200', 'pb-3', 'pb-sm-0', 'me-3');
-    dt_permissions = new DataTable(datatablePermissions, {
+  if (datatableApprovals) {
+    dt_approvals = new DataTable(datatableApprovals, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: `${baseUrl}permissions`
+        url: `${baseUrl}approvals`
       },
       columns: [
         { data: 'fake_id' },
-        { data: 'display_name' },
-        { data: 'name' },
-        { data: 'group_name' },
+        { data: 'approval_role' },
+        { data: 'sequence' },
+        { data: 'employee' },
         { data: 'created_at' },
         { data: 'updated_at' },
         { data: 'id' }
@@ -71,13 +69,26 @@ document.addEventListener('DOMContentLoaded', function (e) {
           targets: -1,
           title: 'Actions',
           render: function (data, type, full, meta) {
+            if (full.deleted_at !== null) {
+              return `
+                <span class="text-nowrap">
+                  <button class="btn btn-icon me-2 restore-record" data-id="${data}">
+                    <i class="bx bx-recycle"></i>
+                  </button>
+                  <button class="btn btn-icon force-record" data-id="${data}">
+                    <i class="bx bx-trash"></i>
+                  </button>
+                </span>
+              `;
+            }
+
             return `
               <span class="text-nowrap">
-                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalPermission" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-icon me-2 edit-record" data-id="${data}" data-bs-target="#modalApproval" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-icon delete-record" data-id="${data}">
-                  <i class="bx bx-trash"></i>
+                  <i class="bx bx-trash-alt"></i>
                 </button>
               </span>
             `;
@@ -104,11 +115,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
           features: [
             {
               search: {
-                placeholder: 'Search Permission',
+                placeholder: 'Search Approval',
                 text: '_INPUT_'
               }
             },
-            filterGroup,
             {
               buttons: [
                 {
@@ -116,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function (e) {
                   className: 'add-new btn btn-primary mb-3 mb-md-0',
                   attr: {
                     'data-bs-toggle': 'modal',
-                    'data-bs-target': '#modalPermission'
+                    'data-bs-target': '#modalApproval'
                   }
                 }
               ]
@@ -137,37 +147,13 @@ document.addEventListener('DOMContentLoaded', function (e) {
           last: '<i class="icon-base bx bx-chevrons-right scaleX-n1-rtl icon-18px"></i>'
         }
       },
-      initComplete: function (settings, json) {
-        permissionGroupSelect = $(
-          '<select id="permissionGroup" class="form-select text-capitalize"><option value=""> Select Group </option></select>'
-        )
-          .appendTo('.permission_group')
-          .on('change', function () {
-            const val = $(this).val();
-            dt_permissions.column(3).search(val).draw();
-          });
-
-        updatePermissionGroupOptions(json.groups);
+      createdRow: function (row, data) {
+        if (data.deleted_at !== null) {
+          $(row).addClass('bg-danger-subtle');
+        }
       }
     });
   }
-
-  function updatePermissionGroupOptions(groups) {
-    if (!permissionGroupSelect) return; // Guard clause
-    const currentVal = permissionGroupSelect.val();
-    permissionGroupSelect.empty().append('<option value=""> Select Group </option>');
-    groups.forEach(function (group) {
-      permissionGroupSelect.append('<option value="' + group + '" class="text-capitalize">' + group + '</option>');
-    });
-    permissionGroupSelect.val(currentVal);
-  }
-
-  dt_permissions.on('draw.dt', function () {
-    const json = dt_permissions.ajax.json();
-    if (json && json.groups) {
-      updatePermissionGroupOptions(json.groups);
-    }
-  });
 
   setTimeout(() => {
     const elementsToModify = [
@@ -200,17 +186,24 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
   }, 100);
 
-  const formPermission = document.getElementById('formPermission'),
-    namePermission = formPermission.querySelector('#display_name'),
-    routePermission = formPermission.querySelector('#name'),
-    groupPermission = formPermission.querySelector('#group_name'),
-    btnSubmit = formPermission.querySelector('button[type="submit"]');
+  const formApproval = document.getElementById('formApproval'),
+    approvalRole = formApproval.querySelector('#approval_role'),
+    fieldSequence = formApproval.querySelector('#sequence'),
+    employeeSelect = formApproval.querySelector('#employee_id'),
+    btnSubmit = formApproval.querySelector('button[type="submit"]');
 
   let editingId = null;
 
+  initDropdownPaged($(employeeSelect), {
+    url: '/employees/select',
+    placeholder: 'Select an option',
+    perPage: 10,
+    hideSearch: true
+  });
+
   // create record
   $('.add-new').on('click', function () {
-    modalTitle.html('Create New Permission');
+    modalTitle.html('Create New Approval');
     editingId = null;
     $(btnSubmit).html('Submit');
   });
@@ -226,41 +219,46 @@ document.addEventListener('DOMContentLoaded', function (e) {
     }
 
     // changing the title of modal
-    modalTitle.html('Edit Existing Permission');
+    modalTitle.html('Edit Existing Approval');
     $(btnSubmit).html('Save');
 
     // get data
-    $.get(`${baseUrl}permissions/${id}/edit`, function (data) {
+    $.get(`${baseUrl}approvals/${id}/edit`, function (data) {
       editingId = id;
-      namePermission.value = data.display_name;
-      routePermission.value = data.name;
-      groupPermission.value = data.group_name;
+      approvalRole.value = data.approval_role;
+      fieldSequence.value = data.sequence;
+
+      if (data.employee) {
+        const option = new Option(`${data.employee.full_name} - ${data.employee.position}`, data.employee.id, true, true);
+
+        $(employeeSelect).append(option).trigger('change');
+      }
     });
   });
 
-  FormValidation.formValidation(formPermission, {
+  FormValidation.formValidation(formApproval, {
     fields: {
-      display_name: {
+      approval_role: {
         validators: {
           notEmpty: {
-            message: 'permission name is required'
+            message: 'Name is required'
           }
         }
       },
-      name: {
+      sequence: {
         validators: {
           notEmpty: {
-            message: 'permission route is required'
+            message: 'Position is required'
           }
         }
       },
-      group_name: {
+      employee_id: {
         validators: {
           notEmpty: {
-            message: 'Permission group is required'
+            message: 'Employee must be selected'
           }
         }
-      }
+      },
     },
     plugins: {
       trigger: new FormValidation.plugins.Trigger(),
@@ -281,17 +279,17 @@ document.addEventListener('DOMContentLoaded', function (e) {
     });
 
     // adding/updating when form successfully validate
-    let url = editingId ? `${baseUrl}permissions/${editingId}` : `${baseUrl}permissions`;
+    let url = editingId ? `${baseUrl}approvals/${editingId}` : `${baseUrl}approvals`;
     let method = editingId ? 'PATCH' : 'POST';
 
     $.ajax({
-      data: $(formPermission).serialize(),
+      data: $(formApproval).serialize(),
       url: url,
       type: method,
       success: function (res) {
         Loading.remove();
-        dt_permissions.draw(false);
-        modalPermission.modal('hide');
+        dt_approvals.draw(false);
+        modalApproval.modal('hide');
 
         showToast(res.status, res.message);
       },
@@ -316,9 +314,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
   });
 
   // clearing form data when modal hidden
-  modalPermission.on('hidden.bs.modal', function () {
-    formPermission.reset();
-    editingId = null;
+  modalApproval.on('hidden.bs.modal', function () {
+    formApproval.reset();
+    editingId = null
+    $(formApproval).find('select').val('').trigger('change');
   });
 
   // delete record
@@ -353,11 +352,11 @@ document.addEventListener('DOMContentLoaded', function (e) {
         // delete the data
         $.ajax({
           method: 'DELETE',
-          url: `${baseUrl}permissions/${id}`,
+          url: `${baseUrl}approvals/${id}`,
           success: function (res) {
             Loading.remove();
             showToast(res.status, res.message);
-            dt_permissions.draw(false);
+            dt_approvals.draw(false);
           },
           error: function (jqXHR) {
             Loading.remove();
@@ -366,7 +365,115 @@ document.addEventListener('DOMContentLoaded', function (e) {
         });
       } else {
         Loading.remove();
-        showToast('info', 'The permission is not deleted!');
+        showToast('info', 'The approval is not deleted!');
+      }
+    });
+  });
+
+  // restore record
+  $(document).on('click', '.restore-record', function () {
+    var id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // sweetalert for confirmation of restore
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, restore it!',
+      customClass: {
+        confirmButton: 'btn btn-primary me-3',
+        cancelButton: 'btn btn-label-secondary'
+      },
+      buttonsStyling: false
+    }).then(function (result) {
+      Loading.circle({
+        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+        svgSize: '60px',
+        svgColor: config.colors.white
+      });
+
+      if (result.value) {
+        // restore the data
+        $.ajax({
+          method: 'POST',
+          url: `${baseUrl}approvals/${id}/restore`,
+          success: function (res) {
+            Loading.remove();
+            showToast(res.status, res.message);
+            dt_approvals.draw(false);
+          },
+          error: function (jqXHR) {
+            Loading.remove();
+            showToast(
+              jqXHR.responseJSON?.status || 'danger',
+              jqXHR.responseJSON?.message || 'An unexpected error occurred'
+            );
+          }
+        });
+      } else {
+        Loading.remove();
+        showToast('info', 'The approval is not restored!');
+      }
+    });
+  });
+
+  // permanent delete record
+  $(document).on('click', '.force-record', function () {
+    var id = $(this).data('id'),
+      dtrModal = $('.dtr-bs-modal.show');
+
+    // hide responsive modal in small screen
+    if (dtrModal.length) {
+      dtrModal.modal('hide');
+    }
+
+    // sweetalert for confirmation of permanent delete
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, permanent delete!',
+      customClass: {
+        confirmButton: 'btn btn-primary me-3',
+        cancelButton: 'btn btn-label-secondary'
+      },
+      buttonsStyling: false
+    }).then(function (result) {
+      Loading.circle({
+        backgroundColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.7)',
+        svgSize: '60px',
+        svgColor: config.colors.white
+      });
+
+      if (result.value) {
+        // permanent delete the data
+        $.ajax({
+          method: 'DELETE',
+          url: `${baseUrl}approvals/${id}/force`,
+          success: function (res) {
+            Loading.remove();
+            showToast(res.status, res.message);
+            dt_approvals.draw(false);
+          },
+          error: function (jqXHR) {
+            Loading.remove();
+            showToast(
+              jqXHR.responseJSON?.status || 'danger',
+              jqXHR.responseJSON?.message || 'An unexpected error occurred'
+            );
+          }
+        });
+      } else {
+        Loading.remove();
+        showToast('info', 'The approval is not deleted!');
       }
     });
   });

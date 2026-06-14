@@ -1,8 +1,10 @@
 <?php
 
+use App\Domains\Approvals\ApprovalController;
+use App\Domains\Employees\EmployeeController;
 use App\Domains\Pages\DashboardController;
-use App\Domains\Pages\ProfileController;
 use App\Domains\Pages\LoginController;
+use App\Domains\Pages\ProfileController;
 use App\Domains\Permissions\PermissionController;
 use App\Domains\Roles\RoleController;
 use App\Domains\Users\UserController;
@@ -35,6 +37,7 @@ Route::middleware(['auth', 'status'])->group(function () {
 
   // Fetch Data
   Route::get('/roles/select', [RoleController::class, 'select']);
+  Route::get('/employees/select', [EmployeeController::class, 'select']);
 });
 
 /**
@@ -46,6 +49,19 @@ Route::middleware(['auth', 'status', 'permission', 'twofactor'])->group(function
   Route::get('/profile/{username}', [ProfileController::class, 'view'])->name('profile.view');
   Route::patch('/profile/{username}', [ProfileController::class, 'update'])->name('profile.update');
   Route::post('/profile/{username}/generate-two-factor', [ProfileController::class, 'generateTwoFactor'])->name('profile.two_factor');
+
+  // Employees
+  Route::get('/page-employees', [EmployeeController::class, 'view'])->name('page-employees');
+  Route::resource('/employees', EmployeeController::class)->except('create');
+  Route::post('/employees/{employee}/user', [EmployeeController::class, 'user'])->name('employees.user');
+  Route::post('/employees/{employee}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
+  Route::delete('/employees/{employee}/force', [EmployeeController::class, 'force'])->name('employees.force');
+
+  // Approvals
+  Route::get('/page-approvals', [ApprovalController::class, 'view'])->name('page-approvals');
+  Route::resource('/approvals', ApprovalController::class)->except('create');
+  Route::post('/approvals/{employee}/restore', [ApprovalController::class, 'restore'])->name('approvals.restore');
+  Route::delete('/approvals/{employee}/force', [ApprovalController::class, 'force'])->name('approvals.force');
 
   // Authorization
   // Permissions

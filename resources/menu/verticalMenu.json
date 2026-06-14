@@ -7,6 +7,18 @@
       "slug": "dashboard"
     },
     {
+      "url": "/page-employees",
+      "name": "Employees",
+      "icon": "menu-icon tf-icons bx bxs-user-detail",
+      "slug": "page-employees"
+    },
+    {
+      "url": "/page-approvals",
+      "name": "Master Approval",
+      "icon": "menu-icon tf-icons bx bx-list-ul",
+      "slug": "page-approvals"
+    },
+    {
       "name": "Authorization",
       "icon": "menu-icon tf-icons bx bx-check-shield",
       "slug": "access",
