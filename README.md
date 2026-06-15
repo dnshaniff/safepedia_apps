@@ -188,17 +188,33 @@ http://127.0.0.1:8000
 Sebelum melakukan pengujian aplikasi:
 
 1. Login menggunakan akun hasil seeder.
-2. Aktifkan Two Factor Authentication (2FA) melalui menu **Profile**.
-3. Gunakan Google Authenticator atau aplikasi TOTP sejenis untuk menghasilkan kode OTP.
-4. Setelah 2FA aktif, logout dan login kembali untuk menguji proses verifikasi OTP.
+2. Klik avatar pengguna pada pojok kanan atas halaman.
+3. Klik nama pengguna untuk membuka halaman Profile.
+4. Aktifkan Two Factor Authentication (2FA).
+5. Gunakan Google Authenticator atau aplikasi TOTP sejenis untuk menghasilkan kode OTP.
+6. Setelah 2FA aktif, logout dan login kembali untuk menguji proses verifikasi OTP.
 
 ---
 
 ## Login Accounts
 
-Dummy user tersedia melalui seeder.
+Password seluruh akun:
 
-Silakan gunakan data employee yang dihasilkan oleh seeder untuk mencoba masing-masing role approval.
+```text
+P@ssw0rd123
+```
+
+| Username | Full Name | Position | Role |
+|-----------|-----------|-----------|-----------|
+| administrator | Administrator | System Administrator | Administrator |
+| budi | Budi | Staff Gudang | User |
+| maman | Maman | SPV Gudang | Supervisi |
+| cecep | Cecep | Kepala Gudang | Supervisi |
+| asep | Asep | Manager Operasional | Supervisi |
+| yohan | Yohan | Direktur Operasional | Supervisi |
+| yoseph | Direktur Keuangan | Direktur Keuangan | Supervisi |
+
+Gunakan akun-akun di atas untuk menguji proses approval sesuai tahapan yang tersedia.
 
 ---
 
@@ -213,12 +229,13 @@ Aplikasi menggunakan TOTP (Time-based One Time Password) yang kompatibel dengan:
 
 ### Aktivasi 2FA
 
-1. Login menggunakan akun yang tersedia dari seeder.
-2. Klik menu **Profile**.
-3. Buka bagian **Two Factor Authentication**.
-4. Scan QR Code menggunakan aplikasi authenticator.
-5. Masukkan kode OTP yang dihasilkan aplikasi.
-6. Simpan konfigurasi.
+1. Login menggunakan salah satu akun yang tersedia.
+2. Klik avatar pengguna pada pojok kanan atas.
+3. Klik nama pengguna untuk membuka halaman Profile.
+4. Pada halaman Profile, buka bagian **Two Factor Authentication**.
+5. Scan QR Code menggunakan aplikasi authenticator.
+6. Masukkan kode OTP yang dihasilkan aplikasi.
+7. Simpan konfigurasi.
 
 Setelah aktif, user akan diminta memasukkan kode OTP setiap kali login.
 
@@ -233,6 +250,8 @@ Setelah aktif, user akan diminta memasukkan kode OTP setiap kali login.
 | Approved | Seluruh approval selesai |
 | Returned | Dikembalikan untuk revisi |
 | Canceled | Pengajuan dibatalkan |
+
+> Untuk menguji alur approval secara penuh, gunakan akun sesuai urutan role yang telah disediakan pada bagian Login Accounts.
 
 ---
 
@@ -257,21 +276,6 @@ Setiap domain dipisahkan berdasarkan:
 - Models
 
 Pendekatan ini digunakan untuk menjaga modularitas dan mempermudah maintenance.
-
----
-
-## Third Party Libraries
-
-- Laravel Permission
-- DataTables
-- Select2
-- Flatpickr
-- Leaflet
-- Dropzone
-- ApexCharts
-- FormValidation
-
----
 
 ## Notes
 
