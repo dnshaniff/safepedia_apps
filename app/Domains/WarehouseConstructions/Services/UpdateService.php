@@ -61,16 +61,18 @@ class UpdateService
           }
         }
 
+        $documentPrefix = Str::slug($warehouseConstruction->construction_number);
+
         $lastNumber = $warehouseConstruction->documents()->get()->map(function ($document) {
           preg_match('/-(\d+)\.pdf$/', $document->file_name, $matches);
 
           return (int) ($matches[1] ?? 0);
-        })->max();
+        })->max() ?? 0;
 
         if (!empty($data['documents'])) {
-          foreach ($data['documents'] as $index => $file) {
+          foreach ($data['documents'] as $file) {
             $lastNumber++;
-            $generatedName = Str::slug($warehouseConstruction->warehouse_name) . "-{$lastNumber}.pdf";
+            $generatedName = "{$documentPrefix}-{$lastNumber}.pdf";
 
             $filePath = "warehouse-constructions/{$generatedName}";
 

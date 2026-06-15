@@ -37,7 +37,7 @@ class StoreService
           ];
         });
 
-        $construction = WarehouseConstruction::create([
+        $warehouseConstruction = WarehouseConstruction::create([
           'construction_number' => $this->generateNumber(),
           'warehouse_name' => $data['warehouse_name'],
           'latitude' => $data['latitude'],
@@ -46,13 +46,13 @@ class StoreService
           'status' => 'draft',
         ]);
 
-        $construction->items()->createMany($calculatedItems->toArray());
+        $warehouseConstruction->items()->createMany($calculatedItems->toArray());
 
-        $warehouseSlug = Str::slug($data['warehouse_name']);
+        $documentNumber = Str::slug($warehouseConstruction->construction_number);
 
         foreach ($data['documents'] as $index => $file) {
 
-          $generatedName = sprintf('%s-%d.pdf', $warehouseSlug, $index + 1);
+          $generatedName = sprintf('%s-%d.pdf', $documentNumber, $index + 1);
 
           $filePath = "warehouse-constructions/{$generatedName}";
 
@@ -60,7 +60,7 @@ class StoreService
 
           $storedFiles[] = $filePath;
 
-          $construction->documents()->create([
+          $warehouseConstruction->documents()->create([
             'original_name' => $file->getClientOriginalName(),
             'file_name' => $generatedName,
             'file_path' => $filePath,
@@ -69,7 +69,7 @@ class StoreService
           ]);
         }
 
-        return $construction;
+        return $warehouseConstruction;
       });
     } catch (Throwable $e) {
       foreach ($storedFiles as $file) {

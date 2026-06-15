@@ -1,112 +1,111 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function (e) {
- const chartPeriod = document.getElementById('chartPeriod');
-const chartEl = document.querySelector('#constructionStatisticsChart');
+  const chartPeriod = document.getElementById('chartPeriod');
+  const chartEl = document.querySelector('#constructionStatisticsChart');
 
-chartPeriod.value = new Date().toISOString().slice(0, 7);
+  chartPeriod.value = new Date().toISOString().slice(0, 7);
 
-let constructionChart = null;
+  let constructionChart = null;
 
-function renderChart(categories = [], data = []) {
-  if (constructionChart) {
-    constructionChart.destroy();
+  function renderChart(categories = [], data = []) {
+    if (constructionChart) {
+      constructionChart.destroy();
+    }
+
+    constructionChart = new ApexCharts(chartEl, {
+      series: [
+        {
+          name: 'Construction',
+          data: data.map(value => Number(value) || 0)
+        }
+      ],
+      chart: {
+        type: 'bar',
+        height: 350,
+        parentHeightOffset: 0,
+        toolbar: {
+          show: false
+        }
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          columnWidth: '55%'
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        width: 0
+      },
+      colors: [config.colors.primary],
+      grid: {
+        borderColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.1)'
+      },
+      xaxis: {
+        categories: categories.map(value => String(value)),
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        },
+        labels: {
+          style: {
+            colors: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.5)',
+            fontSize: '12px'
+          }
+        }
+      },
+      yaxis: {
+        min: 0,
+        labels: {
+          style: {
+            colors: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.5)',
+            fontSize: '12px'
+          },
+          formatter: value => `${parseInt(value || 0)}`
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: value => `${parseInt(value || 0)} Construction`
+        }
+      },
+      noData: {
+        text: 'No data available'
+      }
+    });
+
+    constructionChart.render();
   }
 
-  constructionChart = new ApexCharts(chartEl, {
-    series: [
-      {
-        name: 'Construction',
-        data: data.map(value => Number(value) || 0)
-      }
-    ],
-    chart: {
-      type: 'bar',
-      height: 350,
-      parentHeightOffset: 0,
-      toolbar: {
-        show: false
-      }
-    },
-    plotOptions: {
-      bar: {
-        borderRadius: 4,
-        columnWidth: '55%'
-      }
-    },
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      width: 0
-    },
-    colors: [config.colors.primary],
-    grid: {
-      borderColor: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.1)'
-    },
-    xaxis: {
-      categories: categories.map(value => String(value)),
-      axisBorder: {
-        show: false
+  function loadChart(period) {
+    $.ajax({
+      url: `${baseUrl}dashboard-chart`,
+      type: 'GET',
+      data: { period },
+      success: function (res) {
+        const categories = Array.isArray(res.categories) ? res.categories : [];
+        const data = Array.isArray(res.series) ? res.series : [];
+
+        renderChart(categories, data);
       },
-      axisTicks: {
-        show: false
-      },
-      labels: {
-        style: {
-          colors: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.5)',
-          fontSize: '12px'
-        }
+      error: function (xhr) {
+        console.error('Chart load error:', xhr.responseJSON || xhr);
+        renderChart([], []);
       }
-    },
-    yaxis: {
-      min: 0,
-      labels: {
-        style: {
-          colors: 'rgba(' + window.Helpers.getCssVar('black-rgb') + ', 0.5)',
-          fontSize: '12px'
-        },
-        formatter: value => `${parseInt(value || 0)}`
-      }
-    },
-    tooltip: {
-      y: {
-        formatter: value => `${parseInt(value || 0)} Construction`
-      }
-    },
-    noData: {
-      text: 'No data available'
-    }
+    });
+  }
+
+  chartPeriod.addEventListener('change', function () {
+    loadChart(this.value);
   });
 
-  constructionChart.render();
-}
-
-function loadChart(period) {
-  $.ajax({
-    url: `${baseUrl}dashboard-chart`,
-    type: 'GET',
-    data: { period },
-    success: function (res) {
-      const categories = Array.isArray(res.categories) ? res.categories : [];
-      const data = Array.isArray(res.series) ? res.series : [];
-
-      renderChart(categories, data);
-    },
-    error: function (xhr) {
-      console.error('Chart load error:', xhr.responseJSON || xhr);
-      renderChart([], []);
-    }
-  });
-}
-
-chartPeriod.addEventListener('change', function () {
-  loadChart(this.value);
-});
-
-renderChart([], []);
-loadChart(chartPeriod.value);
-
+  renderChart([], []);
+  loadChart(chartPeriod.value);
 
   function formatCurrency(value) {
     const number = Number(value) || 0;
@@ -135,7 +134,7 @@ loadChart(chartPeriod.value);
         { data: 'grand_total_budget' },
         { data: 'approval' },
         { data: 'status' },
-        { data: 'created_at' },
+        { data: 'created_at' }
       ],
       columnDefs: [
         {
@@ -159,7 +158,6 @@ loadChart(chartPeriod.value);
         {
           targets: 4,
           render: function (data) {
-
             const statuses = {
               draft: {
                 class: 'bg-label-info',
@@ -210,7 +208,7 @@ loadChart(chartPeriod.value);
               </div>
             `;
           }
-        },
+        }
       ],
       scrollCollapse: true,
       fixedHeader: { header: true, headerOffset: 70 },
@@ -235,7 +233,7 @@ loadChart(chartPeriod.value);
                 placeholder: 'Search',
                 text: '_INPUT_'
               }
-            },
+            }
           ]
         },
         bottomStart: {

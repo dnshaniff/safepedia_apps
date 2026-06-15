@@ -57,16 +57,25 @@ class DashboardService
 
   public function chart(string $period): array
   {
-    $date = Carbon::createFromFormat('Y-m', $period)->startOfMonth();
+    $date = Carbon::createFromFormat('Y-m', $period);
 
-    $total = WarehouseConstruction::query()
-      ->whereYear('created_at', $date->year)
-      ->whereMonth('created_at', $date->month)
-      ->count();
+    $daysInMonth = $date->daysInMonth;
+
+    $categories = [];
+    $series = [];
+
+    for ($day = 1; $day <= $daysInMonth; $day++) {
+
+      $count = WarehouseConstruction::query()->whereYear('created_at', $date->year)
+        ->whereMonth('created_at', $date->month)->whereDay('created_at', $day)->count();
+
+      $categories[] = $day;
+      $series[] = $count;
+    }
 
     return [
-      'categories' => [$date->translatedFormat('F Y')],
-      'series' => [$total],
+      'categories' => $categories,
+      'series' => $series,
       'month' => $date->translatedFormat('F Y'),
     ];
   }
