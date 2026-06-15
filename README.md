@@ -85,7 +85,7 @@ git clone <repository-url>
 Masuk ke folder project:
 
 ```bash
-cd was-apps
+cd safepedia_apps
 ```
 
 Install dependency PHP:
